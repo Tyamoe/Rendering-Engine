@@ -13,14 +13,8 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{7a09be29-7e97-4d8a-9cf5-ed585d2cfdbc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Graphics">
-      <UniqueIdentifier>{3aa57bf8-1743-4dc1-b579-dbd56b377bd2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Debug">
       <UniqueIdentifier>{8489704d-b743-4022-9321-1905e5b04f58}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Object">
-      <UniqueIdentifier>{7a19e989-d6cf-46bf-9d5f-2617ab02a9b3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Core">
       <UniqueIdentifier>{9f48e317-b663-49a3-abb6-cb4f482e33d1}</UniqueIdentifier>
@@ -28,19 +22,22 @@
     <Filter Include="Engine\exResources">
       <UniqueIdentifier>{d274f406-fbd9-4402-9da9-07a96eccd8d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\System">
+      <UniqueIdentifier>{e446d4f7-4a6c-49c2-bc51-6c5537ef3bee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering">
+      <UniqueIdentifier>{3aa57bf8-1743-4dc1-b579-dbd56b377bd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Entity">
+      <UniqueIdentifier>{7a19e989-d6cf-46bf-9d5f-2617ab02a9b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Entity\Component">
+      <UniqueIdentifier>{fce4f496-273d-4a18-8a0a-392e11e29bc6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Shader.cpp">
-      <Filter>Engine\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Engine\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="System.cpp">
-      <Filter>Engine\Core</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="vendor\imgui\imgui.cpp">
       <Filter>Editor\External</Filter>
@@ -58,13 +55,13 @@
       <Filter>Editor\External</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Engine\Graphics</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Render.cpp">
-      <Filter>Engine\Graphics</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
-      <Filter>Engine\Object</Filter>
+      <Filter>Engine\Entity</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Scene</Filter>
@@ -72,19 +69,35 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Editor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Engine\System</Filter>
+    </ClCompile>
+    <ClCompile Include="System.cpp">
+      <Filter>Engine\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Engine\Entity\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
-      <Filter>Engine\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Engine\Core</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Render.h">
-      <Filter>Engine\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
-      <Filter>Engine\Core</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imconfig.h">
       <Filter>Editor\External</Filter>
@@ -120,16 +133,37 @@
       <Filter>Editor\External</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Engine\Graphics</Filter>
+      <Filter>Engine\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
-      <Filter>Engine\Object</Filter>
+      <Filter>Engine\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Engine\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="System.h">
+      <Filter>Engine\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Engine\Entity\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
