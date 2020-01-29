@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\stb;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\inc;$(SolutionDir)lib\SOIL\SOIL2;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\FreeImage\Dist\x32;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\FMOD\lib;$(SolutionDir)lib\SOIL;$(SolutionDir)lib\FreeImage\Dist\x32;$(SolutionDir)lib\glew-2.0.0\lib\Release\Win32;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3dll.lib;FreeImage.lib;soil2-debug.lib;fmod_vc.lib;lua5.3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
+
+copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\Win32\glew32.dll" "$(TargetDir)glew32.dll" /Y
+
+copy "$(SolutionDir)lib\FreeImage\Dist\x32\FreeImage.dll" "$(TargetDir)FreeImage.dll" /Y
+copy "$(SolutionDir)lib\FMOD\lib\fmod.dll" "$(TargetDir)fmod.dll" /Y
+
+copy "$(SolutionDir)lib\lua-5.3.5\lua5.3.dll" "$(TargetDir)lua5.3.dll" /Y</Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <PreprocessorDefinitions>GLFW_DLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>true</EnableModules>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
