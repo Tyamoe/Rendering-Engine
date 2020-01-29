@@ -19,9 +19,6 @@
     <Filter Include="Engine\Core">
       <UniqueIdentifier>{9f48e317-b663-49a3-abb6-cb4f482e33d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\exResources">
-      <UniqueIdentifier>{d274f406-fbd9-4402-9da9-07a96eccd8d8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\System">
       <UniqueIdentifier>{e446d4f7-4a6c-49c2-bc51-6c5537ef3bee}</UniqueIdentifier>
     </Filter>
@@ -31,8 +28,11 @@
     <Filter Include="Engine\Entity">
       <UniqueIdentifier>{7a19e989-d6cf-46bf-9d5f-2617ab02a9b3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Entity\Component">
+    <Filter Include="Engine\Entity\Nodes">
       <UniqueIdentifier>{fce4f496-273d-4a18-8a0a-392e11e29bc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{e7918a5b-380b-4ea9-9ca9-9fe1ba933d1b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,7 +89,25 @@
       <Filter>Engine\Core</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
-      <Filter>Engine\Entity\Component</Filter>
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererRayTrace.cpp">
+      <Filter>Engine\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Profiler.cpp">
+      <Filter>Engine\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger.cpp">
+      <Filter>Engine\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,15 +181,36 @@
       <Filter>Engine\Core</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>Engine\Entity\Component</Filter>
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTrace.h">
+      <Filter>Engine\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Profiler.h">
+      <Filter>Engine\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger.h">
+      <Filter>Engine\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Engine\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\FlatColor.vs">
-      <Filter>Engine\exResources</Filter>
+      <Filter>Resources</Filter>
     </None>
     <None Include="resources\shaders\FlatColor.fs">
-      <Filter>Engine\exResources</Filter>
+      <Filter>Resources</Filter>
     </None>
   </ItemGroup>
 </Project>

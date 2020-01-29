@@ -1,20 +1,20 @@
 #include "stdafx.h"
 #include "Shader.h"
 
-static std::string path = "resources/shaders/";
+static TYstring path = "resources/shaders/";
 
 Shader::~Shader()
 {
 	glDeleteProgram(Program);
 }
 
-Shader::Shader(std::string vertexPath, std::string fragmentPath)
+Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 {
 	vertexPath = path + vertexPath;
 	fragmentPath = path + fragmentPath;
 
-	std::string vertexCode;
-	std::string fragmentCode;
+	TYstring vertexCode;
+	TYstring fragmentCode;
 
 	std::ifstream vertexFile;
 	std::ifstream fragmentFile;
@@ -45,12 +45,12 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << e.what() << std::endl;
 	}
 
-	const GLchar* vShaderCode = vertexCode.c_str();
-	const GLchar* fShaderCode = fragmentCode.c_str();
+	const TYchar* vShaderCode = vertexCode.c_str();
+	const TYchar* fShaderCode = fragmentCode.c_str();
 
-	GLuint vertex, fragment;
-	GLint success;
-	GLchar infoLog[512];
+	TYuint vertex, fragment;
+	TYint success;
+	TYchar infoLog[512];
 
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 
@@ -99,23 +99,23 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 
 	// Setup Uniform Map
 	{
-		GLint max_length;
+		TYint max_length;
 		glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
-		GLint num_uniforms;
+		TYint num_uniforms;
 
-		GLchar* pname = new GLchar[max_length];
+		TYchar* pname = new TYchar[max_length];
 
 		glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num_uniforms);
 
-		for (GLint i = 0; i < num_uniforms; ++i) 
+		for (TYint i = 0; i < num_uniforms; ++i) 
 		{
 			GLsizei written;
-			GLint size;
+			TYint size;
 			GLenum type;
 			
 			glGetActiveUniform(Program, i, max_length, &written, &size, &type, pname);
 
-			GLchar* pname1 = new GLchar[max_length];
+			TYchar* pname1 = new TYchar[max_length];
 
 			std::strcpy(pname1, pname);
 
@@ -124,9 +124,9 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 				pname1[written - 3] = '\0';
 			}
 
-			GLint loc = glGetUniformLocation(Program, pname1);
+			TYint loc = glGetUniformLocation(Program, pname1);
 
-			Uniforms.insert(std::pair<GLchar*, GLint>(pname1, loc));
+			Uniforms.insert(std::pair<TYchar*, TYint>(pname1, loc));
 		}
 
 		delete[] pname;
@@ -138,85 +138,85 @@ void Shader::Use()
 	glUseProgram(this->Program);
 }
 
-void Shader::setBool(GLint uniformLoc, bool value)
+void Shader::setBool(TYint uniformLoc, TYbool value)
 {
-	glUniform1i(uniformLoc, (int)value);
+	glUniform1i(uniformLoc, (TYint)value);
 }
 
-void Shader::setInt(GLint uniformLoc, int value)
+void Shader::setInt(TYint uniformLoc, TYint value)
 {
 	glUniform1i(uniformLoc, value);
 }
 
-void Shader::setFloat(GLint uniformLoc, float value)
+void Shader::setFloat(TYint uniformLoc, TYfloat value)
 {
 	glUniform1f(uniformLoc, value);
 }
 
-void Shader::set3FloatArray(GLint uniformLoc, const float* value, int count)
+void Shader::set3FloatArray(TYint uniformLoc, const TYfloat* value, TYint count)
 {
 	glUniform3fv(uniformLoc, count, &value[0]);
 }
-void Shader::set4FloatArray(GLint uniformLoc, const float* value, int count)
+void Shader::set4FloatArray(TYint uniformLoc, const TYfloat* value, TYint count)
 {
 	glUniform4fv(uniformLoc, count, &value[0]);
 }
 
-void Shader::setIntArray(GLint uniformLoc, std::vector<int>& value, int count)
+void Shader::setIntArray(TYint uniformLoc, TYvectori& value, TYint count)
 {
 	glUniform1iv(uniformLoc, count, &value[0]);
 }
 
-void Shader::set1FloatArray(GLint uniformLoc, std::vector<float>& value, int count)
+void Shader::set1FloatArray(TYint uniformLoc, TYvectorf& value, TYint count)
 {
 	glUniform1fv(uniformLoc, count, &value[0]);
 }
-void Shader::set2FloatArray(GLint uniformLoc, std::vector<glm::vec2>& value, int count)
+void Shader::set2FloatArray(TYint uniformLoc, TYvector<TYvec2>& value, TYint count)
 {
 	glUniform2fv(uniformLoc, count, &value[0].x);
 }
-void Shader::set3FloatArray(GLint uniformLoc, std::vector<glm::vec3>& value, int count)
+void Shader::set3FloatArray(TYint uniformLoc, TYvector3& value, TYint count)
 {
 	glUniform3fv(uniformLoc, count, &value[0].x);
 }
-void Shader::set4FloatArray(GLint uniformLoc, std::vector<glm::vec4>& value, int count)
+void Shader::set4FloatArray(TYint uniformLoc, TYvector<TYvec4>& value, TYint count)
 {
 	glUniform4fv(uniformLoc, count, &value[0].x);
 }
 
-void Shader::setVec2(GLint uniformLoc, const glm::vec2 &value)
+void Shader::setVec2(TYint uniformLoc, const TYvec2 &value)
 {
 	glUniform2fv(uniformLoc, 1, &value[0]);
 }
-void Shader::setVec2(GLint uniformLoc, float x, float y)
+void Shader::setVec2(TYint uniformLoc, TYfloat x, TYfloat y)
 {
 	glUniform2f(uniformLoc, x, y);
 }
 
-void Shader::setVec3(GLint uniformLoc, const glm::vec3 &value)
+void Shader::setVec3(TYint uniformLoc, const TYvec &value)
 {
 	glUniform3fv(uniformLoc, 1, &value[0]);
 }
-void Shader::setVec3(GLint uniformLoc, float x, float y, float z)
+void Shader::setVec3(TYint uniformLoc, TYfloat x, TYfloat y, TYfloat z)
 {
 	glUniform3f(uniformLoc, x, y, z);
 }
 
-void Shader::setVec4(GLint uniformLoc, const glm::vec4 &value)
+void Shader::setVec4(TYint uniformLoc, const TYvec4 &value)
 {
 	glUniform4fv(uniformLoc, 1, &value[0]);
 }
-void Shader::setVec4(GLint uniformLoc, float x, float y, float z, float w)
+void Shader::setVec4(TYint uniformLoc, TYfloat x, TYfloat y, TYfloat z, TYfloat w)
 {
 	glUniform4f(uniformLoc, x, y, z, w);
 }
 
-void Shader::setMat3(GLint uniformLoc, const glm::mat3 &mat)
+void Shader::setMat3(TYint uniformLoc, const TYmat3 &mat)
 {
 	glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::setMat4(GLint uniformLoc, const glm::mat4 &mat)
+void Shader::setMat4(TYint uniformLoc, const TYmat &mat)
 {
 	glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
 }

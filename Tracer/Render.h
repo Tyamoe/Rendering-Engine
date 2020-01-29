@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stdafx.h"
+#include "Types.h"
+
 #include "Shader.h"
 #include "Model.h"
 

@@ -1,15 +1,14 @@
 #pragma once
 
-#include "stdafx.h"
+#include "Types.h"
 
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <map>
 
 struct CharPointerCMP
 {
-	bool operator()(char const *a, char const *b) const
+	TYbool operator()(TYchar const *a, TYchar const *b) const
 	{
 		return std::strcmp(a, b) < 0;
 	}
@@ -20,13 +19,13 @@ typedef class Shader
 {
 public:
 	// The program.
-	GLuint Program;
+	TYuint Program;
 
-	std::map<GLchar*, GLint, CharPointerCMP> Uniforms;
-	//std::map<std::string, GLint> Uniforms;
+	TYmap<TYchar*, TYint, CharPointerCMP> Uniforms;
+	//std::map<std::string, TYint> Uniforms;
 
 	// Shader constructor for simple frag/vertex shader program.
-	Shader(std::string vertexPath, std::string fragmentPath);
+	Shader(TYstring vertexPath, TYstring fragmentPath);
 	Shader()
 	{
 		Program = 0;
@@ -36,28 +35,28 @@ public:
 	void Use();
 
 	// Functions used to set shader uniforms. (name = name of uniform).
-	void setBool(GLint uniformLoc, bool value);
-	void setInt(GLint uniformLoc, int value);
-	void setFloat(GLint uniformLoc, float value);
+	void setBool(TYint uniformLoc, TYbool value);
+	void setInt(TYint uniformLoc, TYint value);
+	void setFloat(TYint uniformLoc, TYfloat value);
 
-	void set3FloatArray(GLint uniformLoc, const float* value, int count);
-	void set4FloatArray(GLint uniformLoc, const float* value, int count);
+	void set3FloatArray(TYint uniformLoc, const TYfloat* value, TYint count);
+	void set4FloatArray(TYint uniformLoc, const TYfloat* value, TYint count);
 
-	void setIntArray(GLint uniformLoc, std::vector<int>& value, int count);
+	void setIntArray(TYint uniformLoc, TYvectori& value, TYint count);
 
-	void set1FloatArray(GLint uniformLoc, std::vector<float>& value, int count);
-	void set2FloatArray(GLint uniformLoc, std::vector<glm::vec2>& value, int count);
-	void set3FloatArray(GLint uniformLoc, std::vector<glm::vec3>& value, int count);
-	void set4FloatArray(GLint uniformLoc, std::vector<glm::vec4>& value, int count);
+	void set1FloatArray(TYint uniformLoc, TYvectorf& value, TYint count);
+	void set2FloatArray(TYint uniformLoc, TYvector<TYvec2>& value, TYint count);
+	void set3FloatArray(TYint uniformLoc, TYvector3& value, TYint count);
+	void set4FloatArray(TYint uniformLoc, TYvector<TYvec4>& value, TYint count);
 
-	void setVec2(GLint uniformLoc, const glm::vec2 &value);
-	void setVec2(GLint uniformLoc, float x, float y);
-	void setVec3(GLint uniformLoc, const glm::vec3 &value);
-	void setVec3(GLint uniformLoc, float x, float y, float z);
-	void setVec4(GLint uniformLoc, const glm::vec4 &value);
-	void setVec4(GLint uniformLoc, float x, float y, float z, float w);
+	void setVec2(TYint uniformLoc, const TYvec2 &value);
+	void setVec2(TYint uniformLoc, TYfloat x, TYfloat y);
+	void setVec3(TYint uniformLoc, const TYvec &value);
+	void setVec3(TYint uniformLoc, TYfloat x, TYfloat y, TYfloat z);
+	void setVec4(TYint uniformLoc, const TYvec4 &value);
+	void setVec4(TYint uniformLoc, TYfloat x, TYfloat y, TYfloat z, TYfloat w);
 	
-	void setMat3(GLint uniformLoc, const glm::mat3 &mat);
-	void setMat4(GLint uniformLoc, const glm::mat4 &mat);
+	void setMat3(TYint uniformLoc, const TYmat3 &mat);
+	void setMat4(TYint uniformLoc, const TYmat &mat);
 
 }Shader, *ShaderPtr;
