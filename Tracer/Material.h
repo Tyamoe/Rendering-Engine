@@ -9,6 +9,8 @@ class Material
 		~Material();
 
 	private:
+		TYvec4 color;
+
 };
 
 typedef Material* MaterialPtr;

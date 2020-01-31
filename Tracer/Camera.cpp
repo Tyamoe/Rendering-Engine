@@ -22,7 +22,7 @@ Camera::Camera()
 extern bool ass;
 void Camera::Update(float dt = 0.0167f)
 {
-	float currSpeed = 2 * dt;
+	/*float currSpeed = 2 * dt;
 	if (Input::isKeyDown(GLFW_KEY_W))
 		Position += currSpeed * Front;
 	if (Input::isKeyDown(GLFW_KEY_S))
@@ -49,7 +49,7 @@ void Camera::Update(float dt = 0.0167f)
 	temp.z = cos(glm::radians(pitch_)) * sin(glm::radians(yaw_));
 	Front = glm::normalize(temp);
 
-	view = glm::lookAt(Position, Position + Front, Up);
+	view = glm::lookAt(Position, Position + Front, Up);*/
 }
 
 void Camera::getWorldPosition(float* x, float* y)

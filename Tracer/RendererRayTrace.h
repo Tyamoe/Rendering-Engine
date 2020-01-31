@@ -3,15 +3,24 @@
 #include "Types.h"
 
 #include "Renderer.h"
+#include "Mesh.h"
 
-class RayTrace : public Renderer
+class RenderRayTrace : public Renderer
 {
-public:
-	RayTrace();
-	~RayTrace();
+	public:
+		RenderRayTrace();
+		~RenderRayTrace();
 
-private:
+		TYvoid Init();
 
+		TYvoid PreRender();
+		TYvoid Render(TYfloat dt);
+		TYvoid PostRender();
+
+		TYuint AddMesh(Mesh& mesh);
+
+	private:
+		Mesh Scene;
 };
 
-typedef RayTrace* RayTracePtr;
+typedef RenderRayTrace* RenderRayTracePtr;

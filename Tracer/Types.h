@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
@@ -12,6 +13,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#define TYlog std::cout
+#define TYlogbreak std::endl
+
+#define TYnull nullptr
+
 #define TYvector std::vector
 #define TYmap std::map
 #define TYset std::set
@@ -21,6 +27,7 @@
 typedef int TYint;
 typedef char TYchar;
 typedef short TYshort;
+typedef size_t TYsizet;
 typedef unsigned int TYuint;
 typedef unsigned char TYuchar;
 typedef unsigned short TYushort;
@@ -32,8 +39,9 @@ typedef void TYvoid;
 typedef long long int TYlint;
 typedef unsigned long long int TYulint;
 
-typedef std::vector<TYfloat> TYvectorf;
 typedef std::vector<TYint> TYvectori;
+typedef std::vector<TYuint> TYvectorui;
+typedef std::vector<TYfloat> TYvectorf;
 typedef std::vector<TYbool> TYvectorb;
 typedef std::vector<TYstring> TYvectors;
 typedef std::vector<glm::vec3> TYvector3;

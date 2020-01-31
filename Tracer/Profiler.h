@@ -13,7 +13,7 @@ public:
 	~Profiler();
 
 	void Start();
-	void End();
+	void Stop();
 
 private:
 	TYfloat elapsed;

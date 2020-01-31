@@ -4,6 +4,7 @@
 
 #include "Shape.h"
 #include "Transform.h"
+#include "Physics.h"
 
 class Entity
 {
@@ -15,6 +16,7 @@ class Entity
 		TYstring name;
 
 		TransformPtr transform;
+		PhysicsPtr physics;
 		ShapePtr shape;
 };
 
