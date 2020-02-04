@@ -41,9 +41,7 @@ void Engine::Tick()
 		
 		for (TYsizet i = 0; i < renderers.size(); i++)
 		{
-			renderers[i]->PreRender();
 			renderers[i]->Render(dt);
-			renderers[i]->PostRender();
 		}
 
 		LateTick();
@@ -60,15 +58,25 @@ void Engine::EarlyTick()
 
 	glClearColor(0.3f, 0.69f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (TYsizet i = 0; i < renderers.size(); i++)
+	{
+		renderers[i]->PreRender();
+	}
 }
 
 void Engine::LateTick()
 {
 	if (!EngineInitialized) return;
 
+	for (TYsizet i = 0; i < renderers.size(); i++)
+	{
+		renderers[i]->PostRender();
+	}
+
 	window->input->Update(dt);
 
-	glfwSwapBuffers(GetWindow());
+	glfwSwapBuffers(GetGLFWWindow());
 }
 
 void Engine::UpdateDT()

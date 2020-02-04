@@ -239,10 +239,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\FlatColor.vs">
+    <None Include="resources\shaders\quad.fs">
       <Filter>Resources</Filter>
     </None>
-    <None Include="resources\shaders\FlatColor.fs">
+    <None Include="resources\shaders\quad.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\raytracer.cps">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\flatcolor.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\flatcolor.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>

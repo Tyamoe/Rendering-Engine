@@ -97,8 +97,11 @@
     <ClInclude Include="WindowCB.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\FlatColor.fs" />
-    <None Include="resources\shaders\FlatColor.vs" />
+    <None Include="resources\shaders\flatcolor.fs" />
+    <None Include="resources\shaders\flatcolor.vs" />
+    <None Include="resources\shaders\quad.fs" />
+    <None Include="resources\shaders\quad.vs" />
+    <None Include="resources\shaders\raytracer.cps" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

@@ -19,6 +19,7 @@ class Window
 		void AttachInput(InputPtr pInput);
 
 		GLFWwindow* GetGLFWWindow() { return window; }
+		Layout GetLayout() { return layout; }
 
 		friend class Engine;
 
@@ -30,6 +31,8 @@ class Window
 
 		TYbool vsync = false;
 		TYint MSAA = 0;
+
+		Layout layout;
 
 		void CreateWindow(Layout layout);
 

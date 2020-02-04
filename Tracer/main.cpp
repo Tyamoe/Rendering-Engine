@@ -10,7 +10,7 @@ int main()
 {
 	Window window(Settings(false, 0), Layout());
 
-	EnginePtr engine = new Engine({ Editor });
+	EnginePtr engine = new Engine({ RayTrace, FlatColor, Editor });
 	InputPtr input = new Input(window.GetGLFWWindow());
 
 	window.AttachInput(input);

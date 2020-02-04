@@ -25,6 +25,7 @@ public:
 	//std::map<std::string, TYint> Uniforms;
 
 	// Shader constructor for simple frag/vertex shader program.
+	Shader(TYstring computePath);
 	Shader(TYstring vertexPath, TYstring fragmentPath);
 	Shader()
 	{
@@ -33,6 +34,8 @@ public:
 	~Shader();
 	// Tell OpenGL to use 'this' program.
 	void Use();
+
+	void SetupUniforms();
 
 	// Functions used to set shader uniforms. (name = name of uniform).
 	void setBool(TYint uniformLoc, TYbool value);

@@ -98,7 +98,7 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 	glDeleteShader(fragment);
 
 	// Setup Uniform Map
-	{
+	/*{
 		TYint max_length;
 		glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 		TYint num_uniforms;
@@ -130,7 +130,111 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 		}
 
 		delete[] pname;
+	}*/
+}
+
+Shader::Shader(TYstring pComputePath)
+{
+	Program = glCreateProgram();
+	GLuint cs = glCreateShader(GL_COMPUTE_SHADER);
+	
+	std::string computePath = path + pComputePath;
+
+	std::string computeCode;
+	std::ifstream computeFile;
+	std::stringstream computeStream;
+
+	computeFile.exceptions(std::ifstream::badbit);
+
+	try
+	{
+		computeFile.open(computePath);
+		computeStream << computeFile.rdbuf();
+		computeFile.close();
+		computeCode = computeStream.str();
+
+		TYlog << "Shader: " << pComputePath << " successfully opened for reading" << TYlogbreak;
+
 	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "Files: " << pComputePath << std::endl;
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << e.what() << std::endl;
+		TYlog << std::string(e.what()) << TYlogbreak;
+	}
+
+	const GLchar* vShaderCode = computeCode.c_str();
+
+	glShaderSource(cs, 1, &vShaderCode, NULL);
+	glCompileShader(cs);
+	int rvalue;
+	GLchar log[10240];
+	glGetShaderiv(cs, GL_COMPILE_STATUS, &rvalue);
+	if (!rvalue)
+	{
+		fprintf(stderr, "\n\nError in compiling the compute shader\n\n");
+		GLsizei length;
+		glGetShaderInfoLog(cs, 10239, &length, log);
+		fprintf(stderr, "Compiler log:\n%s\n", log);
+	}
+	else
+	{
+		TYlog << "Shader: " << pComputePath << " successfully COMPILED" << TYlogbreak;
+	}
+	glAttachShader(Program, cs);
+
+	glLinkProgram(Program);
+	glGetProgramiv(Program, GL_LINK_STATUS, &rvalue);
+
+	if (!rvalue) 
+	{
+		fprintf(stderr, "Error in linking compute shader program\n\n");
+		GLsizei length;
+		glGetProgramInfoLog(Program, 10239, &length, log);
+		fprintf(stderr, "\nLinker log:\n%s\n", log);
+	}
+	else
+	{
+		TYlog << "Shader: " << pComputePath << " successfully LINKED" << TYlogbreak;
+	}
+
+	SetupUniforms();
+}
+
+void Shader::SetupUniforms()
+{
+	// Setup Uniform Map
+	TYint max_length;
+	glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+	TYint num_uniforms;
+
+	TYchar* pname = new TYchar[max_length];
+
+	glGetProgramiv(Program, GL_ACTIVE_UNIFORMS, &num_uniforms);
+
+	for (TYint i = 0; i < num_uniforms; i++)
+	{
+		GLsizei written;
+		TYint size;
+		GLenum type;
+
+		glGetActiveUniform(Program, i, max_length, &written, &size, &type, pname);
+
+		TYchar* pname1 = new TYchar[max_length];
+
+		std::strcpy(pname1, pname);
+
+		if (size > 1)
+		{
+			pname1[written - 3] = '\0';
+		}
+
+		TYint loc = glGetUniformLocation(Program, pname1);
+
+		Uniforms.insert(std::pair<TYchar*, TYint>(pname1, loc));
+	}
+
+	delete[] pname;
 }
 
 void Shader::Use()

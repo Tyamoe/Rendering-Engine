@@ -20,7 +20,7 @@ void Window::AttachInput(InputPtr pInput)
 	input = pInput;
 }
 
-void Window::CreateWindow(Layout layout)
+void Window::CreateWindow(Layout pLayout)
 {
 	glfwInit();
 	glfwSetErrorCallback(ErrorCB);
@@ -46,8 +46,11 @@ void Window::CreateWindow(Layout layout)
 
 	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-	GLint width = layout.width == 0 ? mode->width : layout.width;
-	GLint height = layout.height == 0 ? mode->height : layout.height;
+	GLint width = pLayout.width == 0 ? mode->width : pLayout.width;
+	GLint height = pLayout.height == 0 ? mode->height : pLayout.height;
+
+	layout.width = width;
+	layout.height = height;
 
 	window = glfwCreateWindow(width, height, "Ray-Tracer", NULL, NULL);
 
@@ -103,7 +106,7 @@ void Window::CreateWindow(Layout layout)
 	WindowInitialized = true;
 }
 
-Window::Window(Settings pSettings, Layout pLayout)
+Window::Window(Settings pSettings, Layout pLayout) : layout(pLayout)
 {
 	vsync = pSettings.vsync;
 	MSAA = pSettings.MSAA;

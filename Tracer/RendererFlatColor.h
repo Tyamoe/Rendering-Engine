@@ -3,6 +3,7 @@
 #include "Types.h"
 
 #include "Renderer.h"
+#include "Shader.h"
 #include "Mesh.h"
 
 class RenderFlatColor : public Renderer
@@ -18,6 +19,11 @@ public:
 	TYvoid PostRender();
 
 private:
+	ShaderPtr FlatShader = TYnull;
+	ShaderPtr QuadShader = TYnull;
+
+	TYuint RenderBuffer;
+	TYuint RenderTexture;
 };
 
 typedef RenderFlatColor* RenderFlatColorPtr;

@@ -35,7 +35,8 @@ class Engine
 
 	public:
 		void SetWindow(WindowPtr pWindow) { window = pWindow; }
-		GLFWwindow* GetWindow() { return window->GetGLFWWindow(); }
+		GLFWwindow* GetGLFWWindow() { return window->GetGLFWWindow(); }
+		WindowPtr GetWindow() { return window; }
 
 	private:
 		void UpdateDT();

@@ -3,6 +3,7 @@
 #include "Types.h"
 
 #include "Renderer.h"
+#include "Shader.h"
 #include "Mesh.h"
 
 class RenderRayTrace : public Renderer
@@ -21,6 +22,12 @@ class RenderRayTrace : public Renderer
 
 	private:
 		Mesh Scene;
+
+		ShaderPtr RayTraceShader = TYnull;
+		ShaderPtr QuadShader = TYnull;
+
+		TYuint RenderBuffer;
+		TYuint RenderTexture;
 };
 
 typedef RenderRayTrace* RenderRayTracePtr;

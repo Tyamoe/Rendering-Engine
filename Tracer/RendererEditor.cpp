@@ -44,7 +44,7 @@ TYvoid RenderEditor::PostRender()
 TYvoid RenderEditor::Init()
 {
 	context = ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForOpenGL(engine->GetWindow(), false);
+	ImGui_ImplGlfw_InitForOpenGL(engine->GetGLFWWindow(), false);
 	ImGui_ImplOpenGL3_Init();
 	ImGui::StyleColorsDark();
 }
