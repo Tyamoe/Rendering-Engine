@@ -5,6 +5,7 @@
 #include "Engine.h"
 #include "Input.h"
 #include "Renderer.h"
+#include "RendererRayTraceCPU.h"
 #include "RendererRayTrace.h"
 #include "RendererEditor.h"
 #include "RendererFlatColor.h"
@@ -56,7 +57,8 @@ void Engine::EarlyTick()
 
 	UpdateDT();
 
-	glClearColor(0.3f, 0.69f, 0.5f, 1.0f);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.3f, 0.69f, 0.35f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (TYsizet i = 0; i < renderers.size(); i++)
@@ -76,7 +78,7 @@ void Engine::LateTick()
 
 	window->input->Update(dt);
 
-	glfwSwapBuffers(GetGLFWWindow());
+	glfwSwapBuffers(Gwindow);
 }
 
 void Engine::UpdateDT()
@@ -93,6 +95,11 @@ Engine::Engine(TYvector<RendererType> pRendererTypes)
 		RendererPtr renderer = nullptr;
 		switch (pRendererTypes[i])
 		{
+		case RayTraceCPU:
+			renderer = new RenderRayTraceCPU();
+			renderer->SetEngine(this);
+			renderer->UpdatePriority(0);
+			break;
 		case RayTrace:
 			renderer = new RenderRayTrace();
 			renderer->SetEngine(this);

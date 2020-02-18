@@ -130,6 +130,12 @@
     <ClCompile Include="RendererRayTrace.cpp">
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="RendererRayTraceCPU.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -236,6 +242,12 @@
     </ClInclude>
     <ClInclude Include="Structs.h">
       <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTraceCPU.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\tinyobj\tiny_obj_loader.h">
+      <Filter>Editor\External</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

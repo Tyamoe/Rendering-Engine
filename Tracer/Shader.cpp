@@ -98,7 +98,7 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 	glDeleteShader(fragment);
 
 	// Setup Uniform Map
-	/*{
+	{
 		TYint max_length;
 		glGetProgramiv(Program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 		TYint num_uniforms;
@@ -130,7 +130,7 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 		}
 
 		delete[] pname;
-	}*/
+	}
 }
 
 Shader::Shader(TYstring pComputePath)

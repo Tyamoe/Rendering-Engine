@@ -13,6 +13,7 @@ typedef struct RendererCMP RendererCMP;
 
 enum RendererType
 {
+	RayTraceCPU,
 	RayTrace,
 	Editor,
 	FlatColor,

@@ -8,14 +8,14 @@ using namespace std::filesystem;
 
 TYvoid RenderEditor::PreRender()
 {
-	ImGui_ImplOpenGL3_NewFrame();
+	/*ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+	ImGui::NewFrame();*/
 }
 
 TYvoid RenderEditor::Render(TYfloat dt)
 {
-	ImGui::Begin("Model Browser");
+	/*ImGui::Begin("Model Browser");
 
 	const path location("./resources/models/");
 	for (const auto& fileName : directory_iterator(location))
@@ -31,14 +31,14 @@ TYvoid RenderEditor::Render(TYfloat dt)
 		}
 	}
 
-	ImGui::End();
+	ImGui::End();*/
 }
 
 TYvoid RenderEditor::PostRender()
 {
-	ImGui::Render();
+	/*ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	ImGui::EndFrame();
+	ImGui::EndFrame();*/
 }
 
 TYvoid RenderEditor::Init()

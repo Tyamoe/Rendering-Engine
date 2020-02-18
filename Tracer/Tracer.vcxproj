@@ -28,12 +28,16 @@
     <ClCompile Include="RendererEditor.cpp" />
     <ClCompile Include="RendererFlatColor.cpp" />
     <ClCompile Include="RendererRayTrace.cpp" />
+    <ClCompile Include="RendererRayTraceCPU.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp">
@@ -76,6 +80,7 @@
     <ClInclude Include="RendererEditor.h" />
     <ClInclude Include="RendererFlatColor.h" />
     <ClInclude Include="RendererRayTrace.h" />
+    <ClInclude Include="RendererRayTraceCPU.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="stdafx.h" />
@@ -93,6 +98,7 @@
     <ClInclude Include="vendor\imgui\stb_rect_pack.h" />
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
+    <ClInclude Include="vendor\tinyobj\tiny_obj_loader.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowCB.h" />
   </ItemGroup>

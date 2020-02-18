@@ -9,7 +9,7 @@
 void Window::AttachEngine(EnginePtr pEngine)
 {
 	engine = pEngine;
-	engine->SetWindow(this);
+	engine->SetWindow(this, window);
 
 	engine->Init();
 	engine->Start();
@@ -25,7 +25,7 @@ void Window::CreateWindow(Layout pLayout)
 	glfwInit();
 	glfwSetErrorCallback(ErrorCB);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
@@ -39,15 +39,11 @@ void Window::CreateWindow(Layout pLayout)
 	{
 		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
 	}
-	else
-	{
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	}
 
-	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	//const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-	GLint width = pLayout.width == 0 ? mode->width : pLayout.width;
-	GLint height = pLayout.height == 0 ? mode->height : pLayout.height;
+	GLint width = pLayout.width == 0 ? pLayout.width : pLayout.width;
+	GLint height = pLayout.height == 0 ? pLayout.height : pLayout.height;
 
 	layout.width = width;
 	layout.height = height;
@@ -98,6 +94,8 @@ void Window::CreateWindow(Layout pLayout)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+
+	glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 
 	glDebugMessageCallback(ExErrorCB, NULL);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

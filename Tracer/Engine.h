@@ -27,6 +27,7 @@ class Engine
 	private:
 		TYvector<RendererPtr> renderers;
 		WindowPtr window = nullptr;
+		GLFWwindow* Gwindow = nullptr;
 
 		TYfloat dt = 0.0f;
 		TYbool running = false;
@@ -34,8 +35,12 @@ class Engine
 		TYbool EngineInitialized = false;
 
 	public:
-		void SetWindow(WindowPtr pWindow) { window = pWindow; }
-		GLFWwindow* GetGLFWWindow() { return window->GetGLFWWindow(); }
+		void SetWindow(WindowPtr pWindow, GLFWwindow* Gwindow_) 
+		{ 
+			window = pWindow; 
+			Gwindow = Gwindow_;
+		}
+		GLFWwindow* GetGLFWWindow() { return Gwindow; }
 		WindowPtr GetWindow() { return window; }
 
 	private:
