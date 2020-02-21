@@ -136,6 +136,12 @@
     <ClCompile Include="tiny_obj_loader.cpp">
       <Filter>Editor\External</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -248,6 +254,12 @@
     </ClInclude>
     <ClInclude Include="vendor\tinyobj\tiny_obj_loader.h">
       <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Engine\Core\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

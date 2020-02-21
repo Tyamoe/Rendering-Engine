@@ -1,10 +1,15 @@
 #include "stdafx.h"
 
 #include "WindowCB.h"
+#include "Window.h"
 
 void ViewportCB(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+
+	WindowManager[window]->rLayout().width = width;
+	WindowManager[window]->rLayout().height = height;
+	WindowManager[window]->rDirtyLayout() = true;
 }
 
 void ErrorCB(int error, char const* description)

@@ -71,10 +71,10 @@ public:
 			float quadVertices[] =
 			{
 				// positions        // texture Coords
-				-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-				-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-				 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-				 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+				 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 			};
 			// setup plane VAO
 			glGenVertexArrays(1, &quadVAO);
@@ -86,6 +86,9 @@ public:
 			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
 		}
 
 		setInt(Uniforms["texture1"], 0);

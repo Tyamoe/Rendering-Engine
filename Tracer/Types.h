@@ -13,6 +13,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#define TYpi 3.141592653589793f
+#define TYinf 1e8 
+
 #define TYlog std::cout
 #define TYlogbreak std::endl
 
@@ -24,12 +27,14 @@
 #define TYumap std::unordered_map
 #define TYuset std::unordered_set
 
+typedef const char* TYcstring;
 typedef int TYint;
 typedef char TYchar;
 typedef short TYshort;
 typedef size_t TYsizet;
 typedef unsigned int TYuint;
 typedef unsigned char TYuchar;
+typedef unsigned char TYubyte;
 typedef unsigned short TYushort;
 typedef float TYfloat;
 typedef double TYdouble;

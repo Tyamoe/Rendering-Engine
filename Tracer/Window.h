@@ -12,14 +12,23 @@ typedef class Engine* EnginePtr;
 class Window
 {
 	public:
-		Window(Settings pSettings, Layout pLayout);
+		Window(TYcstring pName, Settings pSettings, Layout pLayout);
 		~Window();
 
-		void AttachEngine(EnginePtr pEngine);
-		void AttachInput(InputPtr pInput);
+		TYvoid AttachEngine(EnginePtr pEngine, bool pStart = true);
+		TYvoid AttachInput(InputPtr pInput);
+
+		TYbool Focus();
 
 		GLFWwindow* GetGLFWWindow() { return window; }
+
+		InputPtr GetInput() { return input; }
+
 		Layout GetLayout() { return layout; }
+		Layout& rLayout() { return layout; }
+
+		TYbool GetDirtyLayout() { return DirtyLayout; }
+		TYbool& rDirtyLayout() { return DirtyLayout; }
 
 		friend class Engine;
 
@@ -27,14 +36,19 @@ class Window
 		InputPtr input = nullptr;
 		EnginePtr engine = nullptr;
 
-		TYbool WindowInitialized = false;
+		TYcstring name;
 
+		TYbool WindowInitialized = false;
+		TYbool DirtyLayout = false;
+
+		TYbool fullscreen = false;
+		TYbool maximize = false;
 		TYbool vsync = false;
 		TYint MSAA = 0;
 
 		Layout layout;
 
-		void CreateWindow(Layout layout);
+		TYvoid CreateWindow();
 
 	protected:
 		GLFWwindow* window = nullptr;
@@ -42,3 +56,5 @@ class Window
 };
 
 typedef Window* WindowPtr;
+
+extern TYumap<GLFWwindow*, WindowPtr> WindowManager;

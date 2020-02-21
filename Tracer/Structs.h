@@ -2,10 +2,13 @@
 
 struct Settings
 {
-	Settings(TYbool pVsync, TYint pMSAA) : vsync(pVsync), MSAA(pMSAA) {}
+	Settings(TYbool pMaximize = false, TYbool pFullscreen = false, TYbool pVsync = false, TYint pMSAA = 0) :
+		maximize(pMaximize), fullscreen(pFullscreen), vsync(pVsync), MSAA(pMSAA) {}
 
 	TYbool vsync;
 	TYint MSAA;
+	TYbool maximize;
+	TYbool fullscreen;
 };
 struct Layout
 {

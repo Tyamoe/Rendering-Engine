@@ -57,10 +57,6 @@ void Engine::EarlyTick()
 
 	UpdateDT();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(0.3f, 0.69f, 0.35f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	for (TYsizet i = 0; i < renderers.size(); i++)
 	{
 		renderers[i]->PreRender();
@@ -70,6 +66,12 @@ void Engine::EarlyTick()
 void Engine::LateTick()
 {
 	if (!EngineInitialized) return;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glViewport(0, 0, GetWindow()->layout.width, GetWindow()->layout.height);
+	glClearColor(0.3f, 0.69f, 0.35f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (TYsizet i = 0; i < renderers.size(); i++)
 	{

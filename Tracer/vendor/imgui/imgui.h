@@ -26,6 +26,11 @@ Index of this file:
 
 #pragma once
 
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable: 26495) // class 'xxx' needs to have dll-interface to be used by clients of struct 'xxx' // when IMGUI_API is set to__declspec(dllexport)
+#endif
+
 // Configuration file with compile-time options (edit imconfig.h or define IMGUI_USER_CONFIG to your own filename)
 #ifdef IMGUI_USER_CONFIG
 #include IMGUI_USER_CONFIG

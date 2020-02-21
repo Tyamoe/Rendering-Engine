@@ -2,9 +2,10 @@
 
 #include "Input.h"
 #include "Render.h"
+#include "Window.h"
 
 TYumap<GLFWwindow*, Input*> InputManagers;
-#define INPUT InputManagers[window]
+#define INPUT WindowManager[window]->GetInput()
 
 Input::Input(GLFWwindow* pWindow)
 {
