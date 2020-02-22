@@ -61,21 +61,21 @@ TYvoid Window::CreateWindow()
 
 	int numberOfMonitors = 0;
 	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
-	const GLFWvidmode* desktopMode = glfwGetVideoMode(monitors[0]);
+	//const GLFWvidmode* desktopMode = glfwGetVideoMode(monitors[0]);
 
 	//const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 	if (fullscreen)
 	{
-		layout.width = desktopMode->width;
-		layout.height = desktopMode->height;
+		layout.width = 1920;// desktopMode->width;
+		layout.height = 1080;// desktopMode->height;
 
 		layout.left = 0;
 		layout.top = 0;
 	}
 
-	GLint width = layout.width == 0 ? desktopMode->width : layout.width;
-	GLint height = layout.height == 0 ? desktopMode->height - 63 : layout.height;
+	GLint width = layout.width == 0 ? /*desktopMode->width*/1920 : layout.width;
+	GLint height = layout.height == 0 ? /*desktopMode->height*/1080 - 63 : layout.height;
 
 	layout.width = width;
 	layout.height = height;

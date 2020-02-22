@@ -150,13 +150,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\glfw-3.3.2.bin.WIN32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\glfw-3.3.2.bin.WIN32\lib-vc2019;$(LibraryPath)</LibraryPath>
     <TargetName>Ray-Tracer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\glfw-3.3.2.bin.WIN32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\glfw-3.3.2.bin.WIN32\lib-vc2019;$(LibraryPath)</LibraryPath>
     <TargetName>Surge</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -180,7 +180,7 @@
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\Win32\glew32.dll" "$(TargetDir)glew32.dll" /Y
-copy "$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
+copy "$(SolutionDir)lib\glfw-3.2.2.bin.WIN32\lib-vc2019\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
 copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
     </PostBuildEvent>
     <Bscmake>
@@ -209,8 +209,7 @@ copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\Win32\glew32.dll" "$(TargetDir)glew32.dll" /Y
-
-copy "$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
+copy "$(SolutionDir)lib\glfw-3.3.2.bin.WIN32\lib-vc2019\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
 copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

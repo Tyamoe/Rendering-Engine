@@ -3,6 +3,7 @@
 #include "RendererRayTraceCPU.h"
 
 #include "Utils.h"
+#include "Globals.h"
 
 #define MAX_RAY_DEPTH 3 
 
@@ -73,7 +74,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	}
 
 	// if there's no intersection return black or background color
-	if (!sphere) return PixelColorF(1.0f);
+	if (!sphere) return clearColor;
 
 	PixelColorF surfaceColor = PixelColorF(); // color of the ray/surfaceof the object intersected by the ray 
 	TYvec phit = rayOrigin + rayDir * tnear; // point of intersection 
@@ -159,7 +160,7 @@ TYvoid RenderRayTraceCPU::TraceRays()
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	TYfloat fov = 60.0f;
+	TYfloat fov = Global::FOV;
 	TYfloat aspect = width / TYfloat(height);
 	TYfloat angle = tanf(TYpi * 0.5f * fov / 180.0f);
 	TYfloat invWidth = 1.0f / TYfloat(width), invHeight = 1.0f / TYfloat(height);
@@ -299,13 +300,15 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 	QuadShader = new Shader("quad.vs", "quad.fs");
 
 	// position, radius, surface color, reflectivity, transparency, emission color
-	spheres.push_back(Sphere(TYvec( 0.0, -10004, -20), 10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
+	spheres.push_back(Sphere(TYvec( 0.0, -10004, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
 	spheres.push_back(Sphere(TYvec( 0.0, 0, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
 	spheres.push_back(Sphere(TYvec( 5.0, -1, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
 	spheres.push_back(Sphere(TYvec( 5.0, 0, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
-	spheres.push_back(Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.0f));
+	spheres.push_back(Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
+	spheres.push_back(Sphere(TYvec(15.0, 0, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
+	spheres.push_back(Sphere(TYvec(-5.5, 2, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 	// light
-	spheres.push_back(Sphere(TYvec(0.0, 20, -30), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
+	spheres.push_back(Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()
