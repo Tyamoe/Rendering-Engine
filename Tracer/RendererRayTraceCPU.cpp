@@ -48,7 +48,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	TYvec nhit = phit - sphere->center; // normal at the intersection point 
 	if (sphere->GetType() == geoTriangle)
 	{
-		nhit = sphere->vertices[0].normal;
+		nhit = glm::normalize(glm::cross(sphere->vertices[1].vertex - sphere->vertices[0].vertex, sphere->vertices[2].vertex - sphere->vertices[0].vertex));
 	}
 	nhit = glm::normalize(nhit); // normalize normal direction 
 
@@ -275,15 +275,17 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 	spheres.push_back(new Sphere(TYvec( 0.0, 0, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
 	spheres.push_back(new Sphere(TYvec( 5.0, -1, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
 	spheres.push_back(new Sphere(TYvec( 5.0, 0, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
-	//spheres.push_back(new Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
+	spheres.push_back(new Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
 	spheres.push_back(new Sphere(TYvec(15.0, 0, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
-	//spheres.push_back(new Sphere(TYvec(-5.5, 2, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Sphere(TYvec(-5.5, 2, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 	// light
 	spheres.push_back(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
 
 
-	spheres.push_back(new Triangle(TYvec(-10.5, 2, -20),   Vertex(TYvec(-10.5, 4, -25)), Vertex(TYvec(-9.0f, 1, -20)), Vertex(TYvec(-12.0f, 1, -20)),        PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
-	spheres.push_back(new Triangle(TYvec(10.5, 2, -22), Vertex(TYvec(10.5, 4, -30)), Vertex(TYvec(9.0f, 1, -22)), Vertex(TYvec(12.0f, 1, -22)), PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(-10.5, 2, -20),	Vertex(TYvec(-10.5, 4, -25)),	Vertex(TYvec(-9.0f, 1, -20)),	Vertex(TYvec(-12.0f, 1, -20)),  PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(10.5, 2, -22),		Vertex(TYvec(10.5, 4, -30)),	Vertex(TYvec(9.0f, 1, -22)),	Vertex(TYvec(12.0f, 1, -22)),	PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(0.5, 2, -22),		Vertex(TYvec(0.5, 5, -20)),		Vertex(TYvec(3.0f, 0, -21)),	Vertex(TYvec(-2.0f, 1, -19)),	PixelColorF(0.90f, 0.10f, 0.10f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(11.5, 1, -15),		Vertex(TYvec(11.15, 3, -15)),	Vertex(TYvec(16.0f, -2, -10)), Vertex(TYvec(10.0f, -2, -10)), PixelColorF(0.90f, 0.90f, 0.10f), 1.0f, 0.0f));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()

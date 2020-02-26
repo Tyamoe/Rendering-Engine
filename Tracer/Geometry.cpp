@@ -31,28 +31,32 @@ Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 
 TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1)
 {
-	TYvec v0v1 = vertices[1].vertex - vertices[0].vertex;
-	TYvec v0v2 = vertices[2].vertex - vertices[0].vertex;
-	TYvec pvec = glm::cross(rayDir, v0v2);
-	TYfloat det = glm::dot(v0v1, pvec);
+	TYvec e1 = vertices[1].vertex - vertices[0].vertex;
+	TYvec e2 = vertices[2].vertex - vertices[0].vertex;
+
+	TYvec h = glm::cross(rayDir, e2);
+	TYfloat det = glm::dot(e1, h);
 
 	// ray and triangle are parallel if det is close to 0
 	if (fabs(det) < TYepsilon) 
 		return false;
 
-	TYfloat invDet = 1 / det;
+	TYfloat invDet = 1.0f / det;
 
-	TYvec tvec = rayOrig - vertices[0].vertex;
-	t0 = glm::dot(tvec, pvec) * invDet;
-	if (t0 < 0 || t0 > 1) 
+	TYvec s = rayOrig - vertices[0].vertex;
+
+	TYfloat u = glm::dot(s, h) * invDet;
+
+	if (u < 0.0f || u > 1.0f)
 		return false;
 
-	TYvec qvec = glm::cross(tvec, v0v1);
-	t1 = glm::dot(rayDir, qvec) * invDet;
-	if (t1 < 0 || t0 + t1 > 1) 
+	TYvec qvec = glm::cross(s, e1);
+	TYfloat v = glm::dot(rayDir, qvec) * invDet;
+
+	if (v < 0 || u + v > 1) 
 		return false;
 
-	t0 = dot(v0v2, qvec) * invDet;
+	t0 = dot(e2, qvec) * invDet;
 
 	return true;
 }
