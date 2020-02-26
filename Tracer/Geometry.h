@@ -3,10 +3,17 @@
 #include "Types.h"
 #include "RendererRayTraceCPU.h"
 
+enum GeoType
+{
+	geoTriangle,
+	geoSphere,
+	geoModel
+};
+
 class Vertex
 {
 public:
-	Vertex(TYvec pVertex, TYvec pNormal = TYvec(), TYvec2 pTexCoords = TYvec2()) :
+	Vertex(TYvec pVertex, TYvec pNormal = TYvec(0, 0, 1), TYvec2 pTexCoords = TYvec2()) :
 		vertex(pVertex), normal(pNormal), texCoord(pTexCoords) 
 	{ }
 
@@ -26,6 +33,9 @@ public:
 
 	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1) { return false; }
 
+	TYvoid SetType(GeoType pType) { type = pType; }
+	GeoType GetType() { return type; }
+
 	TYvoid AddVertex(Vertex pVertex);
 
 	PixelColorF surfaceColor;
@@ -35,15 +45,16 @@ public:
 	TYfloat reflection;
 
 	TYvec center;
-
-protected:
 	TYvector<Vertex> vertices;
 
+protected:
+	GeoType type;
 };
 
 class Triangle : public Geometry
 {
 public:
+	Triangle() = default;
 	Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
 	~Triangle();
@@ -64,8 +75,8 @@ public:
 	Sphere(TYvec c, TYfloat r, PixelColorF sc, 
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF()) : 
 		radius(r), radiusSQR(r * r), Geometry(c, sc, refl, transp, ec)
-	{ 
-		
+	{
+		SetType(geoSphere);
 	}
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1);
@@ -76,7 +87,10 @@ public:
 
 class Model : public Triangle
 {
-	Model();
+	Model()
+	{
+		SetType(geoModel);
+	}
 	~Model();
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1) { return false; }

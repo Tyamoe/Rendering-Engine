@@ -22,6 +22,8 @@ Geometry::~Geometry()
 Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 	TYfloat refl, TYfloat transp, PixelColorF ec) : Geometry(c, sc, refl, transp, ec)
 {
+	SetType(geoTriangle);
+
 	AddVertex(v0);
 	AddVertex(v1);
 	AddVertex(v2);

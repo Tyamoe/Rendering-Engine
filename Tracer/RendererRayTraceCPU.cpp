@@ -20,7 +20,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 {
 	//if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
 	TYfloat tnear = TYinf;
-	const Geometry* sphere = TYnull;
+	Geometry* sphere = TYnull;
 	// find intersection of this ray with the sphere in the scene
 	for (TYuint i = 0; i < spheres.size(); ++i)
 	{
@@ -46,6 +46,10 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	PixelColorF surfaceColor = PixelColorF(); // color of the ray/surfaceof the object intersected by the ray 
 	TYvec phit = rayOrigin + rayDir * tnear; // point of intersection 
 	TYvec nhit = phit - sphere->center; // normal at the intersection point 
+	if (sphere->GetType() == geoTriangle)
+	{
+		nhit = sphere->vertices[0].normal;
+	}
 	nhit = glm::normalize(nhit); // normalize normal direction 
 
 	// If the normal and the view direction are not opposite to each other
@@ -278,7 +282,8 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 	spheres.push_back(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
 
 
-	spheres.push_back(new Triangle(TYvec(-10.5, 2, -30),   Vertex(TYvec(-10.5, 4, -30)), Vertex(TYvec(-9.0f, 1, -30)), Vertex(TYvec(-12.0f, 1, -30)),        PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(-10.5, 2, -20),   Vertex(TYvec(-10.5, 4, -25)), Vertex(TYvec(-9.0f, 1, -20)), Vertex(TYvec(-12.0f, 1, -20)),        PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(10.5, 2, -22), Vertex(TYvec(10.5, 4, -30)), Vertex(TYvec(9.0f, 1, -22)), Vertex(TYvec(12.0f, 1, -22)), PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.0f));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()
