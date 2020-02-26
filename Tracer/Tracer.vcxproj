@@ -16,6 +16,7 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="InputUtils.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="Geometry.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InputUtils.h" />

@@ -46,6 +46,9 @@
     <Filter Include="Engine\Rendering\Renderer">
       <UniqueIdentifier>{634b304d-f596-456c-83b7-0eb2ce32317d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Rendering\Mesh">
+      <UniqueIdentifier>{ffff0029-931e-4522-9526-9d67d84f106f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Shader.cpp">
@@ -106,9 +109,6 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Engine\Entity\Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Engine\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="WindowCB.cpp">
       <Filter>Engine\Core\Util</Filter>
     </ClCompile>
@@ -141,6 +141,12 @@
     </ClCompile>
     <ClCompile Include="Globals.cpp">
       <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -219,9 +225,6 @@
     <ClInclude Include="Transform.h">
       <Filter>Engine\Entity\Nodes</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Engine\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="WindowCB.h">
       <Filter>Engine\Core\Util</Filter>
     </ClInclude>
@@ -260,6 +263,12 @@
     </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

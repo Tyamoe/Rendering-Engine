@@ -1,13 +1,7 @@
 #pragma once
 
 #include "Types.h"
-
-class Triangle
-{
-	TYvector3 vertices;
-	TYvector3 normals;
-	TYvector<TYvec2> texcoords;
-};
+//#include "Geometry.h"
 
 class Mesh
 {
@@ -25,6 +19,8 @@ class Mesh
 		TYvectorui indices;
 		TYvector3 normals;
 		TYvector<TYvec2> texcoords;
+
+		//TYvector<Geometry> geometry;
 
 		TYuint VAO;
 		TYuint VBO;

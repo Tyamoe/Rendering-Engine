@@ -4,42 +4,9 @@
 
 #include "Utils.h"
 #include "Globals.h"
+#include "Geometry.h"
 
 #define MAX_RAY_DEPTH 3 
-
-class Sphere
-{
-public:
-	TYvec center;                           /// position of the sphere 
-	TYfloat radius;
-	TYfloat radius2;                  /// sphere radius and radius^2 
-	PixelColorF surfaceColor;
-	PixelColorF emissionColor;      /// surface color and emission (light) 
-	TYfloat transparency;
-	TYfloat reflection;         /// surface transparency and reflectivity 
-	Sphere(const TYvec& c, const float& r, const PixelColorF& sc, const float& refl = 0,
-		const float& transp = 0, const PixelColorF& ec = PixelColorF()) :
-		center(c), radius(r), radius2(r* r), surfaceColor(sc), emissionColor(ec),
-		transparency(transp), reflection(refl)
-	{
-		/* empty */
-	}
-
-	bool intersect(const TYvec& rayorig, const TYvec& raydir, float& t0, float& t1) const
-	{
-		TYvec l = center - rayorig;
-		//float tca = l.dot(raydir);
-		float tca = glm::dot(l, raydir);
-		if (tca < 0) return false;
-		float d2 = /*l.dot(l)*/ glm::dot(l, l) - tca * tca;
-		if (d2 > radius2) return false;
-		float thc = sqrt(radius2 - d2);
-		t0 = tca - thc;
-		t1 = tca + thc;
-
-		return true;
-	}
-};
 
 TYint counter = 0;
 
@@ -48,17 +15,17 @@ TYfloat mix(TYfloat a, TYfloat b, TYfloat mix)
 	return b * mix + a * (1 - mix);
 }
 
-TYvector<Sphere> spheres;
+TYvector<Geometry*> spheres;
 PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth)
 {
 	//if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
 	TYfloat tnear = TYinf;
-	const Sphere* sphere = TYnull;
+	const Geometry* sphere = TYnull;
 	// find intersection of this ray with the sphere in the scene
 	for (TYuint i = 0; i < spheres.size(); ++i)
 	{
 		TYfloat t0 = TYinf, t1 = TYinf;
-		if (spheres[i].intersect(rayOrigin, rayDir, t0, t1))
+		if (spheres[i]->Intersect(rayOrigin, rayDir, t0, t1))
 		{
 			if (t0 < 0)
 			{
@@ -68,7 +35,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 			if (t0 < tnear) 
 			{
 				tnear = t0;
-				sphere = &spheres[i];
+				sphere = spheres[i];
 			}
 		}
 	}
@@ -126,11 +93,11 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		// it's a diffuse object, no need to raytrace any further
 		for (TYuint i = 0; i < spheres.size(); ++i)
 		{
-			if (spheres[i].emissionColor.r > 0)
+			if (spheres[i]->emissionColor.r > 0)
 			{
 				// this is a light
 				PixelColorF trans = PixelColorF(1.0f);
-				TYvec lightDir = spheres[i].center - phit;
+				TYvec lightDir = spheres[i]->center - phit;
 				lightDir = glm::normalize(lightDir);
 
 				for (TYuint j = 0; j < spheres.size(); ++j)
@@ -138,7 +105,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 					if (i != j)
 					{
 						TYfloat t0, t1;
-						if (spheres[j].intersect(phit + nhit * bias, lightDir, t0, t1))
+						if (spheres[j]->Intersect(phit + nhit * bias, lightDir, t0, t1))
 						{
 							trans = PixelColorF();
 							break;
@@ -146,7 +113,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 					}
 				}
 
-				surfaceColor += sphere->surfaceColor * trans * std::max(0.0f, glm::dot(nhit, lightDir)) * spheres[i].emissionColor;
+				surfaceColor += sphere->surfaceColor * trans * std::max(0.0f, glm::dot(nhit, lightDir)) * spheres[i]->emissionColor;
 			}
 		}
 	}
@@ -300,15 +267,18 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 	QuadShader = new Shader("quad.vs", "quad.fs");
 
 	// position, radius, surface color, reflectivity, transparency, emission color
-	spheres.push_back(Sphere(TYvec( 0.0, -10004, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
-	spheres.push_back(Sphere(TYvec( 0.0, 0, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
-	spheres.push_back(Sphere(TYvec( 5.0, -1, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
-	spheres.push_back(Sphere(TYvec( 5.0, 0, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
-	spheres.push_back(Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
-	spheres.push_back(Sphere(TYvec(15.0, 0, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
-	spheres.push_back(Sphere(TYvec(-5.5, 2, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Sphere(TYvec( 0.0, -10004, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
+	spheres.push_back(new Sphere(TYvec( 0.0, 0, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
+	spheres.push_back(new Sphere(TYvec( 5.0, -1, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
+	spheres.push_back(new Sphere(TYvec( 5.0, 0, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
+	//spheres.push_back(new Sphere(TYvec(-5.5, 0, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
+	spheres.push_back(new Sphere(TYvec(15.0, 0, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
+	//spheres.push_back(new Sphere(TYvec(-5.5, 2, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 	// light
-	spheres.push_back(Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
+	spheres.push_back(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(), 0, 0.0, PixelColorF(3.0f)));
+
+
+	spheres.push_back(new Triangle(TYvec(-10.5, 2, -30),   Vertex(TYvec(-10.5, 4, -30)), Vertex(TYvec(-9.0f, 1, -30)), Vertex(TYvec(-12.0f, 1, -30)),        PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()

@@ -15,6 +15,7 @@
 
 #define TYpi 3.141592653589793f
 #define TYinf 1e8 
+#define TYepsilon glm::epsilon<float>() 
 
 #define TYlog std::cout
 #define TYlogbreak std::endl
