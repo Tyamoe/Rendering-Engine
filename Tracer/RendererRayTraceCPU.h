@@ -9,6 +9,8 @@
 #include "Shader.h"
 #include "Mesh.h"
 
+#include "Camera.h"
+
 union PixelColorF;
 
 union PixelColor
@@ -144,6 +146,8 @@ class RenderRayTraceCPU : public Renderer
 
 	private:
 		Mesh Scene;
+
+		CameraPtr camera;
 
 		ShaderPtr BloomShader = TYnull;
 		ShaderPtr QuadShader = TYnull;

@@ -27,10 +27,10 @@ class Input
 		static TYvoid MouseCB(GLFWwindow* window, TYint button, TYint action, TYint mods);
 		static TYvoid ScrollCB(GLFWwindow* window, TYdouble xoffset, TYdouble yoffset);
 
-	private:
-		GLFWwindow* window = nullptr;
 		Keyboard keyboard;
 		Mouse mouse;
+	private:
+		GLFWwindow* window = nullptr;
 };
 
 typedef Input* InputPtr;

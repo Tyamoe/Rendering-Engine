@@ -9,6 +9,7 @@
 #include "Utils.h"
 #include "Globals.h"
 #include "Geometry.h"
+#include "Camera.h"
 
 #define MAX_RAY_DEPTH 3 
 
@@ -18,7 +19,6 @@ static Semaphore* traceWait = TYnull;
 static Barrier* traceBarrier = TYnull;
 
 static std::mutex countLock;
-static std::mutex count2Lock;
 
 static PixelColor clearColor = PixelColor(89, 155, 100, 255);
 
@@ -157,6 +157,23 @@ TYvoid RenderRayTraceCPU::UpdateData()
 	TYfloat angle = tanf(TYpi * 0.5f * fov / 180.0f);
 	TYfloat invWidth = 1.0f / TYfloat(width), invHeight = 1.0f / TYfloat(height);
 
+	/*
+	const camera_perspective = glm.perspective(glm.radians(this.camera_fov), this.frame_width / this.frame_height, 0.1, 100.0);
+	const inverse_camera_perspective = glm.inverse(camera_perspective);
+
+
+    vec3 origin = (uCameraToWorld * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+
+    vec3 direction = (uCameraInverseProjection * vec4(uv, 0.0, 1.0)).xyz;
+    direction = (uCameraToWorld * vec4(direction, 0.0)).xyz;
+    direction = normalize(direction);
+	*/
+
+	TYmat persp = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);
+	persp = glm::inverse(persp);
+
+	traceData.Origin = camera->view * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+
 	int i = 0;
 	for (TYint y = height - 1; y >= 0; y--)
 	{
@@ -167,6 +184,10 @@ TYvoid RenderRayTraceCPU::UpdateData()
 
 			TYvec dir(xx, yy, -1.0f);
 			dir = glm::normalize(dir);
+
+			TYvec ir = (persp * TYvec4(x / width, y / height, 0.0f, 1.0f));
+			ir = (camera->view * TYvec4(ir, 0.0f));
+			ir = glm::normalize(ir);
 
 			traceData.Direction[i] = dir;
 		}
@@ -190,13 +211,13 @@ TYvoid TraceThread(TYint y, PixelColor*& PixelBuffer, TYint width)
 
 		count++;
 
-		count2Lock.lock();
+		countLock.lock();
 		if (count == traceData.height)
 		{
 			count = 0;
 			traceWait->notify();
 		}
-		count2Lock.unlock();
+		countLock.unlock();
 
 		traceBarrier->Wait();
 	}
@@ -246,6 +267,8 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 {
 	Layout layout = engine->GetWindow()->GetLayout();
 
+	camera->Update(dt);
+
 	glBindTexture(GL_TEXTURE_2D, Frame);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, PBO);
 
@@ -293,6 +316,8 @@ TYuint RenderRayTraceCPU::AddMesh(Mesh& mesh)
 TYvoid RenderRayTraceCPU::Init()
 {
 	Layout layout = engine->GetWindow()->GetLayout();
+
+	camera = new Camera(engine->GetWindow()->GetInput(), true);
 
 	pixelCount = layout.width * layout.height;
 	GLsizei byteCount = pixelCount * sizeof(PixelColor);
@@ -358,6 +383,7 @@ TYvoid RenderRayTraceCPU::Init()
 		i++;
 	}
 
+	//camera->Update(0);
 	UpdateData();
 }
 

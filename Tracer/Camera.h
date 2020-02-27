@@ -2,61 +2,22 @@
 
 #include "stdafx.h"
 
+#include "Input.h"
+
 typedef class Camera
 {
 public:
 	Camera();
+	Camera(InputPtr pInput, TYbool invert = false);
 	~Camera();
-
-	_inline bool Dirty() { return dirty; }
-	_inline void setDirty(bool d) { dirty = d; }
-
-	_inline void setPosition(glm::vec3& pos)
-	{
-		Position = pos;
-		dirty = true;
-	}
-
-	_inline float getZoom() { return zoom; }
-
-	_inline void setZoom(float z)
-	{
-		zoom = z;
-		dirty = true;
-	}
-
-	_inline glm::mat4* View() { return &view; }
-
-	_inline glm::mat4* ProjView() { return &PV; }
-
-	_inline glm::vec3* getPosition() { return &Position; }
-
-	_inline void setPosition(glm::vec3 *pos) { Position = *pos; }
-
-	_inline float& getSpeed() { return speed; }
-
-	_inline void setSpeed(float s) { speed = s; }
-
-	_inline void setSmoothness(float sm) { smoothness = sm; }
-
-	_inline float& getSmoothness() { return smoothness; }
-
-	_inline void setTarget(glm::vec2 t) { Target = t; }
-
-	_inline glm::vec2& getTarget() { return Target; }
 
 	void Update(float dt);
 
-	void getWorldPosition(float* x, float* y);
-
-
-	void ChangeCameraZoom(float scale);
-
-	//void zoomToPos(float amount, glm::vec2 pos);
-
 	glm::vec2 TargetWorldPosition;
+
 	// Current View matrix.
 	glm::mat4 view = glm::mat4(1.0f);
+
 	// Camera Transform -> used to make View matrix.
 	glm::vec3 Position = glm::vec3(-4.30f, 5.5f, 6.4f);
 	glm::vec3 Front = glm::vec3(0.5f, -0.5f, -0.6f);
@@ -66,8 +27,11 @@ public:
 private:
 	std::string name;
 
-	bool dirty = true;
-	//              (tm)
+	TYbool inverted;
+	TYfloat multiplier = 1.0f;
+
+	InputPtr input;
+
 	glm::vec2 Target;
 
 	// Camera zoom.

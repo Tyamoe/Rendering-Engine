@@ -14,6 +14,19 @@ Camera::~Camera()
 
 }
 
+Camera::Camera(InputPtr pInput, TYbool invert)
+{
+	Target = Position;
+
+	input = pInput;
+	inverted = invert;
+
+	if (invert)
+	{
+		multiplier = -1.0f;
+	}
+}
+
 Camera::Camera()
 {
 	Target = Position;
@@ -22,20 +35,24 @@ Camera::Camera()
 extern bool ass;
 void Camera::Update(float dt = 0.0167f)
 {
-	/*float currSpeed = 2 * dt;
-	if (Input::isKeyDown(GLFW_KEY_W))
-		Position += currSpeed * Front;
-	if (Input::isKeyDown(GLFW_KEY_S))
-		Position -= currSpeed * Front;
-	if (Input::isKeyDown(GLFW_KEY_A))
-		Position -= glm::normalize(glm::cross(Front, Up)) * currSpeed;
-	if (Input::isKeyDown(GLFW_KEY_D))
-		Position += glm::normalize(glm::cross(Front, Up)) * currSpeed;
+	float currSpeed = 2 * dt;
+	if (input->isKeyDown(GLFW_KEY_W))
+		Position += currSpeed * multiplier * Front;
+	if (input->isKeyDown(GLFW_KEY_S))
+		Position -= currSpeed * multiplier * Front;
+	if (input->isKeyDown(GLFW_KEY_A))
+		Position -= glm::normalize(glm::cross(Front, Up)) * currSpeed * multiplier;
+	if (input->isKeyDown(GLFW_KEY_D))
+		Position += glm::normalize(glm::cross(Front, Up)) * currSpeed * multiplier;
+	if (input->isKeyDown(GLFW_KEY_E))
+		Position += currSpeed * multiplier * Up;
+	if (input->isKeyDown(GLFW_KEY_Q))
+		Position -= currSpeed * multiplier * Up;
 
-	if (Input::isKeyDown(GLFW_KEY_C))
+	if (input->isKeyDown(GLFW_KEY_C))
 	{
-		yaw_ += Input::mouse.screenOffset.x;
-		pitch_ += Input::mouse.screenOffset.y;
+		yaw_ += input->mouse.screenOffset.x * multiplier;
+		pitch_ += input->mouse.screenOffset.y * multiplier;
 	}
 
 	if (pitch_ > 89.f) 
@@ -49,30 +66,5 @@ void Camera::Update(float dt = 0.0167f)
 	temp.z = cos(glm::radians(pitch_)) * sin(glm::radians(yaw_));
 	Front = glm::normalize(temp);
 
-	view = glm::lookAt(Position, Position + Front, Up);*/
-}
-
-void Camera::getWorldPosition(float* x, float* y)
-{
-	float h = 1.0f / zoom;
-	h = Position.x * h;
-	float q = 1.0f / zoom;
-	q = Position.y * q;
-
-	*x = h;
-	*y = q;
-
-	*x = Position.x;
-	*y = Position.y;
-}
-
-void Camera::ChangeCameraZoom(float scale)
-{
-	glm::vec3 currPos = Position;
-
-	Position = glm::vec3(0);
-
-	zoom = scale;
-
-	Position = currPos;
+	view = glm::lookAt(Position, Position + Front, Up);
 }
