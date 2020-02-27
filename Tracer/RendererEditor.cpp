@@ -17,8 +17,9 @@ TYvoid RenderEditor::PreRender()
 TYvoid RenderEditor::Render(TYfloat dt)
 {
 	ImGui::Begin("Model Browser");
-
+	TYfloat fps = ImGui::GetIO().Framerate;
 	ImGui::SliderFloat("FOV", &Global::FOV, -180.0f, 180.0f);
+	ImGui::InputFloat("FPS", &fps, -180.0f, 180.0f);
 
 	ImGui::End();
 }

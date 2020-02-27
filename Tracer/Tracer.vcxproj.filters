@@ -287,5 +287,11 @@
     <None Include="resources\shaders\flatcolor.fs">
       <Filter>Resources</Filter>
     </None>
+    <None Include="resources\shaders\bloom.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\bloom.vs">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

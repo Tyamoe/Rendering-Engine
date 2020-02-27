@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <thread>
+#include <mutex>
+#include <atomic>
+
 #include "RendererRayTraceCPU.h"
 
 #include "Utils.h"
@@ -8,19 +12,36 @@
 
 #define MAX_RAY_DEPTH 3 
 
-TYint counter = 0;
+static Semaphore* block = TYnull;
+static Semaphore* traceWait = TYnull;
 
-TYfloat mix(TYfloat a, TYfloat b, TYfloat mix)
-{
-	return b * mix + a * (1 - mix);
-}
+static Barrier* traceBarrier = TYnull;
 
-TYvector<Geometry*> spheres;
-PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth)
+static std::mutex countLock;
+static std::mutex count2Lock;
+
+static PixelColor clearColor = PixelColor(89, 155, 100, 255);
+
+static TYvector<Geometry*> spheres;
+static std::atomic<int> count = 0;
+
+struct TraceData
 {
-	//if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
+	TYbool tracing = true;
+	
+	TYint width;
+	TYint height;
+
+	TYvec Origin = TYvec(0.0f);
+	TYvector3 Direction;
+
+}inline traceData;
+
+PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth)
+{
 	TYfloat tnear = TYinf;
 	Geometry* sphere = TYnull;
+
 	// find intersection of this ray with the sphere in the scene
 	for (TYuint i = 0; i < spheres.size(); ++i)
 	{
@@ -121,13 +142,76 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 			}
 		}
 	}
-	counter++;
+
 	return surfaceColor + sphere->emissionColor;
+}
+
+TYvoid RenderRayTraceCPU::UpdateData()
+{
+	Layout layout = engine->GetWindow()->GetLayout();
+	TYint width = layout.width;
+	TYint height = layout.height;
+
+	TYfloat fov = Global::FOV;
+	TYfloat aspect = width / TYfloat(height);
+	TYfloat angle = tanf(TYpi * 0.5f * fov / 180.0f);
+	TYfloat invWidth = 1.0f / TYfloat(width), invHeight = 1.0f / TYfloat(height);
+
+	int i = 0;
+	for (TYint y = height - 1; y >= 0; y--)
+	{
+		for (TYint x = 0; x < width; x++, i++)
+		{
+			TYfloat xx = (2.0f * ((x + 0.5f) * invWidth) - 1.0f) * angle * aspect;
+			TYfloat yy = (1.0f - 2.0f * ((y + 0.5f) * invHeight)) * angle;
+
+			TYvec dir(xx, yy, -1.0f);
+			dir = glm::normalize(dir);
+
+			traceData.Direction[i] = dir;
+		}
+	}
+}
+
+TYvoid TraceThread(TYint y, PixelColor*& PixelBuffer, TYint width)
+{
+	while (traceData.tracing)
+	{
+		// Wait for trace to trigger
+		block->wait();
+
+		TYint i = y * width;
+		for (TYint x = 0; x < width; x++, i++)
+		{
+			PixelColor pixel = static_cast<PixelColor>(Trace(traceData.Origin, traceData.Direction[i], 0));
+			pixel.Clamp();
+			PixelBuffer[i] = pixel;
+		}
+
+		count++;
+
+		count2Lock.lock();
+		if (count == traceData.height)
+		{
+			count = 0;
+			traceWait->notify();
+		}
+		count2Lock.unlock();
+
+		traceBarrier->Wait();
+	}
 }
 
 TYvoid RenderRayTraceCPU::TraceRays()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	// Trigger tracing 
+	traceWait->wait();
+	for (TYint i = 0; i < traceData.height; i++)
+	{
+		block->notify();
+	}
+
+	/*Layout layout = engine->GetWindow()->GetLayout();
 	TYint width = layout.width;
 	TYint height = layout.height;
 
@@ -150,7 +234,7 @@ TYvoid RenderRayTraceCPU::TraceRays()
 			PixelBuffer[i] = static_cast<PixelColor>(Trace(TYvec(0.0f), dir, 0));
 			PixelBuffer[i].Clamp();
 		}
-	}
+	}*/
 }
 
 TYvoid RenderRayTraceCPU::PreRender()
@@ -162,37 +246,24 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 {
 	Layout layout = engine->GetWindow()->GetLayout();
 
-	/*
-	// Ray Tracing to file
-	TraceRays();
-
-	// Save result to a PPM image (keep these flags if you compile under Windows)
-	std::ofstream ofs("./outputImages/frame.ppm", std::ios::out | std::ios::binary);
-	ofs << "P6\n" << layout.width << " " << layout.height << "\n255\n";
-	for (TYint i = 0; i < layout.width * layout.height; i++)
-	{
-		ofs << ImageBuffer[i].r << ImageBuffer[i].g << ImageBuffer[i].b;
-	}
-	ofs.close();
-	*/
-
 	glBindTexture(GL_TEXTURE_2D, Frame);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, PBO);
 
 	PixelBuffer = (PixelColor*)glMapNamedBuffer(PBO, GL_WRITE_ONLY);
 
-	// Clear Color Buffer
-	//std::fill(PixelBuffer, PixelBuffer + pixelCount, clearColor);
+	UpdateData();
 
 	TraceRays();
 
-	counter = 0;
+	traceWait->wait();
 
 	glUnmapNamedBuffer(PBO);
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, layout.width, layout.height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	traceWait->notify();
 
 	// Draw to buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
@@ -201,8 +272,8 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 	glClearColor(0.9f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	QuadShader->Use();
-	QuadShader->DrawQuad(Frame);
+	BloomShader->Use();
+	BloomShader->DrawQuad(Frame);
 }
 
 TYvoid RenderRayTraceCPU::PostRender()
@@ -225,8 +296,6 @@ TYvoid RenderRayTraceCPU::Init()
 
 	pixelCount = layout.width * layout.height;
 	GLsizei byteCount = pixelCount * sizeof(PixelColor);
-
-	ImageBuffer = new PixelColor[pixelCount];
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &Frame);
 	glBindTexture(GL_TEXTURE_2D, Frame);
@@ -264,11 +333,38 @@ TYvoid RenderRayTraceCPU::Init()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	TYint width = layout.width;
+	TYint height = layout.height;
+
+	traceData.width = width;
+	traceData.height = height;
+
+	// TEST THREAD CODE
+	tracingThreads = new std::thread[height];
+	threadCount = height;
+
+	block = new Semaphore();
+	traceWait = new Semaphore(1);
+
+	traceBarrier = new Barrier(height);
+
+	traceData.Direction = TYvector3(width * height, TYvec(0));
+
+	int i = 0;
+	for (TYint y = height - 1; y >= 0; y--)
+	{
+		tracingThreads[i] = std::thread(TraceThread, y, std::ref(PixelBuffer), width);
+		i++;
+	}
+
+	UpdateData();
 }
 
 RenderRayTraceCPU::RenderRayTraceCPU()
 {
 	QuadShader = new Shader("quad.vs", "quad.fs");
+	BloomShader = new Shader("bloom.vs", "bloom.fs");
 
 	// position, radius, surface color, reflectivity, transparency, emission color
 	spheres.push_back(new Sphere(TYvec( 0.0, -10004, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
@@ -283,12 +379,17 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 
 
 	spheres.push_back(new Triangle(TYvec(-10.5, 2, -20),	Vertex(TYvec(-10.5, 4, -25)),	Vertex(TYvec(-9.0f, 1, -20)),	Vertex(TYvec(-12.0f, 1, -20)),  PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
-	spheres.push_back(new Triangle(TYvec(10.5, 2, -22),		Vertex(TYvec(10.5, 4, -30)),	Vertex(TYvec(9.0f, 1, -22)),	Vertex(TYvec(12.0f, 1, -22)),	PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(10.5, 2, -22),		Vertex(TYvec(10.5, 4, -30)),	Vertex(TYvec(9.0f, 1, -22)),	Vertex(TYvec(12.0f, 1, -22)),	PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.4f));
 	spheres.push_back(new Triangle(TYvec(0.5, 2, -22),		Vertex(TYvec(0.5, 5, -20)),		Vertex(TYvec(3.0f, 0, -21)),	Vertex(TYvec(-2.0f, 1, -19)),	PixelColorF(0.90f, 0.10f, 0.10f), 1.0f, 0.0f));
-	spheres.push_back(new Triangle(TYvec(11.5, 1, -15),		Vertex(TYvec(11.15, 3, -15)),	Vertex(TYvec(16.0f, -2, -10)), Vertex(TYvec(10.0f, -2, -10)), PixelColorF(0.90f, 0.90f, 0.10f), 1.0f, 0.0f));
+	spheres.push_back(new Triangle(TYvec(11.5, 1, -15),		Vertex(TYvec(11.15, 3, -15)),	Vertex(TYvec(16.0f, -2, -10)),	Vertex(TYvec(10.0f, -2, -10)),	PixelColorF(0.90f, 0.90f, 0.10f), 1.0f, 0.84f));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()
 {
-
+	Layout layout = engine->GetWindow()->GetLayout();
+	for (TYint i = 0; i < threadCount; i++)
+	{
+		tracingThreads[i].join();
+	}
+	delete[] tracingThreads;
 }

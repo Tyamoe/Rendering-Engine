@@ -110,6 +110,8 @@
     <ClInclude Include="WindowCB.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resources\shaders\bloom.fs" />
+    <None Include="resources\shaders\bloom.vs" />
     <None Include="resources\shaders\flatcolor.fs" />
     <None Include="resources\shaders\flatcolor.vs" />
     <None Include="resources\shaders\quad.fs" />

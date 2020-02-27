@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <thread>
 
 #include "Types.h"
 
@@ -144,6 +145,7 @@ class RenderRayTraceCPU : public Renderer
 	private:
 		Mesh Scene;
 
+		ShaderPtr BloomShader = TYnull;
 		ShaderPtr QuadShader = TYnull;
 
 		TYuint RenderBuffer = 0;
@@ -153,13 +155,16 @@ class RenderRayTraceCPU : public Renderer
 
 		TYuint PBO = 0;
 		PixelColor* PixelBuffer = TYnull;
-		PixelColor* ImageBuffer = TYnull;
 
-		PixelColor clearColor = PixelColor(89, 155, 100, 255);
+		std::thread* tracingThreads = TYnull;
+		TYint threadCount = 0;
+
 		TYint pixelCount = 0;
 
+		TYvoid UpdateData();
+		//TYvoid TraceThread(TYint i);
 		TYvoid TraceRays();
-		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth);
+		//PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth);
 };
 
 typedef RenderRayTraceCPU* RenderRayTraceCPUPtr;
