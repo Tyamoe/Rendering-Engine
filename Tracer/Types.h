@@ -28,6 +28,7 @@
 #define TYumap std::unordered_map
 #define TYuset std::unordered_set
 
+typedef char* TYcharPtr;
 typedef const char* TYcstring;
 typedef int TYint;
 typedef char TYchar;
@@ -45,11 +46,11 @@ typedef void TYvoid;
 typedef long long int TYlint;
 typedef unsigned long long int TYulint;
 
-typedef std::vector<TYint> TYvectori;
-typedef std::vector<TYuint> TYvectorui;
-typedef std::vector<TYfloat> TYvectorf;
-typedef std::vector<TYbool> TYvectorb;
-typedef std::vector<TYstring> TYvectors;
+typedef std::vector<TYint> TYvectorI;
+typedef std::vector<TYuint> TYvectorUI;
+typedef std::vector<TYfloat> TYvectorF;
+typedef std::vector<TYbool> TYvectorB;
+typedef std::vector<TYstring> TYvectorS;
 typedef std::vector<glm::vec3> TYvector3;
 
 typedef glm::vec3 TYvec;

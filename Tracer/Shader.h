@@ -45,9 +45,9 @@ public:
 	void set3FloatArray(TYint uniformLoc, const TYfloat* value, TYint count);
 	void set4FloatArray(TYint uniformLoc, const TYfloat* value, TYint count);
 
-	void setIntArray(TYint uniformLoc, TYvectori& value, TYint count);
+	void setIntArray(TYint uniformLoc, TYvectorI& value, TYint count);
 
-	void set1FloatArray(TYint uniformLoc, TYvectorf& value, TYint count);
+	void set1FloatArray(TYint uniformLoc, TYvectorF& value, TYint count);
 	void set2FloatArray(TYint uniformLoc, TYvector<TYvec2>& value, TYint count);
 	void set3FloatArray(TYint uniformLoc, TYvector3& value, TYint count);
 	void set4FloatArray(TYint uniformLoc, TYvector<TYvec4>& value, TYint count);

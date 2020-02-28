@@ -16,7 +16,7 @@ class Mesh
 
 	private:
 		TYvector3 vertices;
-		TYvectorui indices;
+		TYvectorUI indices;
 		TYvector3 normals;
 		TYvector<TYvec2> texcoords;
 

@@ -118,9 +118,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Engine\Entity</Filter>
     </ClCompile>
-    <ClCompile Include="InputUtils.cpp">
-      <Filter>Engine\System\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="RendererEditor.cpp">
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClCompile>
@@ -269,6 +266,15 @@
     </ClInclude>
     <ClInclude Include="Geometry.h">
       <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadingUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingUtils.h">
+      <Filter>Engine\System\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Types.h"
-#include "Structs.h"
 
-//#include "Engine.h"
+#include "Types.h"
+
+#include "WindowUtils.h"
 #include "Input.h"
 
 typedef class Engine* EnginePtr;

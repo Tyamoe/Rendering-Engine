@@ -16,8 +16,6 @@ Camera::~Camera()
 
 Camera::Camera(InputPtr pInput, TYbool invert)
 {
-	Target = Position;
-
 	input = pInput;
 	inverted = invert;
 
@@ -29,42 +27,42 @@ Camera::Camera(InputPtr pInput, TYbool invert)
 
 Camera::Camera()
 {
-	Target = Position;
+
 }
 
-extern bool ass;
-void Camera::Update(float dt = 0.0167f)
+TYvoid Camera::Update(TYfloat dt)
 {
-	float currSpeed = 2 * dt;
+	float currSpeed = 4 * dt;
+
 	if (input->isKeyDown(GLFW_KEY_W))
-		Position += currSpeed * multiplier * Front;
+		position += currSpeed * multiplier * front;
 	if (input->isKeyDown(GLFW_KEY_S))
-		Position -= currSpeed * multiplier * Front;
+		position -= currSpeed * multiplier * front;
 	if (input->isKeyDown(GLFW_KEY_A))
-		Position -= glm::normalize(glm::cross(Front, Up)) * currSpeed * multiplier;
+		position -= glm::normalize(glm::cross(front, up)) * currSpeed * multiplier;
 	if (input->isKeyDown(GLFW_KEY_D))
-		Position += glm::normalize(glm::cross(Front, Up)) * currSpeed * multiplier;
+		position += glm::normalize(glm::cross(front, up)) * currSpeed * multiplier;
 	if (input->isKeyDown(GLFW_KEY_E))
-		Position += currSpeed * multiplier * Up;
+		position += currSpeed * multiplier * up;
 	if (input->isKeyDown(GLFW_KEY_Q))
-		Position -= currSpeed * multiplier * Up;
+		position -= currSpeed * multiplier * up;
 
 	if (input->isKeyDown(GLFW_KEY_C))
 	{
-		yaw_ += input->mouse.screenOffset.x * multiplier;
-		pitch_ += input->mouse.screenOffset.y * multiplier;
+		yaw += input->mouse.screenOffset.x * sensitivity * multiplier;
+		pitch += input->mouse.screenOffset.y * sensitivity * multiplier;
 	}
 
-	if (pitch_ > 89.f) 
-		pitch_ = 89.f;
-	if (pitch_ < -89.f) 
-		pitch_ = -89.f;
+	if (pitch > 89.f) 
+		pitch = 89.f;
+	if (pitch < -89.f) 
+		pitch = -89.f;
 
-	glm::vec3 temp;
-	temp.x = cos(glm::radians(pitch_)) * cos(glm::radians(yaw_));
-	temp.y = sin(glm::radians(pitch_));
-	temp.z = cos(glm::radians(pitch_)) * sin(glm::radians(yaw_));
-	Front = glm::normalize(temp);
+	TYvec temp;
+	temp.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	temp.y = sin(glm::radians(pitch));
+	temp.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	front = glm::normalize(temp);
 
-	view = glm::lookAt(Position, Position + Front, Up);
+	view = glm::lookAt(position, position + front, up);
 }

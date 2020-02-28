@@ -266,12 +266,12 @@ void Shader::set4FloatArray(TYint uniformLoc, const TYfloat* value, TYint count)
 	glUniform4fv(uniformLoc, count, &value[0]);
 }
 
-void Shader::setIntArray(TYint uniformLoc, TYvectori& value, TYint count)
+void Shader::setIntArray(TYint uniformLoc, TYvectorI& value, TYint count)
 {
 	glUniform1iv(uniformLoc, count, &value[0]);
 }
 
-void Shader::set1FloatArray(TYint uniformLoc, TYvectorf& value, TYint count)
+void Shader::set1FloatArray(TYint uniformLoc, TYvectorF& value, TYint count)
 {
 	glUniform1fv(uniformLoc, count, &value[0]);
 }

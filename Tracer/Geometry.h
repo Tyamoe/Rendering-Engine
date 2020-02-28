@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Types.h"
-#include "RendererRayTraceCPU.h"
+#include "RenderingUtils.h"
 
 enum GeoType
 {
@@ -31,7 +31,7 @@ public:
 	{ }
 	virtual ~Geometry();
 
-	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1) { return false; }
+	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal) { return false; }
 
 	TYvoid SetType(GeoType pType) { type = pType; }
 	GeoType GetType() { return type; }
@@ -49,22 +49,25 @@ public:
 
 protected:
 	GeoType type;
+
 };
 
 class Triangle : public Geometry
 {
 public:
 	Triangle() = default;
+	Triangle(Vertex v0, Vertex v1, Vertex v2);
 	Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
 	~Triangle();
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1);
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
 
 	TYfloat radius;
 	TYfloat radiusSQR;
 
 private:
+
 };
 
 class Sphere : public Geometry
@@ -79,19 +82,35 @@ public:
 		SetType(geoSphere);
 	}
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1);
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
 
 	TYfloat radius;
 	TYfloat radiusSQR;
+
+private:
+
 };
 
-class Model : public Triangle
+class Model : public Geometry
 {
+public:
 	Model()
 	{
 		SetType(geoModel);
 	}
+
+	Model(TYstring filePath, PixelColorF sc,
+		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
 	~Model();
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1) { return false; }
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
+	TYvoid AddTriangles(TYvector<Triangle>& pTriangles);
+
+	TYvector<Triangle> triangles;
+
+	TYfloat radius;
+	TYfloat radiusSQR;
+
+private:
+
 };
