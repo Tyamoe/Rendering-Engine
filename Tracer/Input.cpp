@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Input.h"
-#include "Render.h"
 #include "Window.h"
 
 TYumap<GLFWwindow*, Input*> InputManagers;

@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Camera.h"
-#include "Render.h"
-#include "Input.h"
 
 static GLfloat mapToRange(GLfloat value, GLfloat ogRange1, GLfloat ogRange2, GLfloat newRange1, GLfloat newRange2)
 {

@@ -69,9 +69,6 @@
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
       <Filter>Editor\External</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Engine\Entity</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Editor.cpp">
       <Filter>Editor</Filter>
@@ -182,9 +179,6 @@
     </ClInclude>
     <ClInclude Include="vendor\imgui\stb_truetype.h">
       <Filter>Editor\External</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Engine\Entity</Filter>
     </ClInclude>
     <ClInclude Include="Editor.h">
       <Filter>Editor</Filter>
