@@ -20,6 +20,8 @@ TYvoid RenderEditor::Render(TYfloat dt)
 	TYfloat fps = ImGui::GetIO().Framerate;
 	ImGui::SliderFloat("FOV", &Global::FOV, -180.0f, 180.0f);
 	ImGui::InputFloat("FPS", &fps, -180.0f, 180.0f);
+	ImGui::Text("Tri %d", Global::TriCount);
+	ImGui::Text("Culled %d", Global::CulledTries);
 
 	ImGui::End();
 }

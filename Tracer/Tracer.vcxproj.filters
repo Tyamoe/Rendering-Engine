@@ -133,9 +133,6 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Engine\Core\Util</Filter>
     </ClCompile>
-    <ClCompile Include="Globals.cpp">
-      <Filter>Engine\Core\Util</Filter>
-    </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Engine\Rendering\Mesh</Filter>
     </ClCompile>

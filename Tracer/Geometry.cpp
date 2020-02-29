@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "Geometry.h"
+#include "Globals.h"
 
 // BASE
 Geometry::Geometry()
@@ -165,14 +166,40 @@ TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
 
 TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
+	Global::CulledTries = 0;
+	Global::TriCount = triangles.size();
+
+	TYvec norm = TYvec(0.0f);
+	TYfloat t00 = TYinf, t11 = TYinf;
+	TYbool h = false;
+
 	for (TYsizet i = 0; i < triangles.size(); i++)
 	{
-		if (triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal))
+		TYvec p0 = triangles[i].vertices[0].vertex;
+		TYvec p1 = triangles[i].vertices[1].vertex;
+		TYvec p2 = triangles[i].vertices[2].vertex;
+
+		TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
+		if (prod.z <= 0.0f)
 		{
-			return true;
+			Global::CulledTries++;
+			continue;
+		}
+		if (triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < t00)
+		{
+			t00 = t0;
+			t11 = t1;
+			norm = normal;
+			h = true;
+			//return true;
 		}
 	}
-	return false;
+
+	normal = norm;
+	t0 = t00;
+	t1 = t11;
+
+	return h;
 }
 
 Model::~Model()

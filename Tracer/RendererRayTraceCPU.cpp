@@ -248,7 +248,8 @@ TYvoid RenderRayTraceCPU::TraceRays()
 
 TYvoid RenderRayTraceCPU::PreRender()
 {
-
+	Global::CulledTries = 0;
+	Global::TriCount = 0;
 }
 
 TYvoid RenderRayTraceCPU::Render(TYfloat dt)
@@ -385,23 +386,23 @@ RenderRayTraceCPU::RenderRayTraceCPU()
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 
 	// position, radius, surface color, reflectivity, transparency, emission color
-	Scene.push_back(new Sphere(TYvec( 0.0, -10007, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
-	Scene.push_back(new Sphere(TYvec( 0.0, -1, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
-	Scene.push_back(new Sphere(TYvec( 5.0, -2, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
-	Scene.push_back(new Sphere(TYvec( 5.0, -1, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
-	Scene.push_back(new Sphere(TYvec(-5.5, -2, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
-	Scene.push_back(new Sphere(TYvec(15.0, -1, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
-	Scene.push_back(new Sphere(TYvec(-5.5, -3, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
+	//Scene.push_back(new Sphere(TYvec( 0.0, -10007, -20), -10000.0f, PixelColorF(0.20f, 0.20f, 0.20f),	0.1f, 0.0f));
+	//Scene.push_back(new Sphere(TYvec( 0.0, -1, -20),      4.0f,	 PixelColorF(1.0f, 0.32f, 0.36f),	1.0f, 0.5));
+	//Scene.push_back(new Sphere(TYvec( 5.0, -2, -15),	  2.0f,		 PixelColorF(0.90f, 0.82f, 0.36f),	1.0f, 0.0f));
+	//Scene.push_back(new Sphere(TYvec( 5.0, -1, -25),      3.0f,	 PixelColorF(0.65f, 0.57f, 0.97f),	1.0f, 0.0f));
+	//Scene.push_back(new Sphere(TYvec(-5.5, -2, -15),     3.0f,		 PixelColorF(0.30f, 0.90f, 0.50f),	1.0f, 0.4f));
+	//Scene.push_back(new Sphere(TYvec(15.0, -1, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 1.0f, 0.0f));
+	//Scene.push_back(new Sphere(TYvec(-5.5, -3, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 	// light
-	Scene.push_back(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(0.8f, 0.75f, 0.15f), 0, 0.0, PixelColorF(1.0f, 1.0f, 0.3f)));
+	//Scene.push_back(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(0.8f, 0.75f, 0.15f), 0, 0.0, PixelColorF(1.0f, 1.0f, 0.3f)));
 
 
-	Scene.push_back(new Triangle(TYvec(-10.5, -3, -20),	Vertex(TYvec(-10.5, 4, -25)),	Vertex(TYvec(-9.0f, 1, -20)),	Vertex(TYvec(-12.0f, 1, -20)),  PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
-	Scene.push_back(new Triangle(TYvec(10.5, -3, -22),		Vertex(TYvec(10.5, 4, -30)),	Vertex(TYvec(9.0f, 1, -22)),	Vertex(TYvec(12.0f, 1, -22)),	PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.4f));
-	Scene.push_back(new Triangle(TYvec(0.5, -3, -22),		Vertex(TYvec(0.5, 5, -20)),		Vertex(TYvec(3.0f, 0, -21)),	Vertex(TYvec(-2.0f, 1, -19)),	PixelColorF(0.90f, 0.10f, 0.10f), 1.0f, 0.0f));
-	Scene.push_back(new Triangle(TYvec(11.5, -2, -15),		Vertex(TYvec(11.15, 3, -15)),	Vertex(TYvec(16.0f, -2, -10)),	Vertex(TYvec(10.0f, -2, -10)),	PixelColorF(0.90f, 0.90f, 0.10f), 1.0f, 0.84f));
-	
-	//Scene.push_back(new Model("./resources/models/sphere.obj", PixelColorF(0.14f, 0.12f, 0.562f), 1.0f, 0.0f));
+	//Scene.push_back(new Triangle(TYvec(-10.5, -3, -20),	Vertex(TYvec(-10.5, 4, -25)),	Vertex(TYvec(-9.0f, 1, -20)),	Vertex(TYvec(-12.0f, 1, -20)),  PixelColorF(0.10f, 0.90f, 0.10f), 1.0f, 0.0f));
+	//Scene.push_back(new Triangle(TYvec(10.5, -3, -22),		Vertex(TYvec(10.5, 4, -30)),	Vertex(TYvec(9.0f, 1, -22)),	Vertex(TYvec(12.0f, 1, -22)),	PixelColorF(0.10f, 0.10f, 0.90f), 1.0f, 0.4f));
+	//Scene.push_back(new Triangle(TYvec(0.5, -3, -22),		Vertex(TYvec(0.5, 5, -20)),		Vertex(TYvec(3.0f, 0, -21)),	Vertex(TYvec(-2.0f, 1, -19)),	PixelColorF(0.90f, 0.10f, 0.10f), 1.0f, 0.0f));
+	//Scene.push_back(new Triangle(TYvec(11.5, -2, -15),		Vertex(TYvec(11.15, 3, -15)),	Vertex(TYvec(16.0f, -2, -10)),	Vertex(TYvec(10.0f, -2, -10)),	PixelColorF(0.90f, 0.90f, 0.10f), 1.0f, 0.84f));
+	//
+	//Scene.push_back(new Model("./resources/models/bunny.obj", PixelColorF(0.14f, 0.12f, 0.562f), 1.0f, 0.0f));
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()

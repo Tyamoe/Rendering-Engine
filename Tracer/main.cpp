@@ -9,7 +9,7 @@
 
 int main()
 {
-	Window window("Tray Racer", Settings(), Layout(400, 400, 400, 300));
+	Window window("Tray Racer", Settings(), Layout(800, 600, 400, 200));
 
 	EnginePtr engine = new Engine({ RayTraceCPU, Editor });
 	InputPtr input = new Input(window.GetGLFWWindow());
