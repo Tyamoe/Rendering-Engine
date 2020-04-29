@@ -6,12 +6,15 @@
 #include "Globals.h"
 
 #include "Structs.h"
+#include "GenericDraw.h"
 
 int main()
 {
-	Window window("Tray Racer", Settings(), Layout(800, 600, 400, 200));
+	Window window("Tray Racer", Settings(), Layout(800, 600, 400, 220));
 
-	EnginePtr engine = new Engine({ RayTraceCPU, Editor });
+	GenericDraw::Init();
+
+	EnginePtr engine = new Engine({ /*RayTraceCPU, */Editor });
 	InputPtr input = new Input(window.GetGLFWWindow());
 
 	window.AttachInput(input);

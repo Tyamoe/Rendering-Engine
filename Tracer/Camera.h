@@ -12,10 +12,12 @@ public:
 	Camera(InputPtr pInput, TYbool invert = false);
 	~Camera();
 
-	TYvoid Update(TYfloat dt);
+	TYbool Update(TYfloat dt);
+
+	TYbool dirty = true;
 
 	// Current View matrix.
-	TYmat view = glm::mat4(1.0f);
+	TYmat view = TYmat(1.0f);
 
 	// Camera Transform -> used to make View matrix.
 	TYvec position = TYvec(0.0f, 0.0f, -3.0f);
@@ -23,6 +25,13 @@ public:
 	TYvec up = TYvec(0.0f, 1.0f, 0.0f);
 
 	TYfloat yaw = -91.69f, pitch = -17;
+
+	TYvec iposition = TYvec(0.0f, 0.0f, -3.0f);
+	TYvec ifront = TYvec(0.0f, 0.0f, -1.0f);
+	TYvec iup = TYvec(0.0f, 1.0f, 0.0f);
+	TYfloat iyaw = -91.69f;
+	TYfloat ipitch = -17;
+	TYmat iview = TYmat(1.0f);
 private:
 	TYstring name;
 

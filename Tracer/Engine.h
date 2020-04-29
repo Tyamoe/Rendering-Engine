@@ -16,6 +16,7 @@ class Engine
 		~Engine();
 
 		TYvoid Init();
+		TYvoid AddRenderer(RendererPtr renderer);
 
 		void Start();
 		void Stop();

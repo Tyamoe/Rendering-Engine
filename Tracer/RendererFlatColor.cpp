@@ -50,7 +50,7 @@ TYvoid RenderFlatColor::Init()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-RenderFlatColor::RenderFlatColor()
+RenderFlatColor::RenderFlatColor() : Renderer()
 {
 
 }

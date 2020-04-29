@@ -139,6 +139,15 @@
     <ClCompile Include="Geometry.cpp">
       <Filter>Engine\Rendering\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="BVH.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GenericDraw.cpp">
+      <Filter>Engine\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -267,6 +276,18 @@
     <ClInclude Include="RenderingUtils.h">
       <Filter>Engine\System\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="BVH.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingVolume.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GenericDraw.h">
+      <Filter>Engine\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\quad.fs">
@@ -288,6 +309,12 @@
       <Filter>Resources</Filter>
     </None>
     <None Include="resources\shaders\bloom.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\color.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\color.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>

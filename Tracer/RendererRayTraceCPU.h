@@ -6,10 +6,35 @@
 #include "Shader.h"
 #include "Mesh.h"
 
+#include "Scene.h"
 #include "Camera.h"
 #include "Geometry.h"
 #include "RenderingUtils.h"
 #include "ThreadingUtils.h"
+
+template <typename T>
+struct atomwrapper
+{
+	std::atomic<T> _a;
+
+	atomwrapper()
+		:_a(0)
+	{}
+
+	atomwrapper(const std::atomic<T>& a)
+		:_a(a.load())
+	{}
+
+	atomwrapper(const atomwrapper& other)
+		:_a(other._a.load())
+	{}
+
+	atomwrapper& operator=(const atomwrapper& other)
+	{
+		_a.store(other._a.load());
+		return *this;
+	}
+};
 
 class RenderRayTraceCPU : public Renderer
 {
@@ -17,12 +42,21 @@ class RenderRayTraceCPU : public Renderer
 	{
 		TYbool tracing = true;
 
-		TYint width = 0;
-		TYint height = 0;
+		TYfloat width = 0;
+		TYfloat height = 0;
+
+		TYint ThreadCount = 0;
 
 		TYvec Origin = TYvec(0.0f);
 		TYvector3 Direction;
 
+		TYfloat aspect;
+		TYfloat angle;
+
+		TYfloat invWidth;
+		TYfloat invHeight;
+
+		TYbool dirty = true;
 	};
 
 	public:
@@ -36,6 +70,9 @@ class RenderRayTraceCPU : public Renderer
 			std::mutex countLock;
 
 			std::atomic<TYint> count = 0;
+
+			std::thread* tracingThreads = TYnull;
+			TYint threadCount = 0;
 	};
 
 	public:
@@ -50,14 +87,23 @@ class RenderRayTraceCPU : public Renderer
 
 		TYuint AddMesh(Mesh& mesh);
 
-		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint modifier = 0);
+		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter);
+
+		TYvoid ThreadHeight();
+		TYvoid ThreadWidth();
+		TYvoid ThreadGrid();
+		TYvoid ThreadStrip();
 
 		TraceData traceData;
-		TYvector<Geometry*> Scene;
+		ScenePtr scene;
 
-	private:
 		CameraPtr camera;
 
+		//
+		RenderRayTraceCPU(const RenderRayTraceCPU& a) = delete;
+		RenderRayTraceCPU& operator=(const RenderRayTraceCPU&) = delete;
+
+	private:
 		ShaderPtr BloomShader = TYnull;
 		ShaderPtr QuadShader = TYnull;
 
@@ -71,9 +117,6 @@ class RenderRayTraceCPU : public Renderer
 
 		TYint pixelCount = 0; 
 		PixelColor clearColor = PixelColor(89, 155, 100, 255);
-
-		std::thread* tracingThreads = TYnull;
-		TYint threadCount = 0;
 
 		TYvoid UpdateData();
 		TYvoid TraceRays();

@@ -6,7 +6,9 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <stack>
 #include <unordered_set>
+#include <tuple>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,11 +24,14 @@
 
 #define TYnull nullptr
 
+#define TYstack std::stack
 #define TYvector std::vector
 #define TYmap std::map
 #define TYset std::set
 #define TYumap std::unordered_map
 #define TYuset std::unordered_set
+#define TYpair std::pair
+#define TYtuple std::tuple
 
 typedef char* TYcharPtr;
 typedef const char* TYcstring;

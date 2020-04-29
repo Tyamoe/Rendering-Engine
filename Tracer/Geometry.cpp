@@ -4,6 +4,7 @@
 
 #include "Geometry.h"
 #include "Globals.h"
+#include "BVH.h"
 
 // BASE
 Geometry::Geometry()
@@ -21,7 +22,6 @@ Geometry::~Geometry()
 
 }
 
-// Model
 Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, PixelColorF ec) :
 	radius(0), radiusSQR(0), Geometry(TYvec(0.0f), sc, refl, transp, ec)
 {
@@ -166,7 +166,17 @@ TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
 
 TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
-	Global::CulledTries = 0;
+	if (bvh)
+	{
+		if (!bvh->head->Intersect(rayOrig, rayDir))
+		{
+			//TYlog << "Bounding Sphere\n";
+			Global::CulledTries++;
+			return false;
+		}
+	}
+
+	//Global::CulledTries = 0;
 	Global::TriCount = triangles.size();
 
 	TYvec norm = TYvec(0.0f);
@@ -175,16 +185,16 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 
 	for (TYsizet i = 0; i < triangles.size(); i++)
 	{
-		TYvec p0 = triangles[i].vertices[0].vertex;
-		TYvec p1 = triangles[i].vertices[1].vertex;
-		TYvec p2 = triangles[i].vertices[2].vertex;
+		TYvec p0 = triangles[i].vertices[0].position;
+		TYvec p1 = triangles[i].vertices[1].position;
+		TYvec p2 = triangles[i].vertices[2].position;
 
-		TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
+		/*TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
 		if (prod.z <= 0.0f)
 		{
-			Global::CulledTries++;
+			//Global::CulledTries++;
 			continue;
-		}
+		}*/
 		if (triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < t00)
 		{
 			t00 = t0;
@@ -229,8 +239,8 @@ Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 
 TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
-	TYvec e1 = vertices[1].vertex - vertices[0].vertex;
-	TYvec e2 = vertices[2].vertex - vertices[0].vertex;
+	TYvec e1 = vertices[1].position - vertices[0].position;
+	TYvec e2 = vertices[2].position - vertices[0].position;
 
 	TYvec h = glm::cross(rayDir, e2);
 	TYfloat det = glm::dot(e1, h);
@@ -241,7 +251,7 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 
 	TYfloat invDet = 1.0f / det;
 
-	TYvec s = rayOrig - vertices[0].vertex;
+	TYvec s = rayOrig - vertices[0].position;
 
 	TYfloat u = glm::dot(s, h) * invDet;
 
@@ -257,7 +267,7 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 	t0 = dot(e2, qvec) * invDet;
 
 	// Compute normal at the intersection point 
-	normal = glm::cross(vertices[1].vertex - vertices[0].vertex, vertices[2].vertex - vertices[0].vertex);
+	normal = glm::cross(vertices[1].position - vertices[0].position, vertices[2].position - vertices[0].position);
 
 	return true;
 }
@@ -270,6 +280,14 @@ Triangle::~Triangle()
 // SPHERE 
 TYbool Sphere::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
+	/*if (bvh)
+	{
+		if (bvh->head->Intersect(rayOrig, rayDir))
+		{
+			//TYlog << "Bounding Sphere\n";
+		}
+	}*/
+
 	TYvec l = center - rayOrig;
 
 	TYfloat tca = glm::dot(l, rayDir);

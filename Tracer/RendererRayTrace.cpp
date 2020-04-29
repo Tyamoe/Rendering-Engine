@@ -58,7 +58,7 @@ TYvoid RenderRayTrace::Init()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-RenderRayTrace::RenderRayTrace()
+RenderRayTrace::RenderRayTrace() : Renderer()
 {
 
 }

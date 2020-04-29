@@ -2,6 +2,9 @@
 
 #include "Types.h"
 #include "RenderingUtils.h"
+#include "Utils.h"
+
+typedef class BVH BVH;
 
 enum GeoType
 {
@@ -14,10 +17,10 @@ class Vertex
 {
 public:
 	Vertex(TYvec pVertex, TYvec pNormal = TYvec(0, 0, 1), TYvec2 pTexCoords = TYvec2()) :
-		vertex(pVertex), normal(pNormal), texCoord(pTexCoords) 
+		position(pVertex), normal(pNormal), texCoord(pTexCoords)
 	{ }
 
-	TYvec vertex;
+	TYvec position;
 	TYvec normal;
 	TYvec2 texCoord;
 };
@@ -38,14 +41,16 @@ public:
 
 	TYvoid AddVertex(Vertex pVertex);
 
-	PixelColorF surfaceColor;
-	PixelColorF emissionColor;
+	PixelColorF surfaceColor = PixelColorF();
+	PixelColorF emissionColor = PixelColorF();
 
-	TYfloat transparency;
-	TYfloat reflection;
+	TYfloat transparency = 0.0f;
+	TYfloat reflection = 0.0f;
 
-	TYvec center;
+	TYvec center = TYvec(0.0f);
 	TYvector<Vertex> vertices;
+
+	BVH* bvh = TYnull;
 
 protected:
 	GeoType type;
@@ -55,7 +60,12 @@ protected:
 class Triangle : public Geometry
 {
 public:
-	Triangle() = default;
+
+	Triangle() : Geometry()
+	{
+		SetType(geoTriangle);
+	}
+
 	Triangle(Vertex v0, Vertex v1, Vertex v2);
 	Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
@@ -73,14 +83,19 @@ private:
 class Sphere : public Geometry
 {
 public:
-	~Sphere();
+	Sphere() : Geometry()
+	{
+		SetType(geoSphere);
+	}
 
-	Sphere(TYvec c, TYfloat r, PixelColorF sc, 
-		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF()) : 
+	Sphere(TYvec c, TYfloat r, PixelColorF sc = PixelColorF(),
+		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF()) :
 		radius(r), radiusSQR(r * r), Geometry(c, sc, refl, transp, ec)
 	{
 		SetType(geoSphere);
 	}
+
+	~Sphere();
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
 
@@ -94,7 +109,7 @@ private:
 class Model : public Geometry
 {
 public:
-	Model()
+	Model() : Geometry()
 	{
 		SetType(geoModel);
 	}

@@ -152,7 +152,7 @@ TYvoid Input::MouseCB(GLFWwindow* window, TYint button, TYint action, TYint mods
 		INPUT->mouse.mouseDown[button] = false;
 		INPUT->mouse.mouseReleased[button] = true;
 	}
-	std::cout << INPUT->mouse.screenPos.x << ", " << INPUT->mouse.screenPos.y << std::endl;
+	//TYlog << INPUT->mouse.screenPos.x << ", " << INPUT->mouse.screenPos.y << TYlogbreak;
 }
 
 TYvoid Input::ScrollCB(GLFWwindow* window, TYdouble xoffset, TYdouble yoffset)

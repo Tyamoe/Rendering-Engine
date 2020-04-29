@@ -48,7 +48,7 @@ class Window
 
 		Layout layout;
 
-		TYvoid CreateWindow();
+		TYvoid cCreateWindow();
 
 	protected:
 		GLFWwindow* window = nullptr;

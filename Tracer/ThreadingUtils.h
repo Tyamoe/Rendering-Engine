@@ -59,6 +59,13 @@ public:
 		sCond.notify_one();
 	}
 
+	TYvoid NotifyAll(TYsizet pCount)
+	{
+		std::unique_lock<std::mutex> lock(sMutex);
+		sCount = pCount;
+		sCond.notify_all();
+	}
+
 private:
 	TYsizet sCount;
 

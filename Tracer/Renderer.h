@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "Debugger.h"
 #include "Profiler.h"
+#include "GenericDraw.h"
 
 typedef class Engine* EnginePtr;
 
@@ -22,7 +23,9 @@ enum RendererType
 class Renderer
 {
 	public:
-		//Renderer();
+		Renderer()
+		{
+		}
 		virtual ~Renderer() {}
 
 		virtual TYvoid Init() {}

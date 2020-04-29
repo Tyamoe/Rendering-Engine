@@ -43,7 +43,7 @@ TYbool Window::Focus()
 	return true;
 }
 
-TYvoid Window::CreateWindow()
+TYvoid Window::cCreateWindow()
 {
 	if (!Global::GLFWInit)
 	{
@@ -153,7 +153,7 @@ Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLa
 
 	name = pName;
 
-	CreateWindow();
+	cCreateWindow();
 }
 
 Window::~Window()

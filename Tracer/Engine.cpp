@@ -39,7 +39,7 @@ void Engine::Tick()
 	while (running && !glfwWindowShouldClose(window->window))
 	{
 		EarlyTick();
-		
+
 		for (TYsizet i = 0; i < renderers.size(); i++)
 		{
 			renderers[i]->Render(dt);
@@ -86,6 +86,22 @@ void Engine::LateTick()
 void Engine::UpdateDT()
 {
 	dt = ImGui::GetIO().DeltaTime;
+}
+
+TYvoid Engine::AddRenderer(RendererPtr renderer)
+{
+	renderer->SetEngine(this);
+	renderer->UpdatePriority(0);
+
+	if (renderers.size() > 1)
+	{
+		RendererPtr r = renderers[0];
+		renderers.erase(renderers.begin());
+		delete r;
+	}
+	renderers.insert(renderers.begin(), renderer);
+
+	renderer->Init();
 }
 
 Engine::Engine(TYvector<RendererType> pRendererTypes)

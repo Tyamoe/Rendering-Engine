@@ -62,10 +62,12 @@ public:
 	void setMat3(TYint uniformLoc, const TYmat3 &mat);
 	void setMat4(TYint uniformLoc, const TYmat &mat);
 
-	TYvoid DrawQuad(TYuint texture)
+	TYvoid DrawQuad(TYuint texture, TYbool invert = false)
 	{
 		static unsigned int quadVAO = 0;
 		static unsigned int quadVBO;
+		static unsigned int quadVAO1 = 0;
+		static unsigned int quadVBO1;
 		if (quadVAO == 0)
 		{
 			float quadVertices[] =
@@ -75,6 +77,14 @@ public:
 				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 				 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			};
+			float quadVertices2[] =
+			{
+				// positions        // texture Coords
+				-1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
+				-1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+				 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
+				 1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
 			};
 			// setup plane VAO
 			glGenVertexArrays(1, &quadVAO);
@@ -89,14 +99,35 @@ public:
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
+
+			glGenVertexArrays(1, &quadVAO1);
+			glGenBuffers(1, &quadVBO1);
+			glBindVertexArray(quadVAO1);
+			glBindBuffer(GL_ARRAY_BUFFER, quadVBO1);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices2), &quadVertices2, GL_STATIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
 		}
 
 		setInt(Uniforms["texture1"], 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-		glBindVertexArray(quadVAO);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		if (invert)
+		{
+			glBindVertexArray(quadVAO1);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		}
+		else
+		{
+			glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		}
 
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
