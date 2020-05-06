@@ -87,7 +87,7 @@ class RenderRayTraceCPU : public Renderer
 
 		TYuint AddMesh(Mesh& mesh);
 
-		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter);
+		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter, TYint ignore);
 
 		TYvoid ThreadHeight();
 		TYvoid ThreadWidth();

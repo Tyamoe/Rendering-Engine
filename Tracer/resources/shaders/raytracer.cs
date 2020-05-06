@@ -147,7 +147,7 @@ bool intersectSphere(Ray r, SPHERE sph, out float t, out vec3 n)
     return true;
 }
 
-bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit, inout vec3 n, inout vec3 c)
+bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit, inout vec3 n, inout vec3 c, int ignore)
 {
     bool does_hit = false;
     t = 0.0f;
@@ -165,6 +165,12 @@ bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit
         {
             tries = true;
             j = 0;
+        }
+
+        if(i == ignore)
+        {
+            j++;
+            continue;
         }
 
         if(!tries)
@@ -218,7 +224,7 @@ vec3 MixV(vec3 a, vec3 b, float mix)
 
 #define MAX_DEPTH 1
 
-vec3 trace_r(Ray ray)
+vec3 trace_r(Ray ray, int ignore)
 {
     float t;
 
@@ -227,7 +233,7 @@ vec3 trace_r(Ray ray)
 
     int hit;
 
-    if (!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
+    if (!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c, ignore) || t <= 0.0f)
     {
         return voidColor;
     }
@@ -258,7 +264,7 @@ vec3 trace_r(Ray ray)
     vec3 lightDir = spheres[0].pos - phit;
     lightDir = normalize(lightDir);
 
-    float diff = max(dot(nhit, lightDir), 0.0f);
+    float diff = max(dot(nhit, lightDir) + 0.1f, 0.0f);
     vec3 diffuse = diff * surfaces[0].e;
 
     float specularStrength = 0.5f;
@@ -285,9 +291,18 @@ vec3 trace_r(Ray ray)
         vec3 sn;
         vec3 sc;
 
-        if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
+        if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc, 0) && shadowInd >= numLights)
         {
-            trans = vec3(0.0f);
+            float t = surfaces[shadowInd].t;
+            if (t != 0.0f)
+            {
+                t = t <= 1.0f ? 1.0f : clamp(1.0f - (t - 1.0f), 0.4f, 0.95f);
+            }
+            else
+            {
+                t = 0.15f;
+            }
+            trans = vec3(t);
         }
 
         surfaceColor = surfaceColor * trans;
@@ -310,7 +325,7 @@ vec3 trace(Ray ray)
 
     while (depth < MAX_DEPTH)
     {
-        if(!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
+        if(!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c, -1) || t <= 0.0f)
         {
             if(depth == 0)
             {
@@ -358,7 +373,7 @@ vec3 trace(Ray ray)
                 Ray r;
                 r.origin = phit + nhit * bias;
                 r.direction = refldir;
-                vec3 reflect = trace_r(r);
+                vec3 reflect = trace_r(r, hit);
 
                 vec3 refract = vec3(0.0f);
 
@@ -368,7 +383,7 @@ vec3 trace(Ray ray)
                 // Refraction Step
                 if (surfaces[hit].t > 0.0f)
                 {
-                    float ior = 0.4f, eta = (inside) ? ior : 1.0f / ior;
+                    float ior = surfaces[hit].t, eta = (!inside) ? ior : 1.0f / ior;
                     float cosi = -dot(nhit, ray.direction);
 
                     float k = 1.0f - eta * eta * (1.0f - cosi * cosi);
@@ -381,20 +396,20 @@ vec3 trace(Ray ray)
                     Ray rr;
                     rr.origin = phit - nhit * bias;
                     rr.direction = refrdir;
-                    refract = trace_r(rr);
+                    refract = trace_r(rr, hit);
                 }
 
-                incomingColor = (reflect * fresEffect + refract * (1.0f - fresEffect) * surfaces[hit].t) * surfaces[hit].s;
+                incomingColor = ((reflect * surfaces[hit].r) * fresEffect + refract * (1.0f - fresEffect) * 1.0f) * surfaces[hit].s;
             }
 
             // Phong Step
             vec3 lightDir = spheres[0].pos - phit;
             lightDir = normalize(lightDir);
 
-            float diff = max(dot(nhit, lightDir), 0.0f);
+            float diff = max(dot(nhit, lightDir) + 0.1f, 0.0f);
             vec3 diffuse = diff * surfaces[0].e;
 
-            float specularStrength = 0.5f;
+            float specularStrength = 0.4f;
             vec3 viewDir = normalize(CamPos - phit);
             vec3 reflectDir = reflect(-lightDir, nhit);
             float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32.0f);
@@ -415,20 +430,30 @@ vec3 trace(Ray ray)
                 lightDir1 = normalize(lightDir1);
 
                 Ray sr;
-                sr.origin = phit + nhit * bias;
+                sr.origin = phit + (nhit);
                 sr.direction = lightDir1;
                 int shadowInd = 0;
 
                 vec3 sn;
                 vec3 sc;
 
-                if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
+                if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc, 0) && shadowInd >= numLights)
                 {
-                    trans = vec3(0.0f);
+                    float t = surfaces[shadowInd].t;
+                    if(t != 0.0f)
+                    {
+                        t = t <= 1.0f ? 1.0f : clamp(1.0f - (t - 1.0f), 0.4f, 0.95f);
+                    }
+                    else
+                    {
+                        t = 0.15f;
+                    }
+                    trans = vec3(t);
                 }
 
                 surfaceColor = surfaceColor * trans;
             }
+            
         }
 
         res += surfaceColor;

@@ -8,11 +8,11 @@ Scene::Scene()
 	AddGeometry(new Sphere(TYvec(0.0, 20, -25), 3.0f, PixelColorF(0.8f, 0.75f, 0.15f), 0.0f, 0.0f, PixelColorF(1.0f, 1.0f, 0.3f)));
 
 	// position, radius, surface color, reflectivity, transparency, emission color
-	AddGeometry(new Sphere(TYvec(0.0, -10007, -20), 10000.0f, PixelColorF(0.20f, 0.20f, 0.20f), 0.0f, 0.0f));
+	AddGeometry(new Sphere(TYvec(0.0, -10007, -20), 10000.0f, PixelColorF(0.20f, 0.20f, 0.20f), 0.7f, 0.0f));
 	//AddGeometry(new Sphere(TYvec(0.0, -1, -20), 4.0f, PixelColorF(1.0f, 0.32f, 0.36f), 1.0f, 0.5));
 	//AddGeometry(new Sphere(TYvec(0, 0, 0), 2.0f, PixelColorF(0.90f, 0.82f, 0.36f), 0.0f, 0.0f));
-	AddGeometry(new Sphere(TYvec(5.0, -1, -25), 3.0f, PixelColorF(0.2f, 0.2f, 0.97f), 1.0f, 0.0f));
-	AddGeometry(new Sphere(TYvec(-5.5, -2, -15), 3.0f, PixelColorF(0.30f, 0.90f, 0.50f), 0.0f, 0.8f));
+	AddGeometry(new Sphere(TYvec(5.0, -1, -25), 3.0f, PixelColorF(0.2f, 0.2f, 0.97f), 0.0f, 0.0f));
+	AddGeometry(new Sphere(TYvec(-5.5, -2, -15), 3.0f, PixelColorF(0.30f, 0.90f, 0.50f), 0.0f, 1.0f));
 	AddGeometry(new Sphere(TYvec(15.0, -1, -25), 3.0f, PixelColorF(0.97f, 0.27f, 0.97f), 0.0f, 0.0f));
 	AddGeometry(new Sphere(TYvec(-5.5, -3, -30), 1.0f, PixelColorF(0.30f, 0.90f, 0.90f), 1.0f, 0.0f));
 

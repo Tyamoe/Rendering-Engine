@@ -30,7 +30,7 @@ struct ThreadData
 	RenderRayTraceCPUPtr rt_;
 };
 
-#define MAX_RAY_DEPTH 3 
+#define MAX_RAY_DEPTH 2 
 
 TYvector< atomwrapper<TYint> > rayCount;
 
@@ -69,17 +69,19 @@ TYvoid RenderRayTraceCPU::UpdateData()
 	}*/
 }
 
-PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter)
+PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter, TYint ignore = -1)
 {
 	rayCounter++;
 	Global::DevCounter++;
 	TYvec normal = TYvec(0.0f);
 	TYfloat tnear = TYinf;
 	Geometry* hit = TYnull;
+	TYint hitIndex = -1;
 
 	// Intersect ray with scene
 	for (TYuint i = 0; i < scene->geometry.size(); i++)
 	{
+		if (i == ignore) continue;
 		TYvec norm = TYvec(0.0f);
 		TYfloat t0 = TYinf, t1 = TYinf;
 		/*if (scene->geometry[i]->bvh != TYnull)
@@ -104,6 +106,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 				tnear = t0;
 				hit = scene->geometry[i];
 				normal = norm;
+				hitIndex = i;
 			}
 		}
 	}
@@ -156,7 +159,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		TYint rays = 0;
 
 		// Compute reflection color
-		PixelColorF reflect = Trace(phit + nhit * bias, refldir, rayDepth + 1, rays);
+		PixelColorF reflect = Trace(phit + nhit * bias, refldir, rayDepth + 1, rays, hitIndex);
 
 		PixelColorF refract = PixelColorF();
 
@@ -168,7 +171,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		// Compute refraction ray
 		if (hit->transparency)
 		{
-			TYfloat ior = 0.4f, eta = (inside) ? ior : 1.0f / ior; // are we inside or outside the surface? 
+			TYfloat ior = hit->transparency, eta = (inside) ? ior : 1.0f / ior; // are we inside or outside the surface? 
 			TYfloat cosi = -glm::dot(nhit, rayDir);
 
 			TYfloat k = 1.0f - eta * eta * (1.0f - cosi * cosi);
@@ -180,23 +183,23 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 			TYint rays1 = 0;
 
 			// Compute refraction color
-			refract = Trace(phit - nhit * bias, refrdir, rayDepth + 1, rays1);
+			refract = Trace(phit - nhit * bias, refrdir, rayDepth + 1, rays1, hitIndex);
 
 			rayCounter += rays1;
 		}
 
 		// Mix of reflection and refraction
-		incomingColor = ((reflect) * fresEffect + refract * (1.0f - fresEffect) * hit->transparency) * hit->surfaceColor;
+		incomingColor = ((reflect * hit->reflection) * fresEffect + refract * (1.0f - fresEffect) * 1.0f) * hit->surfaceColor;
 	}
 
 	// Phong Step
 	TYvec lightDir = scene->geometry[0]->center - phit;
 	lightDir = normalize(lightDir);
 
-	float diff = glm::max(glm::dot(nhit, lightDir), 0.0f);
+	float diff = glm::max(glm::dot(nhit, lightDir) + 0.2f * abs(glm::dot(nhit, lightDir)), 0.0f);
 	PixelColorF diffuse = diff * scene->geometry[0]->emissionColor;
 
-	TYfloat specularStrength = 0.5f;
+	TYfloat specularStrength = 0.4f;
 	TYvec viewDir = glm::normalize(camera->position - phit);
 	TYvec reflectDir = glm::reflect(-lightDir, nhit);
 	TYfloat spec = glm::pow(glm::max(glm::dot(viewDir, reflectDir), 0.0f), 32.0f);
@@ -205,8 +208,14 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	surfaceColor = (diffuse + specular) * hit->surfaceColor;
 
 	TYfloat mixVal = glm::clamp(hit->reflection + hit->transparency, 0.0f, 1.0f);
-
 	surfaceColor = Mix(surfaceColor, incomingColor, PixelColorF(mixVal));
+
+	/*if(TYfloat f = glm::dot(nhit, lightDir) < 0.0f)
+		surfaceColor = 1.0f - glm::clamp(abs(glm::dot(nhit, lightDir)), 0.0f, 1.0f);// Mix(surfaceColor, incomingColor, PixelColorF(mixVal));
+	else
+	{
+		surfaceColor = PixelColorF(1.0f, 0.0f, 0.0f);
+	}*/
 
 	// Shadow Step
 	PixelColorF trans = PixelColorF(1.0f);
@@ -216,7 +225,17 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		TYfloat t0, t1;
 		if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
 		{
-			trans = PixelColorF();
+			TYfloat t = scene->geometry[j]->transparency;
+			if (t != 0.0f)
+			{
+				t = t <= 1.0f ? 1.0f : glm::clamp(1.0f - (t - 1.0f), 0.4f, 0.95f);
+			}
+			else
+			{
+				t = 0.15f;
+			}
+
+			trans = PixelColorF(t);
 			break;
 		}
 	}
