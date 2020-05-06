@@ -54,6 +54,12 @@ layout(std430, binding = 3) readonly buffer Surfaces
     SURFACE surfaces[];
 };
 
+#define TYpi 3.14159265358979323846f
+#define TYepsilon 1e-3f
+#define MAX_FLOAT 3.402823466e+30f
+
+const vec3 eculer = vec3(0.8f, 0.75f, 0.15f);
+const vec3 sculer = vec3(0.65f, 0.57f, 0.97f);
 
 uniform int DevI;
 uniform bool DevB;
@@ -63,49 +69,15 @@ uniform vec3 DevV;
 uniform int numLights;
 uniform int numSpheres;
 
+uniform float initSeed;
+uniform float FOV;
+
 uniform vec3 voidColor;
-    
 uniform vec3 CamPos;
 
-uniform mat4 uCameraToWorld;
-uniform mat4 uCameraInverseProjection;
-    
-uniform float uInitialSeed;
-
-const vec3 eculer = vec3(0.8f, 0.75f, 0.15f);
-const vec3 sculer = vec3(0.65f, 0.57f, 0.97f);
-
-#define M_PI 3.14159265358979323846f
-#define EPSILON 1e-3f
-#define MAX_FLOAT 3.402823466e+30f
+uniform mat4 view;
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-
-float rand(inout float seed, vec2 pixel)
-{
-    float result = fract(sin(seed / 100.0f * dot(pixel, vec2(12.9898f, 78.233f))) * 43758.5453f);
-    seed += 1.0f;
-    return result;
-}
-
-vec2 rand2(inout float seed, vec2 pixel)
-{
-    return vec2(rand(seed, pixel), rand(seed, pixel));
-}
-
-vec3 rand3(inout float seed, vec2 pixel)
-{
-    vec3 p;
-    //do {
-    p = 2.0f * vec3(rand(seed, pixel), rand(seed, pixel), rand(seed, pixel)) - vec3(1.0f);
-    //} while (length(p) > 1.0f);
-    return normalize(p);
-}
-
-vec3 ray_at(Ray r, float t)
-{
-    return r.origin + r.direction * t;
-}
 
 bool intersectTriangle(Ray r, TRIANGLE tri, out float t, out vec3 n)
 {
@@ -114,7 +86,7 @@ bool intersectTriangle(Ray r, TRIANGLE tri, out float t, out vec3 n)
     vec3 h = cross(r.direction, e2);
     float a = dot(e1, h);
 
-    if (abs(a) < EPSILON)
+    if (abs(a) < TYepsilon)
         return false;
 
     float f = 1.0f / a;
@@ -135,7 +107,7 @@ bool intersectTriangle(Ray r, TRIANGLE tri, out float t, out vec3 n)
 
     t = f * dot(e2, q);
 
-    if (t < EPSILON)
+    if (t < TYepsilon)
     {
         return false;
     }
@@ -244,53 +216,23 @@ vec3 MixV(vec3 a, vec3 b, float mix)
     return b * mix + a * (1.0f - mix);
 }
 
-vec3 sample_sphere_uniform(vec2 s)
-{
-    float phi = M_TWO_PI * s.x;
-    float cos_theta = 1.0f - 2.0f * s.y;
-    float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
-
-    return vec3(
-        cos(phi) * sin_theta,
-        cos_theta,
-        sin(phi) * sin_theta);
-}
-
-/*
-
-vec3 random_point_on_sfere(SFERE s, inout float seed, vec2 pixel, out float p)
-{
-    float x = rand(seed, pixel);
-    float y = rand(seed, pixel);
-    float z = rand(seed, pixel);
-
-    vec3 dir = normalize(vec3(x, y, z)) * s.radius;
-    dir = dir + s.pos;
-
-    p = length(dir - (vec3(0.0f, 1.0f, 0.0f) * s.radius));
-
-    return dir;
-}
-
-*/
-
 #define MAX_DEPTH 1
 
 vec3 trace_r(Ray ray)
 {
     float t;
+
     vec3 n;
     vec3 c;
-    int max_depth = MAX_DEPTH;
-    int depth = 0;
+
     int hit;
 
-    if (!intersetScene(ray, EPSILON, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
+    if (!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
     {
         return voidColor;
     }
 
-    if (hit == 0 && depth == 0)
+    if (hit == 0)
     {
         return eculer;
     }
@@ -343,7 +285,7 @@ vec3 trace_r(Ray ray)
         vec3 sn;
         vec3 sc;
 
-        if (intersetScene(sr, EPSILON, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
+        if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
         {
             trans = vec3(0.0f);
         }
@@ -354,20 +296,21 @@ vec3 trace_r(Ray ray)
     return surfaceColor;
 }
 
-vec3 trace(Ray ray, inout float seed, vec2 pixel)
+vec3 trace(Ray ray)
 {
     float t;
+
     vec3 n;
     vec3 c;
-    int max_depth = MAX_DEPTH;
+
     int depth = 0;
     int hit;
 
     vec3 res = vec3(0.0f);
 
-    while (depth < max_depth)
+    while (depth < MAX_DEPTH)
     {
-        if(!intersetScene(ray, EPSILON, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
+        if(!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c) || t <= 0.0f)
         {
             if(depth == 0)
             {
@@ -479,7 +422,7 @@ vec3 trace(Ray ray, inout float seed, vec2 pixel)
                 vec3 sn;
                 vec3 sc;
 
-                if (intersetScene(sr, EPSILON, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
+                if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc) && shadowInd >= numLights)
                 {
                     trans = vec3(0.0f);
                 }
@@ -495,30 +438,20 @@ vec3 trace(Ray ray, inout float seed, vec2 pixel)
     return res / depth;
 }
 
-Ray create_camera_ray(vec2 uv, vec2 dim)
+Ray createRay(vec2 uv, vec2 dim)
 {
-    //int width = 800;
-    //int height = 600;
-
-    float fov = 75.0f;
-
     float aspect = dim.x / dim.y;
-    float angle = tan(M_PI * 0.5f * fov / 180.0f);
+    float angle = tan(TYpi * 0.5f * FOV / 180.0f);
 
     float invWidth = 1.0f / dim.x;
     float invHeight = 1.0f / dim.y;
 
-    vec3 origin = (uCameraToWorld * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
-
-    //vec3 direction = (uCameraInverseProjection * vec4(uv, 0.0f, 1.0f)).xyz;
-    //direction = (uCameraToWorld * vec4(direction.xy, -1.0f, 0.0f)).xyz;
-    //direction = normalize(direction);
+    vec3 origin = (view * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
 
     float xx = (2.0f * ((uv.x + 0.5f) * invWidth) - 1.0f) * aspect * angle;
     float yy = (1.0f - 2.0f * ((uv.y + 0.5f) * invHeight)) * angle;
 
-    // Ray direction considering camera
-    vec3 direction = (uCameraToWorld * vec4(xx, yy, -1.0f, 1.0f)).xyz;
+    vec3 direction = (view * vec4(xx, yy, -1.0f, 1.0f)).xyz;
     direction = direction - origin;
     direction = normalize(direction);
 
@@ -537,23 +470,17 @@ void main()
     // gl_GlobalInvocationId = gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID
 
     ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 imageSize = ivec2(gl_NumWorkGroups.xy * gl_WorkGroupSize.xy);
-    vec2 uv = vec2(storePos) / vec2(imageSize);
-    float seed = uInitialSeed;
 
-    vec2 sample_pos = (vec2(storePos) + rand2(seed, uv)) / vec2(imageSize);
+    ivec2 dim = ivec2(gl_NumWorkGroups.xy * gl_WorkGroupSize.xy);
 
-    vec2 xy = vec2(storePos.x, imageSize.y - storePos.y);
-    // Generate a camera ray.
-    Ray r = create_camera_ray(xy, vec2(imageSize));
+    float seed = initSeed;
 
-    // Shade the sample.
-    vec3 finalColor = trace(r, seed, uv);
+    vec2 xy = vec2(storePos.x, dim.y - storePos.y);
 
-    //vec3 ccc = normalize(sferes[0].pos);
-    // Merge this sample with previous samples.
-    vec4 color1 = vec4(finalColor, 1.0f);
+    Ray ray = createRay(xy, vec2(dim));
 
-    // Write the pixel.
-    imageStore(frame, storePos, color1);
+    vec3 color = trace(ray);
+    vec4 outColor = vec4(color, 1.0f);
+
+    imageStore(frame, storePos, outColor);
 }

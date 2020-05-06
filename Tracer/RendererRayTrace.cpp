@@ -44,16 +44,16 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 	loc = glGetUniformLocation(RayTraceShader->Program, "DevV");
 	RayTraceShader->setVec3(loc, Global::DevComputeShaderV);
 
-	RayTraceShader->setVec3(RayTraceShader->Uniforms["CamPos"], camera->position);
-	RayTraceShader->setVec3(RayTraceShader->Uniforms["voidColor"], TYvec(0.35f, 0.6f, 0.392f));
 	RayTraceShader->setInt(RayTraceShader->Uniforms["numLights"], lightCount);
 	RayTraceShader->setInt(RayTraceShader->Uniforms["numSpheres"], sphereCount);
 
-	RayTraceShader->setMat4(RayTraceShader->Uniforms["uCameraToWorld"], camera->view);
-	RayTraceShader->setMat4(RayTraceShader->Uniforms["uCameraInverseProjection"], glm::inverse(GenericDraw::projection));
+	RayTraceShader->setFloat(RayTraceShader->Uniforms["FOV"], Global::FOV);
+	RayTraceShader->setFloat(RayTraceShader->Uniforms["initSeed"], GetRand(0.0f, 1.0f));
 
-	RayTraceShader->setFloat(RayTraceShader->Uniforms["uInitialSeed"], GetRand(0.0f, 1.0f));
-	RayTraceShader->setInt(RayTraceShader->Uniforms["uSamples"], 0);
+	RayTraceShader->setVec3(RayTraceShader->Uniforms["voidColor"], TYvec(0.35f, 0.6f, 0.392f));
+	RayTraceShader->setVec3(RayTraceShader->Uniforms["CamPos"], camera->position);
+
+	RayTraceShader->setMat4(RayTraceShader->Uniforms["view"], camera->view);
 
 	glDispatchCompute(width, height, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
