@@ -103,7 +103,11 @@ class RenderRayTraceCPU : public Renderer
 		RenderRayTraceCPU(const RenderRayTraceCPU& a) = delete;
 		RenderRayTraceCPU& operator=(const RenderRayTraceCPU&) = delete;
 
+		std::mutex lineLock;
+		TYvector<TYvec> lines;
+
 	private:
+		ShaderPtr ColorShader = TYnull;
 		ShaderPtr BloomShader = TYnull;
 		ShaderPtr QuadShader = TYnull;
 

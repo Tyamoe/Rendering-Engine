@@ -14,7 +14,7 @@ int main()
 
 	GenericDraw::Init();
 
-	EnginePtr engine = new Engine({ /*RayTraceCPU, */Editor });
+	EnginePtr engine = new Engine({ RayTrace, Editor });
 	InputPtr input = new Input(window.GetGLFWWindow());
 
 	window.AttachInput(input);

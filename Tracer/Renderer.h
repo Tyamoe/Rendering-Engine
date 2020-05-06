@@ -39,6 +39,10 @@ class Renderer
 
 		TYvoid UpdatePriority(TYint pPriority) { priority = pPriority; }
 
+		TYvoid SetType(RendererType t) { type = t; }
+		RendererType GetType() { return type; }
+		RendererType type = Editor;
+
 		friend struct RendererCMP;
 
 	private:

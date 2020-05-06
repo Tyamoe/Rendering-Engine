@@ -142,6 +142,8 @@ TYvoid Window::cCreateWindow()
 	{
 		glfwMaximizeWindow(window);
 	}
+	if(GLenum e = glGetError() != 0)
+		TYlog << "5-00 " << e << TYlogbreak;
 }
 
 Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLayout)

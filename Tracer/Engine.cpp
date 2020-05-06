@@ -104,6 +104,18 @@ TYvoid Engine::AddRenderer(RendererPtr renderer)
 	renderer->Init();
 }
 
+RendererPtr Engine::GetRenderer(RendererType type)
+{
+	for (RendererPtr r : renderers)
+	{
+		if (r->type == type)
+		{
+			return r;
+		}
+	}
+	return TYnull;
+}
+
 Engine::Engine(TYvector<RendererType> pRendererTypes)
 {
 	EngineInitialized = true;

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "RendererRayTrace.h"
 #include "RendererRayTraceCPU.h"
 #include "RendererEditor.h"
 #include "Globals.h"
@@ -23,17 +24,30 @@ TYvoid RenderEditor::Render(TYfloat dt)
 
 	ImGui::InputFloat("FPS", &fps, -180.0f, 1080.0f);
 
-	//ImGui::Text("Tri %d", Global::TriCount);
-	ImGui::Text("Culled %d", Global::CulledTries);
+	ImGui::Text("Tri %d", Global::TriCount.load());
+	ImGui::Text("Culled %d", Global::CulledTries.load());
 	ImGui::Text("Rays %d", Global::DevCounter.operator int());
 
 	ImGui::InputInt("Thread Count", &Global::DevThreadCount);
 
 	ImGui::SliderFloat("FOV", &Global::FOV, -180.0f, 180.0f);
 	ImGui::Checkbox("Dev Bool", &Global::DevBool);
-	ImGui::Checkbox("Use MultiThreading", &Global::MultiThreadBool);
 
-	if (ImGui::Button("Height"))
+	ImGui::Text("Compute Shader");
+	ImGui::Checkbox("Bool", &Global::DevComputeShaderB);
+	ImGui::SliderInt("Int", &Global::DevComputeShaderI, 0, 10);
+	ImGui::SliderFloat("Float", &Global::DevComputeShaderF, -50.0f, 50.0f);
+	ImGui::SliderFloat3("Vec3", &Global::DevComputeShaderV[0], 0.0f, 1.0f);
+
+	if (ImGui::Button("Recompile Tracer"))
+	{
+		RenderRayTracePtr a = static_cast<RenderRayTracePtr>(engine->GetRenderer(RayTrace));
+		if(a)
+			a->RecompileRaytracer();
+	}
+
+	//ImGui::Checkbox("Use MultiThreading", &Global::MultiThreadBool);
+	/*if (ImGui::Button("Height"))
 	{
 		RenderRayTraceCPUPtr r = new RenderRayTraceCPU();
 		engine->AddRenderer(r);
@@ -56,7 +70,7 @@ TYvoid RenderEditor::Render(TYfloat dt)
 		RenderRayTraceCPUPtr r = new RenderRayTraceCPU();
 		engine->AddRenderer(r);
 		r->ThreadStrip();
-	}
+	}*/
 
 	ImGui::End();
 }
@@ -78,6 +92,8 @@ TYvoid RenderEditor::Init()
 
 RenderEditor::RenderEditor(TYbool pReadonly, Windows pActiveWindows) : Renderer()
 {
+	SetType(Editor);
+
 	readonly = pReadonly;
 	activeWindows = pActiveWindows;
 }

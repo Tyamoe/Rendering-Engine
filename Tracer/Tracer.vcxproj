@@ -122,9 +122,13 @@
     <None Include="resources\shaders\color.vs" />
     <None Include="resources\shaders\flatcolor.fs" />
     <None Include="resources\shaders\flatcolor.vs" />
+    <None Include="resources\shaders\line.fs" />
+    <None Include="resources\shaders\line.vs" />
     <None Include="resources\shaders\quad.fs" />
     <None Include="resources\shaders\quad.vs" />
-    <None Include="resources\shaders\raytracer.cps" />
+    <None Include="resources\shaders\raytracer.cs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

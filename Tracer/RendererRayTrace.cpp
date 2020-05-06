@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "Globals.h"
 #include "RendererRayTrace.h"
 
 TYvoid RenderRayTrace::PreRender() 
@@ -9,44 +10,98 @@ TYvoid RenderRayTrace::PreRender()
 
 TYvoid RenderRayTrace::Render(TYfloat dt) 
 {
+	Layout layout = engine->GetWindow()->GetLayout();
+	TYint width = layout.width;
+	TYint height = layout.height;
 
+	camera->Update(dt);
+
+	GenericDraw::dt = dt;
+	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);;
+	GenericDraw::view = camera->view;
+
+	RayTraceShader->Use();
+
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SSBO_Sphere);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SSBO_Triangle);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, SSBO_Surface);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Frame);
+	glUniform1i(RayTraceShader->Uniforms["frameTex"], 0);
+	glBindImageTexture(0, Frame, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+	TYint loc = glGetUniformLocation(RayTraceShader->Program, "DevI");
+
+	RayTraceShader->setInt(loc, Global::DevComputeShaderI);
+
+	loc = glGetUniformLocation(RayTraceShader->Program, "DevB");
+	RayTraceShader->setBool(loc, Global::DevComputeShaderB);
+
+	loc = glGetUniformLocation(RayTraceShader->Program, "DevF");
+	RayTraceShader->setFloat(loc, Global::DevComputeShaderF);
+
+	loc = glGetUniformLocation(RayTraceShader->Program, "DevV");
+	RayTraceShader->setVec3(loc, Global::DevComputeShaderV);
+
+	RayTraceShader->setVec3(RayTraceShader->Uniforms["CamPos"], camera->position);
+	RayTraceShader->setVec3(RayTraceShader->Uniforms["voidColor"], TYvec(0.35f, 0.6f, 0.392f));
+	RayTraceShader->setInt(RayTraceShader->Uniforms["numLights"], lightCount);
+	RayTraceShader->setInt(RayTraceShader->Uniforms["numSpheres"], sphereCount);
+
+	RayTraceShader->setMat4(RayTraceShader->Uniforms["uCameraToWorld"], camera->view);
+	RayTraceShader->setMat4(RayTraceShader->Uniforms["uCameraInverseProjection"], glm::inverse(GenericDraw::projection));
+
+	RayTraceShader->setFloat(RayTraceShader->Uniforms["uInitialSeed"], GetRand(0.0f, 1.0f));
+	RayTraceShader->setInt(RayTraceShader->Uniforms["uSamples"], 0);
+
+	glDispatchCompute(width, height, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+	// Draw to buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
+	glViewport(0, 0, layout.width, layout.height);
+
+	glClearColor(0.9f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	BloomShader->Use();
+	BloomShader->DrawQuad(Frame);
 }
 
 TYvoid RenderRayTrace::PostRender() 
 {
-
+	QuadShader->Use();
+	QuadShader->DrawQuad(RenderTexture);
 }
 
 TYuint RenderRayTrace::AddMesh(Mesh& mesh)
 {
-	TYuint offset = Scene.size();
-	Scene += mesh;
+	TYuint offset = scene->geometry.size();
+	//Scene += mesh;
 
 	return offset;
 }
 
 TYvoid RenderRayTrace::Init()
 {
-	RayTraceShader = new Shader("raytrace.cps");
-	QuadShader = new Shader("quad.vs", "quad.fs");
-
 	Layout layout = engine->GetWindow()->GetLayout();
 
-	// Texture
-	glCreateTextures(GL_TEXTURE_2D, 1, &RenderTexture);
+	TYint width = layout.width;
+	TYint height = layout.height;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	camera = new Camera(engine->GetWindow()->GetInput(), true);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, layout.width, layout.height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// FrameBuffer
+	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
+
+	// Setup render texture
+	glGenTextures(1, &RenderTexture);
+	glBindTexture(GL_TEXTURE_2D, RenderTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RenderTexture, 0);
 
@@ -55,12 +110,71 @@ TYvoid RenderRayTrace::Init()
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer in Raytrace Renderer is not complete!" << std::endl;
 	}
 
+	glGenTextures(1, &Frame);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Frame);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, layout.width, layout.height, 0, GL_RGBA, GL_FLOAT, NULL);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	TYvector<SPHERE> spheres;
+	TYvector<TRIANGLE> triangles;
+	TYvector<SURFACE> surfaces;
+
+	// Load scene
+	for (Geometry* geo : scene->geometry)
+	{
+		if (geo->GetType() == geoSphere)
+		{
+			spheres.push_back(SPHERE(geo->center, reinterpret_cast<Sphere*>(geo)->radius));
+		}
+		else if (geo->GetType() == geoTriangle)
+		{
+			TYvec a, b, c;
+			a = geo->vertices[1].position;
+			b = geo->vertices[2].position;
+			c = geo->vertices[0].position;
+			triangles.push_back(TRIANGLE(a, b, c));
+		}
+		else
+		{
+			continue;
+		}
+
+		surfaces.push_back(SURFACE(geo->surfaceColor, geo->transparency, geo->emissionColor, geo->reflection));
+	}
+
+	lightCount = 1;
+	sphereCount = TYint(spheres.size());
+
+	RayTraceShader->Use();
+
+	// SSBO
+	glGenBuffers(1, &SSBO_Sphere);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Sphere);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, spheres.size() * sizeof(SPHERE), spheres.data(), GL_DYNAMIC_DRAW);
+
+	glGenBuffers(1, &SSBO_Triangle);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Triangle);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, triangles.size() * sizeof(TRIANGLE), triangles.data(), GL_DYNAMIC_DRAW);
+
+	glGenBuffers(1, &SSBO_Surface);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Surface);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, surfaces.size() * sizeof(SURFACE), surfaces.data(), GL_DYNAMIC_DRAW);
 }
 
 RenderRayTrace::RenderRayTrace() : Renderer()
 {
+	SetType(RayTrace);
 
+	RayTraceShader = new Shader("raytracer.cs");
+	QuadShader = new Shader("quad.vs", "quad.fs");
+	BloomShader = new Shader("bloom.vs", "bloom.fs");
+
+	scene = new Scene();
 }
 
 RenderRayTrace::~RenderRayTrace()

@@ -18,6 +18,8 @@ class Engine
 		TYvoid Init();
 		TYvoid AddRenderer(RendererPtr renderer);
 
+		RendererPtr GetRenderer(RendererType type);
+
 		void Start();
 		void Stop();
 

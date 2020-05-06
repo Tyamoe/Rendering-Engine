@@ -125,8 +125,8 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 	{
 		TYfloat oldLow = 0.0f;
 		TYfloat oldHigh = MaxDistance;
-		TYfloat newLow = -1.0f;
-		TYfloat newHigh = 1.0f;
+		TYfloat newLow = -5.0f;
+		TYfloat newHigh = 5.0f;
 
 		TYfloat x = vertices[i + 0];
 		TYfloat y = vertices[i + 1];
@@ -151,9 +151,9 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 		TYuint i2 = Indices[i + 1] * 3;
 		TYuint i3 = Indices[i + 2] * 3;
 
-		TYvec v1 = TYvec(Vertices[i1], Vertices[i1 + 1], Vertices[i1 + 2]);
-		TYvec v2 = TYvec(Vertices[i2], Vertices[i2 + 1], Vertices[i2 + 2]);
-		TYvec v3 = TYvec(Vertices[i3], Vertices[i3 + 1], Vertices[i3 + 2]);
+		TYvec v1 = TYvec(Vertices[i1], Vertices[i1 + 1], Vertices[i1 + 2] - 21.0f);
+		TYvec v2 = TYvec(Vertices[i2], Vertices[i2 + 1], Vertices[i2 + 2] - 21.0f);
+		TYvec v3 = TYvec(Vertices[i3], Vertices[i3 + 1], Vertices[i3 + 2] - 21.0f);
 
 		triangles.push_back(Triangle(v1, v2, v3));
 	}
@@ -228,7 +228,7 @@ Triangle::Triangle(Vertex v0, Vertex v1, Vertex v2) : Geometry()
 }
 
 Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
-	TYfloat refl, TYfloat transp, PixelColorF ec) : Geometry(c, sc, refl, transp, ec)
+	TYfloat refl, TYfloat transp, PixelColorF ec) : Geometry((v0.position + v1.position + v2.position) / 3.0f, sc, refl, transp, ec)
 {
 	SetType(geoTriangle);
 
@@ -265,6 +265,12 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 		return false;
 
 	t0 = dot(e2, qvec) * invDet;
+
+	if (t0 < TYepsilon)
+	{
+		Global::TriCount++;
+		return false;
+	}
 
 	// Compute normal at the intersection point 
 	normal = glm::cross(vertices[1].position - vertices[0].position, vertices[2].position - vertices[0].position);

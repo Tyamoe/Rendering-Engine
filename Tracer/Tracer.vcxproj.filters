@@ -296,9 +296,6 @@
     <None Include="resources\shaders\quad.vs">
       <Filter>Resources</Filter>
     </None>
-    <None Include="resources\shaders\raytracer.cps">
-      <Filter>Resources</Filter>
-    </None>
     <None Include="resources\shaders\flatcolor.vs">
       <Filter>Resources</Filter>
     </None>
@@ -315,6 +312,15 @@
       <Filter>Resources</Filter>
     </None>
     <None Include="resources\shaders\color.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\raytracer.cs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\line.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\line.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>

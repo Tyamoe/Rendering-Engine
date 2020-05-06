@@ -153,7 +153,7 @@ Shader::Shader(TYstring pComputePath)
 		computeFile.close();
 		computeCode = computeStream.str();
 
-		TYlog << "Shader: " << pComputePath << " successfully opened for reading" << TYlogbreak;
+		//TYlog << "Shader: " << pComputePath << " successfully opened for reading" << TYlogbreak;
 
 	}
 	catch (std::ifstream::failure e)
@@ -179,7 +179,7 @@ Shader::Shader(TYstring pComputePath)
 	}
 	else
 	{
-		TYlog << "Shader: " << pComputePath << " successfully COMPILED" << TYlogbreak;
+		//TYlog << "Shader: " << pComputePath << " successfully COMPILED" << TYlogbreak;
 	}
 	glAttachShader(Program, cs);
 
@@ -195,7 +195,7 @@ Shader::Shader(TYstring pComputePath)
 	}
 	else
 	{
-		TYlog << "Shader: " << pComputePath << " successfully LINKED" << TYlogbreak;
+		//TYlog << "Shader: " << pComputePath << " successfully LINKED" << TYlogbreak;
 	}
 
 	SetupUniforms();

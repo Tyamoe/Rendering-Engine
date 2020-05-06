@@ -1,3 +1,11 @@
+/*
+
+	Ray Trace SDF
+	https://wallisc.github.io/rendering/2020/05/02/Volumetric-Rendering-Part-1.html
+	http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
+
+*/
+
 #include "stdafx.h"
 
 #include "Utils.h"
@@ -102,6 +110,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 	// No intersection
 	if (!hit) return clearColor;
+	if (hit->emissionColor.r > 0.0f) return hit->emissionColor;
 
 	// Color of the ray/surfaceof the object intersected by the ray 
 	PixelColorF surfaceColor = PixelColorF(); 
@@ -136,6 +145,8 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		DdotN = glm::dot(rayDir, nhit);
 	}
 
+	PixelColorF incomingColor = PixelColorF();
+
 	if ((hit->transparency > 0 || hit->reflection > 0) && rayDepth < MAX_RAY_DEPTH)
 	{
 		// Compute reflection direction
@@ -157,7 +168,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		// Compute refraction ray
 		if (hit->transparency)
 		{
-			TYfloat ior = 1.1f, eta = (inside) ? ior : 1.0f / ior; // are we inside or outside the surface? 
+			TYfloat ior = 0.4f, eta = (inside) ? ior : 1.0f / ior; // are we inside or outside the surface? 
 			TYfloat cosi = -glm::dot(nhit, rayDir);
 
 			TYfloat k = 1.0f - eta * eta * (1.0f - cosi * cosi);
@@ -175,36 +186,57 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		}
 
 		// Mix of reflection and refraction
-		surfaceColor = (reflect * fresEffect + refract * (1.0f - fresEffect) * hit->transparency) * hit->surfaceColor;
+		incomingColor = ((reflect) * fresEffect + refract * (1.0f - fresEffect) * hit->transparency) * hit->surfaceColor;
 	}
-	else
+
+	// Phong Step
+	TYvec lightDir = scene->geometry[0]->center - phit;
+	lightDir = normalize(lightDir);
+
+	float diff = glm::max(glm::dot(nhit, lightDir), 0.0f);
+	PixelColorF diffuse = diff * scene->geometry[0]->emissionColor;
+
+	TYfloat specularStrength = 0.5f;
+	TYvec viewDir = glm::normalize(camera->position - phit);
+	TYvec reflectDir = glm::reflect(-lightDir, nhit);
+	TYfloat spec = glm::pow(glm::max(glm::dot(viewDir, reflectDir), 0.0f), 32.0f);
+	PixelColorF specular = specularStrength * spec * scene->geometry[0]->emissionColor;
+
+	surfaceColor = (diffuse + specular) * hit->surfaceColor;
+
+	TYfloat mixVal = glm::clamp(hit->reflection + hit->transparency, 0.0f, 1.0f);
+
+	surfaceColor = Mix(surfaceColor, incomingColor, PixelColorF(mixVal));
+
+	// Shadow Step
+	PixelColorF trans = PixelColorF(1.0f);
+
+	for (TYuint j = 1; j < scene->geometry.size(); j++)
 	{
-		for (TYuint i = 0; i < scene->geometry.size(); i++)
+		TYfloat t0, t1;
+		if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
 		{
-			if (scene->geometry[i]->emissionColor.r > 0.0f) // It is a light
-			{
-				PixelColorF trans = PixelColorF(1.0f);
-
-				TYvec lightDir = scene->geometry[i]->center - phit;
-				lightDir = glm::normalize(lightDir);
-
-				for (TYuint j = 0; j < scene->geometry.size(); j++)
-				{
-					if (i != j)
-					{
-						TYfloat t0, t1;
-						if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
-						{
-							trans = PixelColorF();
-							break;
-						}
-					}
-				}
-				surfaceColor += hit->surfaceColor * trans * std::max(0.0f, glm::dot(nhit, lightDir)) * scene->geometry[i]->emissionColor;
-			}
+			trans = PixelColorF();
+			break;
 		}
 	}
-	return surfaceColor + hit->emissionColor;
+	surfaceColor = surfaceColor * trans;
+
+	if (hit->GetType() == geoTriangle)
+	{
+		//surfaceColor = glm::normalize(phit);
+		if (Global::DevBool)
+		{
+			lineLock.lock();
+
+			lines.push_back(phit + nhit * bias);
+			lines.push_back(phit + nhit * bias + (lightDir * 12.0f));
+
+			lineLock.unlock();
+		}
+	}
+	PixelColorF emis = PixelColorF();// hit->emissionColor == PixelColorF() ? (hit->surfaceColor* 0.02f) : hit->emissionColor;
+	return surfaceColor + emis;
 }
 
 TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPUPtr rt, TYint index)
@@ -379,6 +411,15 @@ TYvoid RenderRayTraceCPU::PostRender()
 		}
 
 		GenericDraw::DrawSphere(TYvec(0.0f), 2.0f, TYvec(1.0f, 1.0f, 1.0f));
+
+		for (TYsizet i = 0; i < lines.size(); i += 2)
+		{
+			GenericDraw::DrawSphere(lines[i], 0.1f, TYvec(0.0f, 0.25f, 0.5f));
+			GenericDraw::DrawSphere(lines[i + 1], 0.1f, TYvec(0.6f, 0.4f, 0.0f));
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		lines.clear();
 	}
 }
 
@@ -559,12 +600,17 @@ TYvoid RenderRayTraceCPU::Init()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	ThreadStrip();
 }
 
 RenderRayTraceCPU::RenderRayTraceCPU() : Renderer()
 {
+	SetType(RayTraceCPU);
+
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
+	ColorShader = new Shader("color.vs", "color.fs");
 
 	scene = new Scene();
 }

@@ -74,14 +74,32 @@ union PixelColorF
 		a = 1.0f;
 	}
 
+	PixelColorF(TYvec v) :
+		r(v.r), g(v.g), b(v.b), a(1.0f) {}
+
+	operator TYvec()
+	{
+		return TYvec(r, g, b);
+	}
+
 	operator PixelColor()
 	{
 		return PixelColor(TYubyte(r * 255.0f), TYubyte(g * 255.0f), TYubyte(b * 255.0f), TYubyte(a * 255.0f));
 	}
 
+	TYbool operator==(const PixelColorF& a1) const
+	{
+		return r == a1.r && g == a1.g && b == a1.b;
+	}
+
 	PixelColorF operator+=(const PixelColorF& a1) const
 	{
 		return PixelColorF(r + a1.r, g + a1.g, b + a1.b, a);
+	}
+
+	PixelColorF operator-(const PixelColorF& a1) const
+	{
+		return PixelColorF(r - a1.r, g - a1.g, b - a1.b, a);
 	}
 
 	PixelColorF operator+(const PixelColorF& a1) const
@@ -117,6 +135,16 @@ union PixelColorF
 
 	TYubyte raw[sizeof(TYfloat) * 4];
 };
+
+inline PixelColorF operator-(TYfloat f, const PixelColorF& p)
+{
+	return PixelColorF(f - p.r, f - p.g, f - p.b, p.a);
+}
+
+inline PixelColorF operator* (TYfloat f, const PixelColorF& p)
+{
+	return PixelColorF(p.r * f, p.g * f, p.b * f, p.a);
+}
 
 inline PixelColor::operator PixelColorF()
 {
