@@ -32,6 +32,8 @@ TYvoid RenderEditor::Render(TYfloat dt)
 
 	ImGui::SliderFloat("FOV", &Global::FOV, -180.0f, 180.0f);
 	ImGui::Checkbox("Dev Bool", &Global::DevBool);
+	ImGui::Checkbox("Dev Bool2", &Global::DevBool2);
+	ImGui::Checkbox("Sphere Bound", &Global::DevSphereAABB);
 
 	ImGui::Text("Compute Shader");
 	ImGui::Checkbox("Bool", &Global::DevComputeShaderB);

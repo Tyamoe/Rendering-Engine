@@ -14,6 +14,8 @@ namespace Global
 
 	inline std::atomic<TYint> DevCounter = 0;
 	inline TYbool DevBool = false;
+	inline TYbool DevBool2 = false;
+	inline TYbool DevSphereAABB = false;
 	inline TYbool MultiThreadBool = true;
 
 	inline TYint DevFrameCount = 0;

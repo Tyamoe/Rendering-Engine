@@ -59,18 +59,43 @@ class RenderRayTrace : public Renderer
 		{
 			TRIANGLE(TYvec p0, TYvec p1, TYvec p2) : v0(p0), v1(p1), v2(p2)
 			{
-				c = (p0 + p1 + p2) / 3.0f;
+				pad1 = 0.0f;
+				pad2 = 0.0f;
+				pad3 = 0.0f;
 			}
 
-			TRIANGLE(TYvec p0, TYvec p1, TYvec p2, TYvec cc) : v0(p0), v1(p1), v2(p2), c(cc)
+			TRIANGLE(TYvec p0, TYvec p1, TYvec p2, TYvec cc) : v0(p0), v1(p1), v2(p2)
 			{
-
+				pad1 = 0.0f;
+				pad2 = 0.0f;
+				pad3 = 0.0f;
 			}
 
 			TYvec v0;
+			TYfloat pad1;
 			TYvec v1;
+			TYfloat pad2;
 			TYvec v2;
-			TYvec c;
+			TYfloat pad3;
+		};
+
+		struct MODEL
+		{
+			MODEL(TYint o, TYint t) : offset(o), triCount(t)
+			{
+			}
+
+			TYint offset;
+			TYint triCount;
+		};
+
+		struct BOUND
+		{
+			BOUND(TYvec p, TYfloat r) : pos(p), radius(r)
+			{
+			}
+			TYvec pos;
+			TYfloat radius;
 		};
 
 		struct SURFACE
@@ -90,6 +115,8 @@ class RenderRayTrace : public Renderer
 
 		TYuint SSBO_Sphere = 0;
 		TYuint SSBO_Triangle = 0;
+		TYuint SSBO_Model = 0;
+		TYuint SSBO_Bound = 0;
 		TYuint SSBO_Surface = 0;
 };
 

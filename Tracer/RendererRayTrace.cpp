@@ -24,7 +24,9 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SSBO_Sphere);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SSBO_Triangle);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, SSBO_Surface);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, SSBO_Model);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_Bound);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_Surface);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Frame);
@@ -122,6 +124,8 @@ TYvoid RenderRayTrace::Init()
 
 	TYvector<SPHERE> spheres;
 	TYvector<TRIANGLE> triangles;
+	TYvector<MODEL> models;
+	TYvector<BOUND> bounds;
 	TYvector<SURFACE> surfaces;
 
 	// Load scene
@@ -133,11 +137,41 @@ TYvoid RenderRayTrace::Init()
 		}
 		else if (geo->GetType() == geoTriangle)
 		{
+			Triangle* tt = reinterpret_cast<Triangle*>(geo);
+
 			TYvec a, b, c;
-			a = geo->vertices[1].position;
-			b = geo->vertices[2].position;
-			c = geo->vertices[0].position;
+			a = tt->vertices[0].position;
+			b = tt->vertices[1].position;
+			c = tt->vertices[2].position;
+
+			models.push_back(MODEL(triangles.size(), 1));
+
+			TYvec ce = (a + b + c) / 3.0f;
+
+			TYfloat r = glm::max(glm::length(a - ce), glm::max(glm::length(b - ce), glm::length(c - ce)));
+
+			bounds.push_back(BOUND(ce, r));
+
 			triangles.push_back(TRIANGLE(a, b, c));
+		}
+		else if (geo->GetType() == geoModel)
+		{
+			Model* ss = reinterpret_cast<Model*>(geo);
+			models.push_back(MODEL(triangles.size(), ss->triangles.size()));
+
+			BoundingSphere* bs = reinterpret_cast<BoundingSphere*>(ss->bvh->head);
+
+			bounds.push_back(BOUND( bs->center, bs->radius));
+
+			for (Triangle t : ss->triangles)
+			{
+				TYvec a, b, c;
+				a = t.vertices[0].position;
+				b = t.vertices[1].position;
+				c = t.vertices[2].position;
+
+				triangles.push_back(TRIANGLE(a, b, c));
+			}
 		}
 		else
 		{
@@ -155,15 +189,23 @@ TYvoid RenderRayTrace::Init()
 	// SSBO
 	glGenBuffers(1, &SSBO_Sphere);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Sphere);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, spheres.size() * sizeof(SPHERE), spheres.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, spheres.size() * sizeof(SPHERE), spheres.data(), GL_STATIC_DRAW);
 
 	glGenBuffers(1, &SSBO_Triangle);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Triangle);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, triangles.size() * sizeof(TRIANGLE), triangles.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, triangles.size() * sizeof(TRIANGLE), triangles.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &SSBO_Model);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Model);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, models.size() * sizeof(MODEL), models.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &SSBO_Bound);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Bound);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, bounds.size() * sizeof(BOUND), bounds.data(), GL_STATIC_DRAW);
 
 	glGenBuffers(1, &SSBO_Surface);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_Surface);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, surfaces.size() * sizeof(SURFACE), surfaces.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, surfaces.size() * sizeof(SURFACE), surfaces.data(), GL_STATIC_DRAW);
 }
 
 RenderRayTrace::RenderRayTrace() : Renderer()

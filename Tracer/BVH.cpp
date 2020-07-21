@@ -34,7 +34,7 @@ BVH* BVH::GenerateBVH(Triangle* triangle)
 	TYvec v1 = triangle->vertices[1].position;
 	TYvec v2 = triangle->vertices[2].position;
 
-	for (Vertex vertex : triangle->vertices)
+	for (Vertex vertex : triangle->vertices.v)
 	{
 		if (vertex.position.x > bmax.x) bmax.x = vertex.position.x;
 		if (vertex.position.x < bmin.x) bmin.x = vertex.position.x;
@@ -64,7 +64,7 @@ BVH* BVH::GenerateBVH(Model* model)
 
 	for (Triangle triangle : model->triangles)
 	{
-		for (Vertex vertex : triangle.vertices)
+		for (Vertex vertex : triangle.vertices.v)
 		{
 			if (vertex.position.x > bmax.x) bmax.x = vertex.position.x;
 			if (vertex.position.x < bmin.x) bmin.x = vertex.position.x;

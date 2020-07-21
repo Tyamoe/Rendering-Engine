@@ -3,6 +3,7 @@
 #include "Types.h"
 #include "RenderingUtils.h"
 #include "Utils.h"
+#include "Octree.h"
 
 typedef class BVH BVH;
 
@@ -48,7 +49,7 @@ public:
 	TYfloat reflection = 0.0f;
 
 	TYvec center = TYvec(0.0f);
-	TYvector<Vertex> vertices;
+	//TYvector<Vertex> vertices;
 
 	BVH* bvh = TYnull;
 
@@ -75,6 +76,25 @@ public:
 
 	TYfloat radius;
 	TYfloat radiusSQR;
+
+	union Vertice
+	{
+		Vertice() {}
+
+		Vertex& operator[](TYint i)
+		{
+			return v[i];
+		}
+
+		struct
+		{
+			Vertex v0, v1, v2;
+		};
+
+		Vertex v[3];
+	};
+
+	Vertice vertices;
 
 private:
 
@@ -112,6 +132,8 @@ public:
 	Model() : Geometry()
 	{
 		SetType(geoModel);
+
+		octree = new Octree(this);
 	}
 
 	Model(TYstring filePath, PixelColorF sc,
@@ -125,6 +147,8 @@ public:
 
 	TYfloat radius;
 	TYfloat radiusSQR;
+
+	Octree* octree = TYnull;
 
 private:
 

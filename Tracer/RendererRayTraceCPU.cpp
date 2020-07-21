@@ -120,14 +120,8 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 	// Compute point of intersection 
 	TYvec phit = rayOrigin + rayDir * tnear; 
+	TYvec nhit = normal;
 
-	// Compute normal at the intersection point 
-	TYvec nhit = normal;// phit - sphere->center;
-
-	/*if (sphere->GetType() == geoTriangle)
-	{
-		nhit = glm::normalize(glm::cross(sphere->vertices[1].vertex - sphere->vertices[0].vertex, sphere->vertices[2].vertex - sphere->vertices[0].vertex));
-	}*/
 	nhit = glm::normalize(nhit);
 
 	TYfloat DdotN = glm::dot(rayDir, nhit);
@@ -146,6 +140,21 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 		nhit = -nhit;
 		DdotN = glm::dot(rayDir, nhit);
+	}
+
+	/*************************************/
+	if (hit->GetType() == geoModel)
+	{
+		//surfaceColor = glm::normalize(phit);
+		if (Global::DevBool)
+		{
+			lineLock.lock();
+
+			lines.push_back(phit);
+			lines.push_back(phit + nhit * bias);
+
+			lineLock.unlock();
+		}
 	}
 
 	PixelColorF incomingColor = PixelColorF();
@@ -196,11 +205,11 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	TYvec lightDir = scene->geometry[0]->center - phit;
 	lightDir = normalize(lightDir);
 
-	float diff = glm::max(glm::dot(nhit, lightDir) + 0.2f * abs(glm::dot(nhit, lightDir)), 0.0f);
+	TYfloat diff = glm::max(glm::dot(nhit, lightDir) + 0.15f, 0.0f);
 	PixelColorF diffuse = diff * scene->geometry[0]->emissionColor;
 
 	TYfloat specularStrength = 0.4f;
-	TYvec viewDir = glm::normalize(camera->position - phit);
+	TYvec viewDir = glm::normalize(rayOrigin - phit);
 	TYvec reflectDir = glm::reflect(-lightDir, nhit);
 	TYfloat spec = glm::pow(glm::max(glm::dot(viewDir, reflectDir), 0.0f), 32.0f);
 	PixelColorF specular = specularStrength * spec * scene->geometry[0]->emissionColor;
@@ -209,13 +218,6 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 	TYfloat mixVal = glm::clamp(hit->reflection + hit->transparency, 0.0f, 1.0f);
 	surfaceColor = Mix(surfaceColor, incomingColor, PixelColorF(mixVal));
-
-	/*if(TYfloat f = glm::dot(nhit, lightDir) < 0.0f)
-		surfaceColor = 1.0f - glm::clamp(abs(glm::dot(nhit, lightDir)), 0.0f, 1.0f);// Mix(surfaceColor, incomingColor, PixelColorF(mixVal));
-	else
-	{
-		surfaceColor = PixelColorF(1.0f, 0.0f, 0.0f);
-	}*/
 
 	// Shadow Step
 	PixelColorF trans = PixelColorF(1.0f);
@@ -240,20 +242,6 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		}
 	}
 	surfaceColor = surfaceColor * trans;
-
-	if (hit->GetType() == geoTriangle)
-	{
-		//surfaceColor = glm::normalize(phit);
-		if (Global::DevBool)
-		{
-			lineLock.lock();
-
-			lines.push_back(phit + nhit * bias);
-			lines.push_back(phit + nhit * bias + (lightDir * 12.0f));
-
-			lineLock.unlock();
-		}
-	}
 	PixelColorF emis = PixelColorF();// hit->emissionColor == PixelColorF() ? (hit->surfaceColor* 0.02f) : hit->emissionColor;
 	return surfaceColor + emis;
 }

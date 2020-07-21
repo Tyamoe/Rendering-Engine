@@ -148,6 +148,12 @@
     <ClCompile Include="GenericDraw.cpp">
       <Filter>Engine\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Octree.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererRayTraceVulkan.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -287,6 +293,12 @@
     </ClInclude>
     <ClInclude Include="GenericDraw.h">
       <Filter>Engine\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Octree.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTraceVulkan.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

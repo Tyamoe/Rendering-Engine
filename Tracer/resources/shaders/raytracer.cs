@@ -3,10 +3,16 @@
 precision highp float;
 precision highp int;
 
+struct BOUND
+{
+    vec3 pos;
+    float radius;
+};
+
 struct MODEL
 {
     int offset;
-    int triangle_count;
+    int triCount;
 };
 
 struct SPHERE
@@ -18,9 +24,11 @@ struct SPHERE
 struct TRIANGLE
 { 
     vec3 v0;
+    float pad1;
     vec3 v1;
+    float pad2;
     vec3 v2;
-    vec3 center;
+    float pad3;
 };
 
 struct SURFACE
@@ -49,7 +57,17 @@ layout(std430, binding = 2) readonly buffer Triangles
     TRIANGLE triangles[];
 };
 
-layout(std430, binding = 3) readonly buffer Surfaces
+layout(std430, binding = 3) readonly buffer Models
+{
+    MODEL models[];
+};
+
+layout(std430, binding = 4) readonly buffer Bounds
+{
+    BOUND bounds[];
+};
+
+layout(std430, binding = 5) readonly buffer Surfaces
 {
     SURFACE surfaces[];
 };
@@ -112,7 +130,24 @@ bool intersectTriangle(Ray r, TRIANGLE tri, out float t, out vec3 n)
         return false;
     }
 
-    n = normalize(cross(tri.v1 - tri.v0, tri.v2 - tri.v0));
+    n = normalize(cross(tri.v2 - tri.v0, tri.v1 - tri.v0));
+
+    return true;
+}
+
+bool intersectSphere_b(Ray r, vec3 pos, float radius)
+{
+    vec3 l = pos - r.origin;
+
+    float tca = dot(l, r.direction);
+
+    if (tca < 0)
+        return false;
+
+    float d2 = dot(l, l) - tca * tca;
+
+    if (d2 > radius * radius)
+        return false;
 
     return true;
 }
@@ -147,7 +182,7 @@ bool intersectSphere(Ray r, SPHERE sph, out float t, out vec3 n)
     return true;
 }
 
-bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit, inout vec3 n, inout vec3 c, int ignore)
+bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit, inout vec3 n, int ignore)
 {
     bool does_hit = false;
     t = 0.0f;
@@ -183,21 +218,42 @@ bool intersetScene(Ray r, float t_min, float t_max, inout float t, inout int hit
                 does_hit = true;
                 hit = i;
                 n = nor;
-                c = sphere.pos;
             }
         }
         else
         {
-            TRIANGLE tri = triangles[j];
+            BOUND b = bounds[j];
+            int l = -1;
 
-            if (intersectTriangle(r, tri, t, nor) && t >= t_min && t < t_max && t < best_min_t)
+            /*SPHERE sp;
+            sp.pos = b.pos;
+            sp.radius = b.radius;
+            if (intersectSphere(r, sp, t, nor) && t >= t_min && t < t_max && t < best_min_t)
             {
                 best_min_t = t;
                 does_hit = true;
                 hit = i;
                 n = nor;
+            }*/
+            if (intersectSphere_b(r, b.pos, b.radius))
+            {
+                l = 1;
+            }
 
-                c = tri.center;
+            if (l != -1)
+            {
+                MODEL model = models[j];
+                for (int k = 0; k < model.triCount; k++)
+                {
+                    TRIANGLE tri = triangles[model.offset + k];
+                    if (intersectTriangle(r, tri, t, nor) && t < t_max && t < best_min_t)
+                    {
+                        best_min_t = t;
+                        does_hit = true;
+                        hit = i;
+                        n = nor;
+                    }
+                }
             }
         }
 
@@ -229,11 +285,10 @@ vec3 trace_r(Ray ray, int ignore)
     float t;
 
     vec3 n;
-    vec3 c;
 
     int hit;
 
-    if (!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c, ignore) || t <= 0.0f)
+    if (!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, ignore) || t <= 0.0f)
     {
         return voidColor;
     }
@@ -289,9 +344,8 @@ vec3 trace_r(Ray ray, int ignore)
         int shadowInd = 0;
 
         vec3 sn;
-        vec3 sc;
 
-        if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc, 0) && shadowInd >= numLights)
+        if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, 0) && shadowInd >= numLights)
         {
             float t = surfaces[shadowInd].t;
             if (t != 0.0f)
@@ -316,7 +370,6 @@ vec3 trace(Ray ray)
     float t;
 
     vec3 n;
-    vec3 c;
 
     int depth = 0;
     int hit;
@@ -325,7 +378,7 @@ vec3 trace(Ray ray)
 
     while (depth < MAX_DEPTH)
     {
-        if(!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, c, -1) || t <= 0.0f)
+        if(!intersetScene(ray, TYepsilon, MAX_FLOAT, t, hit, n, -1) || t <= 0.0f)
         {
             if(depth == 0)
             {
@@ -406,11 +459,11 @@ vec3 trace(Ray ray)
             vec3 lightDir = spheres[0].pos - phit;
             lightDir = normalize(lightDir);
 
-            float diff = max(dot(nhit, lightDir) + 0.1f, 0.0f);
+            float diff = max(dot(nhit, lightDir) + 0.15f, 0.0f);
             vec3 diffuse = diff * surfaces[0].e;
 
             float specularStrength = 0.4f;
-            vec3 viewDir = normalize(CamPos - phit);
+            vec3 viewDir = normalize(ray.origin - phit);
             vec3 reflectDir = reflect(-lightDir, nhit);
             float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32.0f);
             vec3 specular = specularStrength * spec * surfaces[0].e;
@@ -435,9 +488,8 @@ vec3 trace(Ray ray)
                 int shadowInd = 0;
 
                 vec3 sn;
-                vec3 sc;
 
-                if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, sc, 0) && shadowInd >= numLights)
+                if (intersetScene(sr, TYepsilon, MAX_FLOAT, t, shadowInd, sn, 0) && shadowInd >= numLights)
                 {
                     float t = surfaces[shadowInd].t;
                     if(t != 0.0f)

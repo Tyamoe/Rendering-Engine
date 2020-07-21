@@ -14,7 +14,7 @@ Geometry::Geometry()
 
 TYvoid Geometry::AddVertex(Vertex pVertex)
 {
-	vertices.push_back(pVertex);
+	//vertices.push_back(pVertex);
 }
 
 Geometry::~Geometry()
@@ -27,7 +27,9 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 {
 	SetType(geoModel);
 
-	TYvectorF Vertices;
+	octree = new Octree(this);
+
+	TYvector3 Vertices;
 	TYvectorUI Indices;
 
 	TYvectorF vertices;
@@ -125,8 +127,8 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 	{
 		TYfloat oldLow = 0.0f;
 		TYfloat oldHigh = MaxDistance;
-		TYfloat newLow = -5.0f;
-		TYfloat newHigh = 5.0f;
+		TYfloat newLow = -8.0f;
+		TYfloat newHigh = 8.0f;
 
 		TYfloat x = vertices[i + 0];
 		TYfloat y = vertices[i + 1];
@@ -140,23 +142,32 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 		y = ((y - oldLow) / (oldHigh - oldLow)) * (newHigh - newLow + newLow);
 		z = ((z - oldLow) / (oldHigh - oldLow)) * (newHigh - newLow + newLow);
 
-		Vertices.push_back(x);
-		Vertices.push_back(y);
-		Vertices.push_back(z);
+		//Vertices.push_back(x);
+		//Vertices.push_back(y);
+		//Vertices.push_back(z);
+		Vertices.push_back(TYvec(x, y, z - 25.0f));
 	}
 
 	for (TYsizet i = 0; i < Indices.size(); i += 3)
 	{
-		TYuint i1 = Indices[i] * 3;
-		TYuint i2 = Indices[i + 1] * 3;
-		TYuint i3 = Indices[i + 2] * 3;
+		TYuint i1 = Indices[i];
 
-		TYvec v1 = TYvec(Vertices[i1], Vertices[i1 + 1], Vertices[i1 + 2] - 21.0f);
-		TYvec v2 = TYvec(Vertices[i2], Vertices[i2 + 1], Vertices[i2 + 2] - 21.0f);
-		TYvec v3 = TYvec(Vertices[i3], Vertices[i3 + 1], Vertices[i3 + 2] - 21.0f);
+		TYuint i2 = Indices[i + 1] ;
+
+		TYuint i3 = Indices[i + 2];
+
+		//TYvec v1 = TYvec(Vertices[i1], Vertices[i1 + 1], Vertices[i1 + 2] - 21.0f);
+		//TYvec v2 = TYvec(Vertices[i2], Vertices[i2 + 1], Vertices[i2 + 2] - 21.0f);
+		//TYvec v3 = TYvec(Vertices[i3], Vertices[i3 + 1], Vertices[i3 + 2] - 21.0f);
+
+		TYvec v1 = Vertices[i1];
+		TYvec v2 = Vertices[i2];
+		TYvec v3 = Vertices[i3];
 
 		triangles.push_back(Triangle(v1, v2, v3));
+		octree->GlobalTriangles.push_back(Triangle(v1, v2, v3));
 	}
+	octree->Make();
 }
 
 TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
@@ -166,36 +177,56 @@ TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
 
 TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
-	if (bvh)
+	Node* node = TYnull;
+	if (Global::DevSphereAABB)
 	{
-		if (!bvh->head->Intersect(rayOrig, rayDir))
+		if (bvh)
 		{
-			//TYlog << "Bounding Sphere\n";
-			Global::CulledTries++;
-			return false;
+			if (!bvh->head->Intersect(rayOrig, rayDir))
+			{
+				Global::CulledTries++;
+				return false;
+			}
+		}
+	}
+	else
+	{
+		if (octree)
+		{
+			node = octree->Intersect(rayOrig, rayDir);
+			if (!node)
+			{
+				Global::CulledTries++;
+				return false;
+			}
 		}
 	}
 
-	//Global::CulledTries = 0;
-	Global::TriCount = triangles.size();
+	//Global::TriCount = triangles.size();
 
 	TYvec norm = TYvec(0.0f);
 	TYfloat t00 = TYinf, t11 = TYinf;
 	TYbool h = false;
 
-	for (TYsizet i = 0; i < triangles.size(); i++)
+	if (node->Triangles.size() <= triangles.size())
 	{
-		TYvec p0 = triangles[i].vertices[0].position;
+		Global::TriCount++;
+	}
+
+	//for (TYsizet i = 0; i < triangles.size(); i++)
+	for (TYsizet i = 0; i < node->Triangles.size(); i++)
+	{
+		/*TYvec p0 = triangles[i].vertices[0].position;
 		TYvec p1 = triangles[i].vertices[1].position;
 		TYvec p2 = triangles[i].vertices[2].position;
 
-		/*TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
+		TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
 		if (prod.z <= 0.0f)
 		{
 			//Global::CulledTries++;
 			continue;
 		}*/
-		if (triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < t00)
+		if (node->Triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < TYmaxf && t0 < t00)
 		{
 			t00 = t0;
 			t11 = t1;
@@ -218,13 +249,17 @@ Model::~Model()
 }
 
 // TRIANGLE
-Triangle::Triangle(Vertex v0, Vertex v1, Vertex v2) : Geometry()
+Triangle::Triangle(Vertex v0_, Vertex v1_, Vertex v2_) : Geometry()
 {
 	SetType(geoTriangle);
 
-	AddVertex(v0);
-	AddVertex(v1);
-	AddVertex(v2);
+	AddVertex(v0_);
+	AddVertex(v1_);
+	AddVertex(v2_);
+
+	vertices.v0 = v0_;
+	vertices.v1 = v1_;
+	vertices.v2 = v2_;
 }
 
 Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
@@ -235,6 +270,10 @@ Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
 	AddVertex(v0);
 	AddVertex(v1);
 	AddVertex(v2);
+
+	vertices.v[0] = v0;
+	vertices.v[1] = v1;
+	vertices.v[2] = v2;
 }
 
 TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
@@ -272,7 +311,6 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 		return false;
 	}
 
-	// Compute normal at the intersection point 
 	normal = glm::cross(vertices[1].position - vertices[0].position, vertices[2].position - vertices[0].position);
 
 	return true;

@@ -9,12 +9,14 @@
 #include <stack>
 #include <unordered_set>
 #include <tuple>
+#include <limits>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#define TYmaxf std::numeric_limits<float>::max()
 #define TYpi 3.141592653589793f
 #define TYinf 1e8 
 #define TYepsilon glm::epsilon<float>() 
