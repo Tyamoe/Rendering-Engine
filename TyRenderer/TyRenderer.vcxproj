@@ -160,7 +160,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E0CEF958-9EE6-42DA-8CFE-3AD054ACA788}</ProjectGuid>
+    <ProjectGuid>{1D5781CC-BCCD-4504-923F-64E1ED4B843C}</ProjectGuid>
     <RootNamespace>TyRenderer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>TyRenderer</ProjectName>
