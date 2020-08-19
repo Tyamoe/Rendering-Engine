@@ -1,0 +1,339 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{b606f71b-a1b8-473f-8186-0a18f1f7186a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor\External">
+      <UniqueIdentifier>{35b6a947-af29-4cde-8fd0-e3114b8cfe49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{3373a783-ad46-472d-86c9-404421953ad7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{7a09be29-7e97-4d8a-9cf5-ed585d2cfdbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Debug">
+      <UniqueIdentifier>{8489704d-b743-4022-9321-1905e5b04f58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core">
+      <UniqueIdentifier>{9f48e317-b663-49a3-abb6-cb4f482e33d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System">
+      <UniqueIdentifier>{e446d4f7-4a6c-49c2-bc51-6c5537ef3bee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering">
+      <UniqueIdentifier>{3aa57bf8-1743-4dc1-b579-dbd56b377bd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Entity">
+      <UniqueIdentifier>{7a19e989-d6cf-46bf-9d5f-2617ab02a9b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Entity\Nodes">
+      <UniqueIdentifier>{fce4f496-273d-4a18-8a0a-392e11e29bc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{e7918a5b-380b-4ea9-9ca9-9fe1ba933d1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Entity\Components">
+      <UniqueIdentifier>{c96af232-aa87-432d-82fb-34db94282e34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\Util">
+      <UniqueIdentifier>{3aa7affd-df11-4584-86a4-42b3a90b2617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Utils">
+      <UniqueIdentifier>{c0420801-195d-4d08-83b5-51bc6a3d94d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering\Renderer">
+      <UniqueIdentifier>{634b304d-f596-456c-83b7-0eb2ce32317d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering\Mesh">
+      <UniqueIdentifier>{ffff0029-931e-4522-9526-9d67d84f106f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Engine\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Editor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Engine\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Profiler.cpp">
+      <Filter>Engine\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger.cpp">
+      <Filter>Engine\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Shape.cpp">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCB.cpp">
+      <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Engine\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererEditor.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererFlatColor.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererRayTrace.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererRayTraceCPU.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <Filter>Editor\External</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Engine\Core\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="BVH.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GenericDraw.cpp">
+      <Filter>Engine\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Octree.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererRayTraceVulkan.cpp">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shader.h">
+      <Filter>Engine\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imconfig.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_internal.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_rectpack.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_textedit.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_truetype.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\stb_rect_pack.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\stb_textedit.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\stb_truetype.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Engine\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Profiler.h">
+      <Filter>Engine\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger.h">
+      <Filter>Engine\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape.h">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Engine\Entity\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowCB.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Engine\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="InputUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererEditor.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererFlatColor.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTrace.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Structs.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTraceCPU.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\tinyobj\tiny_obj_loader.h">
+      <Filter>Editor\External</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadingUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingUtils.h">
+      <Filter>Engine\System\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="BVH.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingVolume.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GenericDraw.h">
+      <Filter>Engine\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Octree.h">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererRayTraceVulkan.h">
+      <Filter>Engine\Rendering\Renderer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\quad.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\quad.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\flatcolor.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\flatcolor.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\bloom.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\bloom.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\color.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\color.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\raytracer.cs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\line.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\line.fs">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+</Project>
