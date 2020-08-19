@@ -272,7 +272,7 @@ copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
       <BrowseInformation>true</BrowseInformation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>GLFW_DLL;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_DLL;_CRT_SECURE_NO_WARNINGS;_MBCS;HEADLESS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>APIENTRY;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
       <DisableSpecificWarnings>26495;6387;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
