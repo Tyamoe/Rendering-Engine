@@ -108,7 +108,7 @@ TYvoid GenericDraw::DrawSphere(TYvec pos, TYfloat radius, TYvec color)
 
 	glBindVertexArray(wireVao);
 
-	glDrawArrays(GL_LINES, 0, SphereVertices.size());
+	glDrawArrays(GL_LINES, 0, (GLsizei)SphereVertices.size());
 
 	glBindVertexArray(0);
 }

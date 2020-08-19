@@ -432,7 +432,7 @@ TYvoid RenderRayTraceCPU::PostRender()
 
 TYuint RenderRayTraceCPU::AddMesh(Mesh& mesh)
 {
-	TYuint offset = scene->geometry.size();
+	TYuint offset = (TYuint)scene->geometry.size();
 	//Scene += mesh;
 
 	return offset;

@@ -79,7 +79,7 @@ TYvoid RenderRayTrace::PostRender()
 
 TYuint RenderRayTrace::AddMesh(Mesh& mesh)
 {
-	TYuint offset = scene->geometry.size();
+	TYuint offset = (TYuint)scene->geometry.size();
 	//Scene += mesh;
 
 	return offset;
@@ -144,7 +144,7 @@ TYvoid RenderRayTrace::Init()
 			b = tt->vertices[1].position;
 			c = tt->vertices[2].position;
 
-			models.push_back(MODEL(triangles.size(), 1));
+			models.push_back(MODEL((TYint)triangles.size(), 1));
 
 			TYvec ce = (a + b + c) / 3.0f;
 
@@ -157,7 +157,7 @@ TYvoid RenderRayTrace::Init()
 		else if (geo->GetType() == geoModel)
 		{
 			Model* ss = reinterpret_cast<Model*>(geo);
-			models.push_back(MODEL(triangles.size(), ss->triangles.size()));
+			models.push_back(MODEL((TYint)triangles.size(), (TYint)ss->triangles.size()));
 
 			BoundingSphere* bs = reinterpret_cast<BoundingSphere*>(ss->bvh->head);
 
