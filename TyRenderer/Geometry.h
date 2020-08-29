@@ -1,8 +1,19 @@
 #pragma once
 
+#ifndef TYAMOE3D
+
 #include "Types.h"
-#include "RenderingUtils.h"
 #include "Utils.h"
+
+#else
+
+#include "Tyamoe3DHelper.h"
+#include EngineInc(Types.h)
+#include EngineInc(Utils.h)
+
+#endif // TYAMOE3D
+
+#include "RenderingUtils.h"
 #include "Octree.h"
 
 typedef class BVH BVH;

@@ -1,11 +1,22 @@
+#include "Tyamoe3DHelper.h"
+
+#ifndef TYAMOE3D
+
 #include "stdafx.h"
+#include "Globals.h"
+
+#else
+
+#include EngineInc(stdafx.h)
+#include EngineInc(Globals.h)
+
+#endif // TYAMOE3D
 
 #include <filesystem>
 
 #include "RendererRayTrace.h"
 #include "RendererRayTraceCPU.h"
 #include "RendererEditor.h"
-#include "Globals.h"
 
 using namespace std::filesystem;
 

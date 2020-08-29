@@ -1,8 +1,17 @@
 #pragma once
 
-#include <algorithm>
+#ifndef TYAMOE3D
 
 #include "Types.h"
+
+#else
+
+#include "Tyamoe3DHelper.h"
+#include EngineInc(Types.h)
+
+#endif // TYAMOE3D
+
+#include <algorithm>
 
 union PixelColorF;
 

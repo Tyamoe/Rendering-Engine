@@ -6,10 +6,20 @@
 
 */
 
-#include "stdafx.h"
+#ifndef TYAMOE3D
 
+#include "stdafx.h"
 #include "Utils.h"
 #include "Globals.h"
+
+#else
+
+#include "Tyamoe3DHelper.h"
+#include EngineInc(stdafx.h)
+#include EngineInc(Utils.h)
+#include EngineInc(Globals.h)
+
+#endif // TYAMOE3D
 
 #include "RendererRayTraceCPU.h"
 

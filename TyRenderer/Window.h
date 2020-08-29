@@ -57,4 +57,10 @@ class Window
 
 typedef Window* WindowPtr;
 
+#ifdef HEADLESS
+
 extern TYumap<GLFWwindow*, WindowPtr> WindowManager;
+
+#else
+
+#endif // HEADLESS

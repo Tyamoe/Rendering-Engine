@@ -1,6 +1,17 @@
-#include "stdafx.h"
+#include "Tyamoe3DHelper.h"
 
+#ifndef TYAMOE3D
+
+#include "stdafx.h"
 #include "Globals.h"
+
+#else
+
+#include EngineInc(stdafx.h)
+#include EngineInc(Globals.h)
+
+#endif // TYAMOE3D
+
 #include "RendererRayTraceVulkan.h"
 
 TYvoid RenderRayTraceVulkan::PreRender() 

@@ -1,11 +1,20 @@
 #pragma once
 
-#include "stdafx.h"
+#ifndef TYAMOE3D
 
+#include "stdafx.h"
 #include "Types.h"
 #include "Input.h"
 
-typedef class Camera
+#else
+
+#include "Tyamoe3DHelper.h"
+#include EngineInc(Types.h)
+#include EngineInc(Input.h)
+
+#endif // TYAMOE3D
+
+class Camera
 {
 public:
 	Camera();
@@ -42,4 +51,6 @@ private:
 	TYfloat sensitivity = 3.7f;
 	TYfloat multiplier = 1.0f;
 
-}Camera, *CameraPtr;
+};
+
+typedef class Camera* CameraPtr;

@@ -1,11 +1,18 @@
 #pragma once
 
+#ifndef TYAMOE3D
+
+#include "Engine.h"
 #include "Types.h"
 
-#include "Entity.h"
-#include "Engine.h"
-#include "Debugger.h"
-#include "Profiler.h"
+#else
+
+#include "Tyamoe3DHelper.h"
+#include EngineInc(Engine.h)
+#include EngineInc(Types.h)
+
+#endif // TYAMOE3D
+
 #include "GenericDraw.h"
 
 typedef class Engine* EnginePtr;
@@ -35,8 +42,8 @@ class Renderer
 		virtual TYvoid Render(TYfloat dt) {}
 		virtual TYvoid PostRender() {}
 
-		TYvoid AddEntity(EntityPtr pEntity) { entities.push_back(pEntity); }
-		TYvoid AddEntity(TYvector<EntityPtr> pEntities) { entities.insert(entities.end(), pEntities.begin(), pEntities.end()); }
+		//TYvoid AddEntity(EntityPtr pEntity) { entities.push_back(pEntity); }
+		//TYvoid AddEntity(TYvector<EntityPtr> pEntities) { entities.insert(entities.end(), pEntities.begin(), pEntities.end()); }
 
 		TYvoid UpdatePriority(TYint pPriority) { priority = pPriority; }
 
@@ -51,11 +58,11 @@ class Renderer
 		TYint priority = 0;
 
 		// Data
-		TYvector<EntityPtr> entities;
+		//TYvector<EntityPtr> entities;
 
 		// Debug
-		ProfilerPtr profiler;
-		DebuggerPtr debugger;
+		//ProfilerPtr profiler;
+		//DebuggerPtr debugger;
 
 	protected:
 		// (Meta) Data
@@ -63,8 +70,8 @@ class Renderer
 
 public:
 	TYvoid SetEngine(EnginePtr pEngine) { engine = pEngine; }
-	TYvoid AttachDebugger(DebuggerPtr pDebugger){ debugger = pDebugger;}
-	TYvoid AttachProfiler(ProfilerPtr pProfiler){ profiler = pProfiler;}
+	//TYvoid AttachDebugger(DebuggerPtr pDebugger){ debugger = pDebugger;}
+	//TYvoid AttachProfiler(ProfilerPtr pProfiler){ profiler = pProfiler;}
 };
 
 typedef Renderer* RendererPtr;
