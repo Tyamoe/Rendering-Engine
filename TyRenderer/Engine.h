@@ -2,52 +2,64 @@
 
 #include "Types.h"
 
-#include "Renderer.h"
 #include "Window.h"
+#include "Input.h"
+#include "TyRenderer.h"
 
-typedef class Renderer* RendererPtr;
 typedef class Window* WindowPtr;
 typedef enum RendererType RendererType;
 
 class Engine
 {
 	public:
-		Engine(TYvector<RendererType> pRendererTypes);
+		Engine();
 		~Engine();
 
-		TYvoid Init();
-		TYvoid AddRenderer(RendererPtr renderer);
-
-		RendererPtr GetRenderer(RendererType type);
-
 		void Start();
-		void Stop();
+		void Break();
 
-		void EarlyTick();
-		void Tick();
-		void LateTick();
+		void OnStart();
+
+		void Update();
+		void LateUpdate();
 
 	private:
-		TYvector<RendererPtr> renderers;
-		WindowPtr window = nullptr;
-		GLFWwindow* Gwindow = nullptr;
+		TyRendererPtr renderer = nullptr;
+		InputPtr input = nullptr;
+
+		TYbool EngineInitialized = false;
 
 		TYfloat dt = 0.0f;
 		TYbool running = false;
 
-		TYbool EngineInitialized = false;
+		TYvoid Tick();
+		TYvoid UpdateDT();
+
+		TYbool WindowClosed();
 
 	public:
-		void SetWindow(WindowPtr pWindow, GLFWwindow* Gwindow_) 
-		{ 
-			window = pWindow; 
-			Gwindow = Gwindow_;
+		InputPtr GetInput()
+		{
+			return input;
 		}
-		GLFWwindow* GetGLFWWindow() { return Gwindow; }
-		WindowPtr GetWindow() { return window; }
 
-	private:
-		void UpdateDT();
+		template<typename t>
+		t GetWindow(t p = 0)
+		{
+			return t();
+		}
+
+		template<>
+		GLFWwindow* GetWindow(GLFWwindow* p)
+		{
+			return renderer->window->window;
+		}
+
+		template<>
+		WindowPtr GetWindow(WindowPtr p)
+		{
+			return renderer->window;
+		}
 };
 
 typedef Engine* EnginePtr;

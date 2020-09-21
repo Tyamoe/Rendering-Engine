@@ -17,6 +17,8 @@
 #include "Geometry.h"
 #include "BVH.h"
 
+static MeshHandle sphereHandle;
+
 // BASE
 Geometry::Geometry()
 {
@@ -33,17 +35,20 @@ Geometry::~Geometry()
 
 }
 
-Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, PixelColorF ec) :
-	radius(0), radiusSQR(0), Geometry(TYvec(0.0f), sc, refl, transp, ec)
+Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, PixelColorF ec, TYvec ce) :
+	radius(0), radiusSQR(0), Geometry(ce, sc, refl, transp, ec)
 {
 	SetType(geoModel);
 
 	octree = new Octree(this);
 
-	TYvector3 Vertices;
-	TYvectorUI Indices;
+	TYvector3 tVertices;
+	TYvector3 Normals;
+	//TYvectorUI Indices;
 
 	TYvectorF vertices;
+
+	TYvector3 NormalSum;
 
 	TYfloat minX = INFINITY, minY = INFINITY, minZ = INFINITY;
 	TYfloat maxX = -INFINITY, maxY = -INFINITY, maxZ = -INFINITY;
@@ -89,6 +94,8 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 			vertices.push_back(vertex.x);
 			vertices.push_back(vertex.y);
 			vertices.push_back(vertex.z);
+
+			NormalSum.push_back(TYvec(0.0f, 0.0f, 0.0f));
 		}
 		else if (line[0] == "f")
 		{
@@ -134,6 +141,32 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 	TYfloat sy = (dy / 2.0f);
 	TYfloat sz = (dz / 2.0f);
 
+	// - - - - - - - 
+	TYvec vertex1, vertex2, vertex3, vector1, vector2, crossProduct;
+	for (TYsizet i = 0; i < Indices.size(); i += 3)
+	{
+		TYuint index1 = Indices[i] * 3;
+		TYuint index2 = Indices[i + 1] * 3;
+		TYuint index3 = Indices[i + 2] * 3;
+
+		vertex1 = TYvec(vertices[index1], vertices[index1 + 1], vertices[index1 + 2]);
+		vertex2 = TYvec(vertices[index2], vertices[index2 + 1], vertices[index2 + 2]);
+		vertex3 = TYvec(vertices[index3], vertices[index3 + 1], vertices[index3 + 2]);
+
+		vector1 = vertex1 - vertex2;
+		vector2 = vertex1 - vertex3;
+		crossProduct = glm::cross(vector1, vector2);
+		normalize(crossProduct);
+
+		index1 = index1 / 3;
+		index2 = index2 / 3;
+		index3 = index3 / 3;
+
+		NormalSum[index1] += crossProduct;
+		NormalSum[index2] += crossProduct;
+		NormalSum[index3] += crossProduct;
+	}
+
 	for (TYsizet i = 0; i < vertices.size(); i += 3)
 	{
 		TYfloat oldLow = 0.0f;
@@ -153,17 +186,19 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 		y = ((y - oldLow) / (oldHigh - oldLow)) * (newHigh - newLow + newLow);
 		z = ((z - oldLow) / (oldHigh - oldLow)) * (newHigh - newLow + newLow);
 
-		//Vertices.push_back(x);
-		//Vertices.push_back(y);
-		//Vertices.push_back(z);
-		Vertices.push_back(TYvec(x, y, z - 25.0f));
+		TYvec nn = glm::normalize(NormalSum[i / 3]);
+
+		tVertices.push_back(TYvec(x, y, z - 25.0f));
+		Normals.push_back(nn);
+
+		Vertices.push_back(Vertex(TYvec(x, y, z), nn));
 	}
 
 	for (TYsizet i = 0; i < Indices.size(); i += 3)
 	{
 		TYuint i1 = Indices[i];
 
-		TYuint i2 = Indices[i + 1] ;
+		TYuint i2 = Indices[i + 1];
 
 		TYuint i3 = Indices[i + 2];
 
@@ -171,19 +206,25 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 		//TYvec v2 = TYvec(Vertices[i2], Vertices[i2 + 1], Vertices[i2 + 2] - 21.0f);
 		//TYvec v3 = TYvec(Vertices[i3], Vertices[i3 + 1], Vertices[i3 + 2] - 21.0f);
 
-		TYvec v1 = Vertices[i1];
-		TYvec v2 = Vertices[i2];
-		TYvec v3 = Vertices[i3];
+		Vertex v1 = Vertex(tVertices[i1], Normals[i1]);
+		Vertex v2 = Vertex(tVertices[i2], Normals[i2]);
+		Vertex v3 = Vertex(tVertices[i3], Normals[i3]);
 
 		triangles.push_back(Triangle(v1, v2, v3));
-		octree->GlobalTriangles.push_back(Triangle(v1, v2, v3));
+		//octree->GlobalTriangles.push_back(Triangle(v1, v2, v3));
 	}
-	octree->Make();
+	//octree->Make();
 }
 
 TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
 {
 	triangles.insert(triangles.end(), pTriangles.begin(), pTriangles.end());
+}
+
+TYvoid Model::GenOctree()
+{
+	octree->GlobalTriangles.insert(octree->GlobalTriangles.begin(), triangles.begin(), triangles.end());
+	octree->Make();
 }
 
 TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
@@ -219,7 +260,7 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	TYfloat t00 = TYinf, t11 = TYinf;
 	TYbool h = false;
 
-	if (node->Triangles.size() <= triangles.size())
+	if (node && node->Triangles.size() <= triangles.size())
 	{
 		Global::TriCount++;
 	}
@@ -254,6 +295,48 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	return h;
 }
 
+TYmat Model::GetMatrix()
+{
+	TYmat model = TYmat(1.0f);
+	model = glm::translate(model, center);
+	model = glm::scale(model, { 1.0f, 1.0f, 1.0f });
+
+	return model;
+}
+
+TYvoid Model::GenHandle_GL()
+{
+	MeshHandle mh;
+
+	TYuint VBO, IBO;
+
+	glGenVertexArrays(1, &mh.VAO);
+	glBindVertexArray(mh.VAO);
+
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &IBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, Vertices.size() * sizeof(Vertex), &Vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, Indices.size() * sizeof(TYuint), &Indices[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(3 * sizeof(TYfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(6 * sizeof(TYfloat)));
+
+	glBindVertexArray(0);
+
+	mh.indexCount = Indices.size();
+
+	meshHandle = mh;
+}
+
 Model::~Model()
 {
 
@@ -271,6 +354,17 @@ Triangle::Triangle(Vertex v0_, Vertex v1_, Vertex v2_) : Geometry()
 	vertices.v0 = v0_;
 	vertices.v1 = v1_;
 	vertices.v2 = v2_;
+
+	TYvec vector1, vector2, crossProduct;
+
+	vector1 = v0_.position - v1_.position;
+	vector2 = v0_.position - v2_.position;
+	crossProduct = glm::cross(vector1, vector2);
+	crossProduct = glm::normalize(crossProduct);
+
+	vertices.v0.normal = crossProduct;
+	vertices.v1.normal = crossProduct;
+	vertices.v2.normal = crossProduct;
 }
 
 Triangle::Triangle(TYvec c, Vertex v0, Vertex v1, Vertex v2, PixelColorF sc,
@@ -327,6 +421,50 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 	return true;
 }
 
+TYmat Triangle::GetMatrix()
+{
+	TYmat model = TYmat(1.0f);
+	model = glm::translate(model, { 0.0f, 0.0f, 0.0f });
+	model = glm::scale(model, { 1.0f, 1.0f, 1.0f });
+
+	return model;
+}
+
+TYvoid Triangle::GenHandle_GL()
+{
+	TYvectorUI Indices = { 0, 1, 2 };
+
+	MeshHandle mh;
+
+	TYuint VBO, IBO;
+
+	glGenVertexArrays(1, &mh.VAO);
+	glBindVertexArray(mh.VAO);
+
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &IBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertice), &vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, Indices.size() * sizeof(TYuint), &Indices[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(3 * sizeof(TYfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(6 * sizeof(TYfloat)));
+
+	glBindVertexArray(0);
+
+	mh.indexCount = Indices.size();
+
+	meshHandle = mh;
+}
+
 Triangle::~Triangle()
 {
 
@@ -370,6 +508,111 @@ TYbool Sphere::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, 
 	normal = phit - center;
 
 	return true;
+}
+
+TYmat Sphere::GetMatrix()
+{
+	TYmat model = TYmat(1.0f);
+	model = glm::translate(model, center);
+	model = glm::scale(model, { radius, radius, radius });
+
+	return model;
+}
+
+TYvoid Sphere::GenHandle_GL()
+{
+	if (sphereHandle.indexCount == 0)
+	{
+		TYvectorUI Indices;
+		TYvector<Vertex> Vertices;
+
+		TYvectorF SphereVertices;
+		TYfloat radius = 1.0f;
+		TYint stackCount = 20;
+		TYint sectorCount = 25;
+
+		TYfloat x, y, z, xy, lengthInv = 1.0f / radius;
+
+		TYfloat sectorStep = 2.0f * glm::pi<TYfloat>() / sectorCount;
+		TYfloat stackStep = glm::pi<TYfloat>() / stackCount;
+		TYfloat sectorAngle, stackAngle;
+
+		for (TYint i = 0; i <= stackCount; i++)
+		{
+			stackAngle = glm::pi<TYfloat>() / 2 - i * stackStep;
+			xy = radius * glm::cos(stackAngle);
+			z = radius * glm::sin(stackAngle);
+
+			for (TYint j = 0; j <= sectorCount; j++)
+			{
+				sectorAngle = j * sectorStep;
+
+				x = xy * glm::cos(sectorAngle);
+				y = xy * glm::sin(sectorAngle);
+
+				TYvec norm = TYvec(x * lengthInv, y * lengthInv, z * lengthInv);
+				norm = glm::normalize(norm);
+
+				Vertices.push_back(Vertex(TYvec(x, y, z), norm));
+			}
+		}
+
+		TYint k1, k2;
+		for (TYint i = 0; i < stackCount; i++)
+		{
+			k1 = i * (sectorCount + 1);
+			k2 = k1 + sectorCount + 1;
+
+			for (TYint j = 0; j < sectorCount; j++, k1++, k2++)
+			{
+				if (i != 0)
+				{
+					Indices.push_back(k1);
+					Indices.push_back(k2);
+					Indices.push_back(k1 + 1);
+				}
+
+				if (i != (stackCount - 1))
+				{
+					Indices.push_back(k1 + 1);
+					Indices.push_back(k2);
+					Indices.push_back(k2 + 1);
+				}
+			}
+		}
+
+		MeshHandle mh;
+
+		TYuint VBO, IBO;
+
+		glGenVertexArrays(1, &mh.VAO);
+		glBindVertexArray(mh.VAO);
+
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &IBO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, Vertices.size() * sizeof(Vertex), &Vertices[0], GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, Indices.size() * sizeof(TYuint), &Indices[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(3 * sizeof(TYfloat)));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(TYfloat), (TYvoid*)(6 * sizeof(TYfloat)));
+
+		glBindVertexArray(0);
+
+		mh.indexCount = Indices.size();
+
+		sphereHandle = mh;
+	}
+
+	meshHandle = sphereHandle;
 }
 
 Sphere::~Sphere()

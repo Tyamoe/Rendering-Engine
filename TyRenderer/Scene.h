@@ -16,6 +16,9 @@ public:
 
 	TYvoid Init();
 
+	TYvoid GenOctree();
+	TYvoid GenHandles_GL();
+
 	CameraPtr camera;
 
 	TYvector<Geometry*> geometry;

@@ -27,6 +27,8 @@ Camera::Camera(InputPtr pInput, TYbool invert)
 	input = pInput;
 	inverted = invert;
 
+	input = TY::in;
+
 	if (invert)
 	{
 		multiplier = -1.0f;
@@ -41,6 +43,7 @@ Camera::Camera()
 TYbool Camera::Update(TYfloat dt)
 {
 	float currSpeed = 4 * dt;
+	input = TY::in;
 
 	if (input->isKeyDown(GLFW_KEY_W))
 	{

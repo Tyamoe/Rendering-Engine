@@ -20,7 +20,7 @@ TYvoid RenderRayTrace::PreRender()
 
 TYvoid RenderRayTrace::Render(TYfloat dt) 
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 	TYint width = layout.width;
 	TYint height = layout.height;
 
@@ -97,12 +97,12 @@ TYuint RenderRayTrace::AddMesh(Mesh& mesh)
 
 TYvoid RenderRayTrace::Init()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	camera = new Camera(engine->GetWindow()->GetInput(), true);
+	camera = new Camera(TYnull, true);
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
@@ -220,13 +220,14 @@ TYvoid RenderRayTrace::Init()
 
 RenderRayTrace::RenderRayTrace() : Renderer()
 {
-	SetType(RayTrace);
+	SetType(RendererType::RayTrace);
 
 	RayTraceShader = new Shader("raytracer.cs");
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 
 	scene = new Scene();
+	scene->GenOctree();
 }
 
 RenderRayTrace::~RenderRayTrace()

@@ -6,28 +6,35 @@
 #include "Globals.h"
 
 #include "Structs.h"
-#include "GenericDraw.h"
+
+#include "TyRenderer.h"
 
 #ifdef HEADLESS
 
 int main()
 {
-	Window window("Tray Racer", Settings(), Layout(800, 600, 400, 220));
+	/*Window window("Tray Racer", Settings(), Layout(800, 600, 400, 220)); // E
 
-	GenericDraw::Init();
+	//GenericDraw::Init(); // R
 
-	EnginePtr engine = new Engine({ Editor });
-	InputPtr input = new Input(window.GetGLFWWindow());
+	EnginePtr engine = new Engine();
+	InputPtr input = new Input(window.GetGLFWWindow()); // E
 
 	window.AttachInput(input);
 	window.AttachEngine(engine);
+
+	TyRenderer tyRenderer; // E
+	tyRenderer.Init();*/
+
+	EnginePtr engine = new Engine();
+	engine->Start();
 }
 
 #else
 
 void Init()
 {
-	TYlog << "Hey\n";
+	TYlog << "Init\n";
 }
 
 #endif

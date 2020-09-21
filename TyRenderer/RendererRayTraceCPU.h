@@ -106,9 +106,6 @@ class RenderRayTraceCPU : public Renderer
 		TYvoid ThreadStrip();
 
 		TraceData traceData;
-		ScenePtr scene;
-
-		CameraPtr camera;
 
 		//
 		RenderRayTraceCPU(const RenderRayTraceCPU& a) = delete;
@@ -122,8 +119,8 @@ class RenderRayTraceCPU : public Renderer
 		ShaderPtr BloomShader = TYnull;
 		ShaderPtr QuadShader = TYnull;
 
-		TYuint RenderBuffer = 0;
-		TYuint RenderTexture = 0;
+		TYuint RenderBuffer;
+		TYuint RenderTexture;
 
 		TYuint Frame = 0;
 

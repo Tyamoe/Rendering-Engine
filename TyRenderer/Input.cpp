@@ -4,7 +4,7 @@
 #include "Window.h"
 
 TYumap<GLFWwindow*, Input*> InputManagers;
-#define INPUT WindowManager[window]->GetInput()
+#define INPUT TY::in//WindowManager[window]->GetInput()
 
 Input::Input(GLFWwindow* pWindow)
 {
@@ -16,6 +16,7 @@ Input::Input(GLFWwindow* pWindow)
 	glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
 
 	InputManagers[window] = this;
+	TY::in = this;
 }
 
 TYvoid Input::Update(TYfloat dt)

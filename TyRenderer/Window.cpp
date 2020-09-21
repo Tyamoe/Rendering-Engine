@@ -9,24 +9,6 @@
 
 TYumap<GLFWwindow*, WindowPtr> WindowManager;
 
-TYvoid Window::AttachEngine(EnginePtr pEngine, bool pStart)
-{
-	engine = pEngine;
-	engine->SetWindow(this, window);
-
-	engine->Init();
-
-	if (pStart)
-	{
-		engine->Start();
-	}
-}
-
-TYvoid Window::AttachInput(InputPtr pInput)
-{
-	input = pInput;
-}
-
 TYbool Window::Focus()
 {
 	glfwMakeContextCurrent(window);
@@ -114,9 +96,6 @@ TYvoid Window::cCreateWindow()
 
 	glfwSetWindowPos(window, layout.left, layout.top);
 
-	InputPtr input = new Input(window);
-	AttachInput(input);
-
 	glfwSetFramebufferSizeCallback(window, ViewportCB);
 
 	glViewport(0, 0, width, height);
@@ -146,7 +125,7 @@ TYvoid Window::cCreateWindow()
 		TYlog << "5-00 " << e << TYlogbreak;
 }
 
-Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLayout)
+Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLayout), settings(pSettings)
 {
 	maximize = pSettings.maximize;
 	vsync = pSettings.vsync;
@@ -162,9 +141,6 @@ Window::~Window()
 {
 	if (WindowInitialized)
 	{
-		delete input;
-		delete engine;
-
 		/*if (ImGUI Renderer Created)
 		{
 			ImGui_ImplOpenGL3_Shutdown();

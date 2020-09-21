@@ -43,18 +43,15 @@ class RenderRayTrace : public Renderer
 			RayTraceShader = new Shader("raytracer.cs");
 		}
 
-		ScenePtr scene;
-		CameraPtr camera;
-
 	private:
 		ShaderPtr RayTraceShader = TYnull;
 		ShaderPtr QuadShader = TYnull;
 		ShaderPtr BloomShader = TYnull;
 
+		TYuint Frame = 0;
+
 		TYuint RenderBuffer;
 		TYuint RenderTexture;
-
-		TYuint Frame = 0;
 
 		struct SPHERE
 		{

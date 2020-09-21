@@ -33,9 +33,6 @@ class RenderRayTraceVulkan : public Renderer
 		TYvoid Render(TYfloat dt);
 		TYvoid PostRender();
 
-		ScenePtr scene;
-		CameraPtr camera;
-
 	private:
 		ShaderPtr QuadShader = TYnull;
 		ShaderPtr BloomShader = TYnull;

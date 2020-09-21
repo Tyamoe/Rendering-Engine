@@ -2,60 +2,63 @@
 
 #ifndef TYAMOE3D
 
-#include "Engine.h"
 #include "Types.h"
+#include "Window.h"
+#include "Scene.h"
 
 #else
 
 #include "Tyamoe3DHelper.h"
-#include EngineInc(Engine.h)
+#include EngineInc(Window.h)
 #include EngineInc(Types.h)
+#include EngineInc(Scene.h)
 
 #endif // TYAMOE3D
 
 #include "GenericDraw.h"
+#include "Camera.h"
 
 typedef class Engine* EnginePtr;
 
-typedef struct RendererCMP RendererCMP;
-
-enum RendererType
+typedef enum class RendererType
 {
+	Base,
 	RayTraceCPU,
 	RayTraceVulkan,
 	RayTrace,
 	Editor,
-	FlatColor,
-};
+	Deferred,
+} RendererType;
 
 class Renderer
 {
 	public:
-		Renderer()
-		{
-		}
-		virtual ~Renderer() {}
+		Renderer();
+		virtual ~Renderer();
 
-		virtual TYvoid Init() {}
+		virtual TYvoid Init();
 
-		virtual TYvoid PreRender() {}
-		virtual TYvoid Render(TYfloat dt) {}
-		virtual TYvoid PostRender() {}
+		virtual TYvoid PreRender();
+		virtual TYvoid Render(TYfloat dt);
+		virtual TYvoid PostRender();
 
 		//TYvoid AddEntity(EntityPtr pEntity) { entities.push_back(pEntity); }
 		//TYvoid AddEntity(TYvector<EntityPtr> pEntities) { entities.insert(entities.end(), pEntities.begin(), pEntities.end()); }
 
-		TYvoid UpdatePriority(TYint pPriority) { priority = pPriority; }
-
 		TYvoid SetType(RendererType t) { type = t; }
 		RendererType GetType() { return type; }
-		RendererType type = Editor;
+		RendererType type = RendererType::Base;
+
+		ScenePtr scene;
+		CameraPtr camera;
 
 		friend struct RendererCMP;
 
 	private:
-		//  
-		TYint priority = 0;
+		ShaderPtr QuadShader = TYnull;
+
+		TYuint RenderBuffer;
+		TYuint RenderTexture;
 
 		// Data
 		//TYvector<EntityPtr> entities;
@@ -66,20 +69,12 @@ class Renderer
 
 	protected:
 		// (Meta) Data
-		EnginePtr engine;
+		WindowPtr window;
 
-public:
-	TYvoid SetEngine(EnginePtr pEngine) { engine = pEngine; }
-	//TYvoid AttachDebugger(DebuggerPtr pDebugger){ debugger = pDebugger;}
-	//TYvoid AttachProfiler(ProfilerPtr pProfiler){ profiler = pProfiler;}
+	public:
+		TYvoid SetWindow(WindowPtr pWindow) { window = pWindow; }
+		//TYvoid AttachDebugger(DebuggerPtr pDebugger){ debugger = pDebugger;}
+		//TYvoid AttachProfiler(ProfilerPtr pProfiler){ profiler = pProfiler;}
 };
 
 typedef Renderer* RendererPtr;
-
-struct RendererCMP
-{
-	TYbool operator()(RendererPtr a, RendererPtr b) const
-	{
-		return a->priority < b->priority;
-	}
-};

@@ -29,13 +29,13 @@ public:
 	TYmat view = TYmat(1.0f);
 
 	// Camera Transform -> used to make View matrix.
-	TYvec position = TYvec(0.0f, 0.0f, -3.0f);
+	TYvec position = TYvec(0.0f, 0.0f, 20.0f);
 	TYvec front = TYvec(0.0f, 0.0f, -1.0f);
 	TYvec up = TYvec(0.0f, 1.0f, 0.0f);
 
 	TYfloat yaw = -91.69f, pitch = -17;
 
-	TYvec iposition = TYvec(0.0f, 0.0f, -3.0f);
+	TYvec iposition = TYvec(0.0f, 0.0f, 20.0f);
 	TYvec ifront = TYvec(0.0f, 0.0f, -1.0f);
 	TYvec iup = TYvec(0.0f, 1.0f, 0.0f);
 	TYfloat iyaw = -91.69f;

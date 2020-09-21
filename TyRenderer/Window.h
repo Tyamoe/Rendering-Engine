@@ -15,14 +15,9 @@ class Window
 		Window(TYcstring pName, Settings pSettings, Layout pLayout);
 		~Window();
 
-		TYvoid AttachEngine(EnginePtr pEngine, bool pStart = true);
-		TYvoid AttachInput(InputPtr pInput);
-
 		TYbool Focus();
 
 		GLFWwindow* GetGLFWWindow() { return window; }
-
-		InputPtr GetInput() { return input; }
 
 		Layout GetLayout() { return layout; }
 		Layout& rLayout() { return layout; }
@@ -30,12 +25,10 @@ class Window
 		TYbool GetDirtyLayout() { return DirtyLayout; }
 		TYbool& rDirtyLayout() { return DirtyLayout; }
 
+		friend class TyRenderer;
 		friend class Engine;
 
 	private:
-		InputPtr input = nullptr;
-		EnginePtr engine = nullptr;
-
 		TYcstring name;
 
 		TYbool WindowInitialized = false;
@@ -46,6 +39,7 @@ class Window
 		TYbool vsync = false;
 		TYint MSAA = 0;
 
+		Settings settings;
 		Layout layout;
 
 		TYvoid cCreateWindow();

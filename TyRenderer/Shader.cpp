@@ -1,18 +1,21 @@
-#include "Tyamoe3DHelper.h"
+#include "stdafx.h"
+
+#include "Types.h"
 
 #ifndef TYAMOE3D
 
-#include "stdafx.h"
+static TYstring path = "resources/shaders/";
 
 #else
 
+#include "Tyamoe3DHelper.h"
 #include EngineInc(stdafx.h)
+
+static TYstring path = "TyRenderer/TyRenderer/resources/shaders/";
 
 #endif // TYAMOE3D
 
 #include "Shader.h"
-
-static TYstring path = "resources/shaders/";
 
 Shader::~Shader()
 {

@@ -21,7 +21,7 @@ TYvoid RenderRayTraceVulkan::PreRender()
 
 TYvoid RenderRayTraceVulkan::Render(TYfloat dt) 
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 	TYint width = layout.width;
 	TYint height = layout.height;
 
@@ -40,12 +40,12 @@ TYvoid RenderRayTraceVulkan::PostRender()
 
 TYvoid RenderRayTraceVulkan::Init()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	camera = new Camera(engine->GetWindow()->GetInput(), true);
+	camera = new Camera(TYnull, true);
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
@@ -79,7 +79,7 @@ TYvoid RenderRayTraceVulkan::Init()
 
 RenderRayTraceVulkan::RenderRayTraceVulkan() : Renderer()
 {
-	SetType(RayTraceVulkan);
+	SetType(RendererType::RayTraceVulkan);
 
 	scene = new Scene();
 }

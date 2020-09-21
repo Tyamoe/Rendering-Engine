@@ -326,7 +326,7 @@ TYvoid RenderRayTraceCPU::TraceRays()
 	}
 	else
 	{
-		Layout layout = engine->GetWindow()->GetLayout();
+		Layout layout = window->GetLayout();
 		TYint width = layout.width;
 		TYint height = layout.height;
 
@@ -362,7 +362,7 @@ TYvoid RenderRayTraceCPU::PreRender()
 
 TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 	TYint width = layout.width;
 	TYint height = layout.height;
 
@@ -450,7 +450,7 @@ TYuint RenderRayTraceCPU::AddMesh(Mesh& mesh)
 
 TYvoid RenderRayTraceCPU::ThreadHeight()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
@@ -476,7 +476,7 @@ TYvoid RenderRayTraceCPU::ThreadHeight()
 
 TYvoid RenderRayTraceCPU::ThreadWidth()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
@@ -502,7 +502,7 @@ TYvoid RenderRayTraceCPU::ThreadWidth()
 
 TYvoid RenderRayTraceCPU::ThreadGrid()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
@@ -535,7 +535,7 @@ TYvoid RenderRayTraceCPU::ThreadGrid()
 
 TYvoid RenderRayTraceCPU::ThreadStrip()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
@@ -563,7 +563,7 @@ TYvoid RenderRayTraceCPU::ThreadStrip()
 
 TYvoid RenderRayTraceCPU::Init()
 {
-	Layout layout = engine->GetWindow()->GetLayout();
+	Layout layout = window->GetLayout();
 
 	TYint width = layout.width;
 	TYint height = layout.height;
@@ -573,7 +573,7 @@ TYvoid RenderRayTraceCPU::Init()
 
 	traceData.Direction = TYvector3(width * height, TYvec(0));
 
-	camera = new Camera(engine->GetWindow()->GetInput(), true);
+	camera = new Camera(TYnull, true);
 
 	pixelCount = width * height;
 	GLsizei byteCount = pixelCount * sizeof(PixelColor);
@@ -623,13 +623,14 @@ TYvoid RenderRayTraceCPU::Init()
 
 RenderRayTraceCPU::RenderRayTraceCPU() : Renderer()
 {
-	SetType(RayTraceCPU);
+	SetType(RendererType::RayTraceCPU);
 
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 	ColorShader = new Shader("color.vs", "color.fs");
 
 	scene = new Scene();
+	scene->GenOctree();
 }
 
 RenderRayTraceCPU::~RenderRayTraceCPU()

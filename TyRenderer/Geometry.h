@@ -28,13 +28,22 @@ enum GeoType
 class Vertex
 {
 public:
-	Vertex(TYvec pVertex, TYvec pNormal = TYvec(0, 0, 1), TYvec2 pTexCoords = TYvec2()) :
+	Vertex(TYvec pVertex, TYvec pNormal = TYvec(), TYvec2 pTexCoords = TYvec2()) :
 		position(pVertex), normal(pNormal), texCoord(pTexCoords)
 	{ }
 
 	TYvec position;
 	TYvec normal;
 	TYvec2 texCoord;
+};
+
+class MeshHandle
+{
+public:
+	TYuint VAO = 0;
+	TYuint Texture = 0;
+
+	TYsizet indexCount = 0;
 };
 
 class Geometry
@@ -48,10 +57,27 @@ public:
 
 	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal) { return false; }
 
+	virtual TYvoid GenHandle_GL() {}
+	virtual TYmat GetMatrix() { return TYmat(1.0f); }
+
 	TYvoid SetType(GeoType pType) { type = pType; }
 	GeoType GetType() { return type; }
 
 	TYvoid AddVertex(Vertex pVertex);
+
+	template<GeoType t>
+	void GetHandle()
+	{
+		if (t == geoModel)
+		{
+			TYlog << "HI";
+		}
+	}
+
+	void ddd()
+	{
+		GetHandle<geoModel>();
+	}
 
 	PixelColorF surfaceColor = PixelColorF();
 	PixelColorF emissionColor = PixelColorF();
@@ -61,6 +87,8 @@ public:
 
 	TYvec center = TYvec(0.0f);
 	//TYvector<Vertex> vertices;
+
+	MeshHandle meshHandle;
 
 	BVH* bvh = TYnull;
 
@@ -84,6 +112,10 @@ public:
 	~Triangle();
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
+
+	TYvoid GenHandle_GL();
+
+	TYmat GetMatrix();
 
 	TYfloat radius;
 	TYfloat radiusSQR;
@@ -130,6 +162,10 @@ public:
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
 
+	TYmat GetMatrix();
+
+	TYvoid GenHandle_GL();
+
 	TYfloat radius;
 	TYfloat radiusSQR;
 
@@ -148,13 +184,21 @@ public:
 	}
 
 	Model(TYstring filePath, PixelColorF sc,
-		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
+		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF(), TYvec ce = TYvec(0.0f));
 	~Model();
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
 	TYvoid AddTriangles(TYvector<Triangle>& pTriangles);
 
+	TYmat GetMatrix();
+
+	TYvoid GenOctree();
+	TYvoid GenHandle_GL();
+
 	TYvector<Triangle> triangles;
+
+	TYvectorUI Indices;
+	TYvector<Vertex> Vertices;
 
 	TYfloat radius;
 	TYfloat radiusSQR;

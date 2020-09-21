@@ -34,3 +34,8 @@ class Input
 };
 
 typedef Input* InputPtr;
+
+namespace TY
+{
+	inline InputPtr in = TYnull;
+}
