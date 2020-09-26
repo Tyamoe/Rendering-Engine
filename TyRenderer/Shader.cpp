@@ -125,7 +125,7 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 		{
 			GLsizei written;
 			TYint size;
-			GLenum type;
+			GLenum type = GL_FLOAT;
 			
 			glGetActiveUniform(Program, i, max_length, &written, &size, &type, pname);
 
@@ -136,11 +136,19 @@ Shader::Shader(TYstring vertexPath, TYstring fragmentPath)
 			if (size > 1)
 			{
 				pname1[written - 3] = '\0';
+				type += 1;
 			}
 
 			TYint loc = glGetUniformLocation(Program, pname1);
 
-			Uniforms.insert(std::pair<TYchar*, TYint>(pname1, loc));
+			Uniforms.insert({ pname1, loc });
+
+			UniformSetter setter;
+			setter.loc = loc;
+			setter.type = type;
+			tmpUniforms.insert({ pname1, setter });
+
+			UniformType.insert({ loc, type });
 		}
 
 		delete[] pname;
@@ -337,4 +345,169 @@ void Shader::setMat3(TYint uniformLoc, const TYmat3 &mat)
 void Shader::setMat4(TYint uniformLoc, const TYmat &mat)
 {
 	glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
+
+typedef TYvoid (*GenericSetter)(TYint);
+
+TYvoid setBool(TYint uniformLoc, TYbool value)
+{
+	glUniform1i(uniformLoc, (TYint)value);
+}
+
+TYvoid setInt(TYint uniformLoc, TYint value)
+{
+	glUniform1i(uniformLoc, value);
+}
+
+TYvoid setFloat(TYint uniformLoc, TYfloat value)
+{
+	glUniform1f(uniformLoc, value);
+}
+
+TYvoid set3FloatArray(TYint uniformLoc, const TYfloat* value, TYint count)
+{
+	glUniform3fv(uniformLoc, count, &value[0]);
+}
+TYvoid set4FloatArray(TYint uniformLoc, const TYfloat* value, TYint count)
+{
+	glUniform4fv(uniformLoc, count, &value[0]);
+}
+
+TYvoid setIntArray(TYint uniformLoc, TYvectorI& value, TYint count)
+{
+	glUniform1iv(uniformLoc, count, &value[0]);
+}
+
+TYvoid set1FloatArray(TYint uniformLoc, TYvectorF& value, TYint count)
+{
+	glUniform1fv(uniformLoc, count, &value[0]);
+}
+TYvoid set2FloatArray(TYint uniformLoc, TYvector<TYvec2>& value, TYint count)
+{
+	glUniform2fv(uniformLoc, count, &value[0].x);
+}
+TYvoid set3FloatArray(TYint uniformLoc, TYvector3& value, TYint count)
+{
+	glUniform3fv(uniformLoc, count, &value[0].x);
+}
+TYvoid set4FloatArray(TYint uniformLoc, TYvector<TYvec4>& value, TYint count)
+{
+	glUniform4fv(uniformLoc, count, &value[0].x);
+}
+
+TYvoid setVec2(TYint uniformLoc, TYvec2 value)
+{
+	glUniform2fv(uniformLoc, 1, &value[0]);
+}
+
+TYvoid setVec3(TYint uniformLoc, TYvec value)
+{
+	glUniform3fv(uniformLoc, 1, &value[0]);
+}
+
+TYvoid setVec4(TYint uniformLoc, TYvec4 value)
+{
+	glUniform4fv(uniformLoc, 1, &value[0]);
+}
+
+TYvoid setMat3(TYint uniformLoc, TYmat3 mat)
+{
+	glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
+}
+
+TYvoid setMat4(TYint uniformLoc, TYmat mat)
+{
+	glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
+}
+
+TYumap<TYint, GenericSetter> TypeFuncs =
+{
+	{GL_BOOL, (GenericSetter)setBool},
+	{GL_INT, (GenericSetter)setInt},
+	{GL_FLOAT, (GenericSetter)setFloat},
+
+	{GL_FLOAT_VEC2, (GenericSetter)setVec2},
+	{GL_FLOAT_VEC3, (GenericSetter)setVec3},
+	{GL_FLOAT_VEC4, (GenericSetter)setVec4},
+
+	{GL_FLOAT_MAT3, (GenericSetter)setMat3},
+	{GL_FLOAT_MAT4, (GenericSetter)setMat4},
+
+	{GL_INT + 1, (GenericSetter)setIntArray},
+	{GL_FLOAT + 1, (GenericSetter)set1FloatArray},
+
+	{GL_SAMPLER_1D, (GenericSetter)setInt},
+	{GL_SAMPLER_2D, (GenericSetter)setInt},
+	{GL_SAMPLER_3D, (GenericSetter)setInt},
+	{GL_SAMPLER_CUBE, (GenericSetter)setInt},
+	{GL_SAMPLER_1D_SHADOW, (GenericSetter)setInt},
+	{GL_SAMPLER_2D_SHADOW, (GenericSetter)setInt},
+};
+
+typedef TYvoid(*IntSetter)(TYint, TYint);
+typedef TYvoid(*BoolSetter)(TYint, TYbool);
+typedef TYvoid(*FloatSetter)(TYint, TYfloat);
+
+typedef TYvoid(*Vec2Setter)(TYint, TYvec2);
+typedef TYvoid(*Vec3Setter)(TYint, TYvec);
+typedef TYvoid(*Vec4Setter)(TYint, TYvec4);
+
+typedef TYvoid(*Mat3Setter)(TYint, TYmat3);
+typedef TYvoid(*Mat4Setter)(TYint, TYmat);
+
+typedef TYvoid(*IntArrSetter)(TYint, TYvectorI&, TYint);
+typedef TYvoid(*FloatArrSetter)(TYint, TYvectorF&, TYint);
+
+TYvoid UniformSetter::operator()(TYint value)
+{
+	((IntSetter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYbool value)
+{
+	((BoolSetter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYfloat value)
+{
+	((FloatSetter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYvec2 value)
+{
+	((Vec2Setter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYvec value)
+{
+	((Vec3Setter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYvec4 value)
+{
+	((Vec4Setter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYmat3 value)
+{
+	((Mat3Setter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYmat value)
+{
+	((Mat4Setter)TypeFuncs[type])(loc, value);
+}
+
+TYvoid UniformSetter::operator()(TYvectorI& value, TYint count)
+{
+	((IntArrSetter)TypeFuncs[type])(loc, value, count);
+}
+
+TYvoid UniformSetter::operator()(TYvectorF& value, TYint count)
+{
+	((FloatArrSetter)TypeFuncs[type])(loc, value, count);
 }

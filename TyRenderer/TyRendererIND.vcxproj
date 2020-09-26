@@ -280,8 +280,8 @@
     <TargetName>TyRenderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\glew-2.2.0\include;$(SolutionDir)lib\glfw-3.3.2.bin.WIN64\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\glew-2.2.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.2.bin.WIN64\lib-vc2019;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\assimp-3.3.1\include;$(SolutionDir)lib\glew-2.2.0\include;$(SolutionDir)lib\glfw-3.3.2.bin.WIN64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\assimp-3.3.1\lib\x64;$(SolutionDir)lib\glew-2.2.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.2.bin.WIN64\lib-vc2019;$(LibraryPath)</LibraryPath>
     <TargetName>TyRenderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -337,7 +337,7 @@ copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
       <DisableSpecificWarnings>26495;6387;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3dll.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;assimp.lib;glfw3dll.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -345,7 +345,8 @@ copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\glew-2.2.0\bin\Release\x64\glew32.dll" "$(TargetDir)glew32.dll" /Y
 copy "$(SolutionDir)lib\glfw-3.2.2.bin.WIN64\lib-vc2019\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
-copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y</Command>
+copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y
+copy "$(SolutionDir)lib\assimp-3.3.1\bin\x64\assimp-vc142-mtd.dll" "$(TargetDir)assimp-vc142-mtd.dll" /Y</Command>
     </PostBuildEvent>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>

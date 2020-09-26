@@ -79,7 +79,18 @@ TYvoid RenderDeferred::LightPass()
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	/*
+	PhongShader->tmpUniforms["positionTexture"](0); //////////////////////
+	PhongShader->tmpUniforms["normalTexture"](1);
+	PhongShader->tmpUniforms["colorTexture"](2);
 
+	PhongShader->tmpUniforms["num_active_lights"]((TYint)Lights.size());
+	PhongShader->tmpUniforms["viewPos"](camera->position);
+	PhongShader->tmpUniforms["ambient"]({ 0.1f, 0.1f, 0.1f });
+	PhongShader->tmpUniforms["fog"]({ 0.6f, 0.6f, 0.6f });
+	PhongShader->tmpUniforms["ZNear"](0.1f);
+	PhongShader->tmpUniforms["ZFar"](1000.0f);
+	*/
 	PhongShader->setInt(PhongShader->Uniforms["positionTexture"], 0);
 	PhongShader->setInt(PhongShader->Uniforms["normalTexture"], 1);
 	PhongShader->setInt(PhongShader->Uniforms["colorTexture"], 2);
@@ -90,7 +101,7 @@ TYvoid RenderDeferred::LightPass()
 	PhongShader->setVec3(PhongShader->Uniforms["fog"], { 0.6f, 0.6f, 0.6f });
 	PhongShader->setFloat(PhongShader->Uniforms["ZNear"], 0.1f);
 	PhongShader->setFloat(PhongShader->Uniforms["ZFar"], 1000.0f);
-
+	
 	for (TYsizet i = 0; i < Lights.size(); i++)
 	{
 		TYstring lname = "lights[" + std::to_string(i) + "]";

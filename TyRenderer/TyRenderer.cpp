@@ -62,6 +62,8 @@ TYvoid TyRenderer::PostRender()
 
 	ImGui::Begin("Renderer");
 
+	ImGui::Text("FPS: %f", 1.0f / currDT);
+
 	if (ImGui::Button("Base"))
 	{
 

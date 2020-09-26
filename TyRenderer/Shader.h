@@ -17,23 +17,42 @@
 
 struct CharPointerCMP
 {
-	TYbool operator()(TYchar const *a, TYchar const *b) const
+	TYbool operator()(TYchar const* a, TYchar const* b) const
 	{
 		return std::strcmp(a, b) < 0;
 	}
 };
 
-// Handles all things shader. Creates shader programs and set uniforms.
+struct UniformSetter
+{
+	TYvoid operator()(TYint value);
+	TYvoid operator()(TYbool value);
+	TYvoid operator()(TYfloat value);
+
+	TYvoid operator()(TYvec2 value);
+	TYvoid operator()(TYvec value);
+	TYvoid operator()(TYvec4 value);
+
+	TYvoid operator()(TYmat3 value);
+	TYvoid operator()(TYmat value);
+
+	TYvoid operator()(TYvectorI& value, TYint count);
+	TYvoid operator()(TYvectorF& value, TYint count);
+
+	TYint loc;
+	TYint type;
+};
+
 typedef class Shader
 {
 public:
-	// The program.
 	TYuint Program;
 
 	TYmap<TYchar*, TYint, CharPointerCMP> Uniforms;
+	TYmap<TYchar*, UniformSetter, CharPointerCMP> tmpUniforms;
+	TYmap<TYint, TYint> UniformType;
 	//std::map<std::string, TYint> Uniforms;
 
-	// Shader constructor for simple frag/vertex shader program.
 	Shader(TYstring computePath);
 	Shader(TYstring vertexPath, TYstring fragmentPath);
 	Shader()
@@ -41,12 +60,13 @@ public:
 		Program = 0;
 	}
 	~Shader();
-	// Tell OpenGL to use 'this' program.
+
+	friend struct UniformSetter;
+
 	void Use();
 
 	void SetupUniforms();
 
-	// Functions used to set shader uniforms. (name = name of uniform).
 	void setBool(TYint uniformLoc, TYbool value);
 	void setInt(TYint uniformLoc, TYint value);
 	void setFloat(TYint uniformLoc, TYfloat value);
@@ -73,36 +93,34 @@ public:
 
 	TYvoid DrawQuad(TYuint texture, TYbool invert = false)
 	{
-		static unsigned int quadVAO = 0;
-		static unsigned int quadVBO;
-		static unsigned int quadVAO1 = 0;
-		static unsigned int quadVBO1;
+		static TYuint quadVAO = 0;
+		static TYuint quadVBO;
+		static TYuint quadVAO1 = 0;
+		static TYuint quadVBO1;
 		if (quadVAO == 0)
 		{
-			float quadVertices[] =
+			TYfloat quadVertices[] =
 			{
-				// positions        // texture Coords
 				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
 				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 				 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 			};
-			float quadVertices2[] =
+			TYfloat quadVertices2[] =
 			{
-				// positions        // texture Coords
 				-1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
 				-1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
 				 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
 				 1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
 			};
-			// setup plane VAO
+
 			glGenVertexArrays(1, &quadVAO);
 			glGenBuffers(1, &quadVBO);
 			glBindVertexArray(quadVAO);
 			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 
@@ -114,8 +132,8 @@ public:
 			glBindVertexArray(quadVAO1);
 			glBindBuffer(GL_ARRAY_BUFFER, quadVBO1);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices2), &quadVertices2, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 
