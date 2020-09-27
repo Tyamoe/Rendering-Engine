@@ -40,11 +40,11 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Frame);
-	glUniform1i(RayTraceShader->Uniforms["frameTex"], 0);
+	//glUniform1i(RayTraceShader->Uniforms["frameTex"], 0);
+	RayTraceShader->Uniforms["frame"](0);
 	glBindImageTexture(0, Frame, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
-	TYint loc = glGetUniformLocation(RayTraceShader->Program, "DevI");
-
+	/*TYint loc = glGetUniformLocation(RayTraceShader->Program, "DevI");
 	RayTraceShader->setInt(loc, Global::DevComputeShaderI);
 
 	loc = glGetUniformLocation(RayTraceShader->Program, "DevB");
@@ -54,18 +54,23 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 	RayTraceShader->setFloat(loc, Global::DevComputeShaderF);
 
 	loc = glGetUniformLocation(RayTraceShader->Program, "DevV");
-	RayTraceShader->setVec3(loc, Global::DevComputeShaderV);
+	RayTraceShader->setVec3(loc, Global::DevComputeShaderV);*/
 
-	RayTraceShader->setInt(RayTraceShader->Uniforms["numLights"], lightCount);
-	RayTraceShader->setInt(RayTraceShader->Uniforms["numSpheres"], sphereCount);
+	RayTraceShader->Uniforms["DevI"](Global::DevComputeShaderI);
+	RayTraceShader->Uniforms["DevB"](Global::DevComputeShaderB);
+	RayTraceShader->Uniforms["DevF"](Global::DevComputeShaderF);
+	RayTraceShader->Uniforms["DevV"](Global::DevComputeShaderV);
 
-	RayTraceShader->setFloat(RayTraceShader->Uniforms["FOV"], Global::FOV);
-	RayTraceShader->setFloat(RayTraceShader->Uniforms["initSeed"], GetRand(0.0f, 1.0f));
+	RayTraceShader->Uniforms["numLights"](lightCount);
+	RayTraceShader->Uniforms["numSpheres"](sphereCount);
 
-	RayTraceShader->setVec3(RayTraceShader->Uniforms["voidColor"], TYvec(0.35f, 0.6f, 0.392f));
-	RayTraceShader->setVec3(RayTraceShader->Uniforms["CamPos"], camera->position);
+	RayTraceShader->Uniforms["FOV"](Global::FOV);
+	RayTraceShader->Uniforms["initSeed"](GetRand(0.0f, 1.0f));
 
-	RayTraceShader->setMat4(RayTraceShader->Uniforms["view"], camera->view);
+	RayTraceShader->Uniforms["voidColor"](TYvec(0.35f, 0.6f, 0.392f));
+	RayTraceShader->Uniforms["CamPos"](camera->position);
+
+	RayTraceShader->Uniforms["view"](camera->view);
 
 	glDispatchCompute(width, height, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

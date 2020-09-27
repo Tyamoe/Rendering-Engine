@@ -60,10 +60,10 @@ void RenderDeferred::Draw(Geometry* geometry)
 	modelInv = glm::transpose(modelInv);
 	TYmat MVP = GenericDraw::projection * camera->view * modelMatrix;
 
-	BufferShader->setMat4(BufferShader->Uniforms["MVP"], MVP);
-	BufferShader->setMat4(BufferShader->Uniforms["Model"], modelMatrix);
-	BufferShader->setMat4(BufferShader->Uniforms["InvTrModel"], modelInv);
-	BufferShader->setVec4(BufferShader->Uniforms["meshColor"], TYvec4(0.75f, 0.76f, 0.75f, 1.0f));
+	BufferShader->Uniforms["meshColor"](TYvec4(0.75f, 0.76f, 0.75f, 1.0f));
+	BufferShader->Uniforms["InvTrModel"](modelInv);
+	BufferShader->Uniforms["MVP"](MVP);
+	BufferShader->Uniforms["Model"](modelMatrix);
 
 	glBindVertexArray(geometry->meshHandle.VAO);
 	glDrawElements(GL_TRIANGLES, (TYint)geometry->meshHandle.indexCount, GL_UNSIGNED_INT, 0);
@@ -79,47 +79,36 @@ TYvoid RenderDeferred::LightPass()
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-	/*
-	PhongShader->tmpUniforms["positionTexture"](0); //////////////////////
-	PhongShader->tmpUniforms["normalTexture"](1);
-	PhongShader->tmpUniforms["colorTexture"](2);
 
-	PhongShader->tmpUniforms["num_active_lights"]((TYint)Lights.size());
-	PhongShader->tmpUniforms["viewPos"](camera->position);
-	PhongShader->tmpUniforms["ambient"]({ 0.1f, 0.1f, 0.1f });
-	PhongShader->tmpUniforms["fog"]({ 0.6f, 0.6f, 0.6f });
-	PhongShader->tmpUniforms["ZNear"](0.1f);
-	PhongShader->tmpUniforms["ZFar"](1000.0f);
-	*/
-	PhongShader->setInt(PhongShader->Uniforms["positionTexture"], 0);
-	PhongShader->setInt(PhongShader->Uniforms["normalTexture"], 1);
-	PhongShader->setInt(PhongShader->Uniforms["colorTexture"], 2);
+	PhongShader->Uniforms["positionTexture"](0);
+	PhongShader->Uniforms["normalTexture"](1);
+	PhongShader->Uniforms["colorTexture"](2);
 
-	PhongShader->setInt(PhongShader->Uniforms["num_active_lights"], (TYint)Lights.size());
-	PhongShader->setVec3(PhongShader->Uniforms["viewPos"], camera->position);
-	PhongShader->setVec3(PhongShader->Uniforms["ambient"], { 0.1f, 0.1f, 0.1f });
-	PhongShader->setVec3(PhongShader->Uniforms["fog"], { 0.6f, 0.6f, 0.6f });
-	PhongShader->setFloat(PhongShader->Uniforms["ZNear"], 0.1f);
-	PhongShader->setFloat(PhongShader->Uniforms["ZFar"], 1000.0f);
+	PhongShader->Uniforms["num_active_lights"]((TYint)Lights.size());
+	PhongShader->Uniforms["viewPos"](camera->position);
+	PhongShader->Uniforms["ambient"]({ 0.1f, 0.1f, 0.1f });
+	PhongShader->Uniforms["fog"]({ 0.6f, 0.6f, 0.6f });
+	PhongShader->Uniforms["ZNear"](0.1f);
+	PhongShader->Uniforms["ZFar"](1000.0f);
 	
 	for (TYsizet i = 0; i < Lights.size(); i++)
 	{
 		TYstring lname = "lights[" + std::to_string(i) + "]";
-		PhongShader->setInt(PhongShader->Uniforms  [(TYchar*)(lname + ".type").c_str()], Lights[i].type);
-		PhongShader->setVec3(PhongShader->Uniforms [(TYchar*)(lname + ".ambi").c_str()], Lights[i].ambi);
-		PhongShader->setVec3(PhongShader->Uniforms [(TYchar*)(lname + ".diff").c_str()], Lights[i].diff);
-		PhongShader->setVec3(PhongShader->Uniforms [(TYchar*)(lname + ".spec").c_str()], Lights[i].spec);
+		PhongShader->Uniforms[(TYchar*)(lname + ".type").c_str()](Lights[i].type);
+		PhongShader->Uniforms[(TYchar*)(lname + ".ambi").c_str()](Lights[i].ambi);
+		PhongShader->Uniforms[(TYchar*)(lname + ".diff").c_str()](Lights[i].diff);
+		PhongShader->Uniforms[(TYchar*)(lname + ".spec").c_str()](Lights[i].spec);
 
-		PhongShader->setVec3(PhongShader->Uniforms [(TYchar*)(lname + ".pos").c_str() ], Lights[i].pos);
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".c0").c_str()  ], Lights[i].c0);
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".c1").c_str()  ], Lights[i].c1);
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".c2").c_str()  ], Lights[i].c2);
+		PhongShader->Uniforms[(TYchar*)(lname + ".pos").c_str()](Lights[i].pos);
+		PhongShader->Uniforms[(TYchar*)(lname + ".c0").c_str()](Lights[i].c0);
+		PhongShader->Uniforms[(TYchar*)(lname + ".c1").c_str()](Lights[i].c1);
+		PhongShader->Uniforms[(TYchar*)(lname + ".c2").c_str()](Lights[i].c2);
 
-		PhongShader->setVec3(PhongShader->Uniforms [(TYchar*)(lname + ".dir").c_str() ], Lights[i].dir);
+		PhongShader->Uniforms [(TYchar*)(lname + ".dir").c_str()](Lights[i].dir);
 
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".innerTheta").c_str()], Lights[i].innerTheta);
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".outerTheta").c_str()], Lights[i].outerTheta);
-		PhongShader->setFloat(PhongShader->Uniforms[(TYchar*)(lname + ".spotIntensity").c_str()], Lights[i].spotIntensity);
+		PhongShader->Uniforms[(TYchar*)(lname + ".innerTheta").c_str()](Lights[i].innerTheta);
+		PhongShader->Uniforms[(TYchar*)(lname + ".outerTheta").c_str()](Lights[i].outerTheta);
+		PhongShader->Uniforms[(TYchar*)(lname + ".spotIntensity").c_str()](Lights[i].spotIntensity);
 	}
 
 	glDisable(GL_DEPTH_TEST);

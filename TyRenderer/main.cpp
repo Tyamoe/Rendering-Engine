@@ -36,37 +36,37 @@ int loadasset(const char* path)
 
 int main()
 {
-	aiLogStream stream;
+	//aiLogStream stream;
 
 	/* get a handle to the predefined STDOUT log stream and attach
 	   it to the logging system. It remains active for all further
 	   calls to aiImportFile(Ex) and aiApplyPostProcessing. */
-	stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
-	aiAttachLogStream(&stream);
+	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
+	//aiAttachLogStream(&stream);
 
 	/* ... same procedure, but this stream now writes the
 	   log messages to assimp_log.txt */
-	stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
-	aiAttachLogStream(&stream);
+	//stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
+	//aiAttachLogStream(&stream);
 
 	/* the model name can be specified on the command line. If none
 	  is specified, we try to locate one of the more expressive test
 	  models from the repository (/models-nonbsd may be missing in
 	  some distributions so we need a fallback from /models!). */
-	if (0 != loadasset("models-nonbsd/FBX/2013_BINARY/multiple_animations_test.fbx")) 
+	/*if (0 != loadasset("models-nonbsd/FBX/2013_BINARY/multiple_animations_test.fbx")) 
 	{
 
-	}
+	}*/
 
 	/* cleanup - calling 'aiReleaseImport' is important, as the library
 	   keeps internal resources until the scene is freed again. Not
 	   doing so can cause severe resource leaking. */
-	aiReleaseImport(scene);
+	//aiReleaseImport(scene);
 
 	/* We added a log stream to the library, it's our job to disable it
 	   again. This will definitely release the last resources allocated
 	   by Assimp.*/
-	aiDetachAllLogStreams();
+	//aiDetachAllLogStreams();
 
 	/*Window window("Tray Racer", Settings(), Layout(800, 600, 400, 220)); // E
 

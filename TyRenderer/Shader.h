@@ -39,8 +39,8 @@ struct UniformSetter
 	TYvoid operator()(TYvectorI& value, TYint count);
 	TYvoid operator()(TYvectorF& value, TYint count);
 
-	TYint loc;
-	TYint type;
+	TYint loc = -1;
+	TYint type = -1;
 };
 
 typedef class Shader
@@ -48,10 +48,7 @@ typedef class Shader
 public:
 	TYuint Program;
 
-	TYmap<TYchar*, TYint, CharPointerCMP> Uniforms;
-	TYmap<TYchar*, UniformSetter, CharPointerCMP> tmpUniforms;
-	TYmap<TYint, TYint> UniformType;
-	//std::map<std::string, TYint> Uniforms;
+	TYmap<TYchar*, UniformSetter, CharPointerCMP> Uniforms;
 
 	Shader(TYstring computePath);
 	Shader(TYstring vertexPath, TYstring fragmentPath);
@@ -63,11 +60,11 @@ public:
 
 	friend struct UniformSetter;
 
-	void Use();
+	TYvoid Use();
 
-	void SetupUniforms();
+	TYvoid SetupUniforms();
 
-	void setBool(TYint uniformLoc, TYbool value);
+	/*void setBool(TYint uniformLoc, TYbool value);
 	void setInt(TYint uniformLoc, TYint value);
 	void setFloat(TYint uniformLoc, TYfloat value);
 
@@ -89,7 +86,7 @@ public:
 	void setVec4(TYint uniformLoc, TYfloat x, TYfloat y, TYfloat z, TYfloat w);
 	
 	void setMat3(TYint uniformLoc, const TYmat3 &mat);
-	void setMat4(TYint uniformLoc, const TYmat &mat);
+	void setMat4(TYint uniformLoc, const TYmat &mat);*/
 
 	TYvoid DrawQuad(TYuint texture, TYbool invert = false)
 	{
@@ -141,7 +138,7 @@ public:
 			glBindVertexArray(0);
 		}
 
-		setInt(Uniforms["texture1"], 0);
+		Uniforms["texture1"](0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 

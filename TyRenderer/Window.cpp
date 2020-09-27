@@ -37,7 +37,8 @@ TYvoid Window::cCreateWindow()
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_TRUE);
+		glfwWindowHint(GLFW_CONTEXT_NO_ERROR, GLFW_FALSE);
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 		glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, GLFW_RELEASE_BEHAVIOR_FLUSH);
 	}
 
@@ -110,8 +111,9 @@ TYvoid Window::cCreateWindow()
 	glFrontFace(GL_CCW);
 
 	glDebugMessageCallback(ExErrorCB, NULL);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	glEnable(GL_DEBUG_OUTPUT);
+	//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
 
 	glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 
@@ -121,8 +123,9 @@ TYvoid Window::cCreateWindow()
 	{
 		glfwMaximizeWindow(window);
 	}
-	if(GLenum e = glGetError() != 0)
-		TYlog << "5-00 " << e << TYlogbreak;
+	GLenum e;
+	if((e = glGetError()) != GL_NO_ERROR)
+		TYlog << "5-00 " << glewGetErrorString(e) << TYlogbreak;
 }
 
 Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLayout), settings(pSettings)

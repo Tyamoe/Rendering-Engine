@@ -74,10 +74,10 @@ TYvoid GenericDraw::DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width)
 	model = glm::translate(model, pos);
 	model = glm::scale(model, size * 0.5f);
 
-	ColorShader->setMat4(ColorShader->Uniforms["Model"], model);
-	ColorShader->setMat4(ColorShader->Uniforms["View"], view);
-	ColorShader->setMat4(ColorShader->Uniforms["Proj"], projection);
-	ColorShader->setVec3(ColorShader->Uniforms["oColor"], color);
+	ColorShader->Uniforms["Model"](model);
+	ColorShader->Uniforms["View"](view);
+	ColorShader->Uniforms["Proj"](projection);
+	ColorShader->Uniforms["oColor"](color);
 
 	glBindVertexArray(wireVao);
 	glLineWidth(width);
@@ -111,10 +111,10 @@ TYvoid GenericDraw::DrawSphere(TYvec pos, TYfloat radius, TYvec color)
 	model = glm::translate(model, pos);
 	model = glm::scale(model, TYvec(radius));
 
-	ColorShader->setMat4(ColorShader->Uniforms["Model"], model);
-	ColorShader->setMat4(ColorShader->Uniforms["View"], view);
-	ColorShader->setMat4(ColorShader->Uniforms["Proj"], projection);
-	ColorShader->setVec3(ColorShader->Uniforms["oColor"], color);
+	ColorShader->Uniforms["Model"](model);
+	ColorShader->Uniforms["View"](view);
+	ColorShader->Uniforms["Proj"](projection);
+	ColorShader->Uniforms["oColor"](color);
 
 	glBindVertexArray(wireVao);
 
