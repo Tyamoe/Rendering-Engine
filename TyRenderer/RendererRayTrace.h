@@ -15,13 +15,9 @@
 
 #include "Renderer.h"
 #include "Shader.h"
-#include "Mesh.h"
 
-#include "Camera.h"
 #include "Geometry.h"
 #include "RenderingUtils.h"
-
-typedef class Camera* CameraPtr;
 
 class RenderRayTrace : public Renderer
 {
@@ -34,8 +30,6 @@ class RenderRayTrace : public Renderer
 		TYvoid PreRender();
 		TYvoid Render(TYfloat dt);
 		TYvoid PostRender();
-
-		TYuint AddMesh(Mesh& mesh);
 
 		TYvoid RecompileRaytracer()
 		{

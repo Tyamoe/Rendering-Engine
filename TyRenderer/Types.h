@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <set>
 #include <stack>
+#include <queue>
 #include <unordered_set>
 #include <tuple>
 #include <limits>
@@ -18,7 +19,7 @@
 
 #define TYmaxf std::numeric_limits<float>::max()
 #define TYpi 3.141592653589793f
-#define TYinf 1e8 
+#define TYinf 1e8f
 #define TYepsilon glm::epsilon<float>() 
 
 #define TYlog std::cout
@@ -27,6 +28,7 @@
 #define TYnull nullptr
 
 #define TYstack std::stack
+#define TYqueue std::queue
 #define TYvector std::vector
 #define TYmap std::map
 #define TYset std::set
@@ -51,6 +53,7 @@ typedef std::string TYstring;
 typedef bool TYbool;
 typedef void TYvoid;
 typedef long long int TYlint;
+typedef long long int TYlong;
 typedef unsigned long long int TYulint;
 
 typedef std::vector<TYint> TYvectorI;
@@ -60,9 +63,18 @@ typedef std::vector<TYbool> TYvectorB;
 typedef std::vector<TYstring> TYvectorS;
 typedef std::vector<glm::vec3> TYvector3;
 
-typedef glm::vec3 TYvec;
-typedef glm::mat4 TYmat;
 typedef glm::vec2 TYvec2;
+typedef glm::vec3 TYvec;
+typedef glm::vec3 TYvec3;
 typedef glm::vec4 TYvec4;
 typedef glm::mat3 TYmat3;
-typedef glm::tquat<glm::highp_float> TYquaternion;
+typedef glm::mat4 TYmat;
+typedef glm::mat4 TYmat4;
+
+typedef glm::quat TYquaternion;
+
+typedef glm::ivec2 TYivec2;
+typedef glm::ivec3 TYivec3;
+typedef glm::ivec4 TYivec4;
+
+typedef glm::uvec4 TYuvec4;

@@ -8,10 +8,12 @@
 #include "Geometry.h"
 #include "BVH.h"
 
+class Entity;
+
 class Scene
 {
 public:
-	Scene();
+	Scene(TYint i = 0);
 	~Scene();
 
 	TYvoid Init();
@@ -21,12 +23,16 @@ public:
 
 	CameraPtr camera;
 
+	TYvector<Entity*> entityList;
+
 	TYvector<Geometry*> geometry;
 	TYvector<BVH*> bvh;
 
 private:
 	TYvoid AddGeometry(TYpair<Geometry*, BVH*> geo);
 	TYvoid AddGeometry(Geometry* geo);
+
+	Entity* CreateEntity(TYstring name);
 };
 
 typedef Scene* ScenePtr;

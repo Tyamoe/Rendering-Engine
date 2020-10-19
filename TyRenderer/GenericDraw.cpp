@@ -122,3 +122,50 @@ TYvoid GenericDraw::DrawSphere(TYvec pos, TYfloat radius, TYvec color)
 
 	glBindVertexArray(0);
 }
+
+TYvoid GenericDraw::DrawLine(TYvec s, TYvec e, TYvec color, TYfloat width)
+{
+	TYuint quadVAO = 0;
+	TYuint quadVBO;
+	if (quadVAO == 0)
+	{
+		TYfloat quadVertices[] =
+		{
+			s.x,  s.y, s.z, 0.0f, 1.0f,
+			e.x,  e.y, e.z, 0.0f, 0.0f,
+		};
+
+		glDeleteBuffers(1, &quadVBO);
+		glDeleteBuffers(1, &quadVAO);
+
+		glGenVertexArrays(1, &quadVAO);
+		glBindVertexArray(quadVAO);
+
+		glGenBuffers(1, &quadVBO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (TYvoid*)0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (TYvoid*)(3 * sizeof(TYfloat)));
+	}
+
+	ColorShader->Use();
+
+	TYmat model(1.0f);
+
+	ColorShader->Uniforms["Model"](model);
+	ColorShader->Uniforms["View"](view);
+	ColorShader->Uniforms["Proj"](projection);
+	ColorShader->Uniforms["oColor"](color);
+
+	glBindVertexArray(quadVAO);
+	glLineWidth(width);
+
+	glDrawArrays(GL_LINES, 0, 2);
+
+	glBindVertexArray(0);
+}

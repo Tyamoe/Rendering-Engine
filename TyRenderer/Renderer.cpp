@@ -71,8 +71,6 @@ TYvoid Renderer::Init()
 Renderer::Renderer()
 {
 	SetType(RendererType::Base);
-
-	scene = new Scene();
 }
 
 Renderer::~Renderer()

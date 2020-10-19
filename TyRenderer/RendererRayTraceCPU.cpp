@@ -23,6 +23,10 @@
 
 #include "RendererRayTraceCPU.h"
 
+#include "Entity.h"
+#include "Mesh.h"
+#include "Material.h"
+
 TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPUPtr rt, TYint index);
 
 struct ThreadData
@@ -42,7 +46,7 @@ struct ThreadData
 
 #define MAX_RAY_DEPTH 2 
 
-TYvector< atomwrapper<TYint> > rayCount;
+TYvector<TyAtomic<TYint>> rayCount;
 
 TYvoid RenderRayTraceCPU::UpdateData()
 {
@@ -58,8 +62,10 @@ TYvoid RenderRayTraceCPU::UpdateData()
 	traceData.invWidth = 1.0f / traceData.width;
 	traceData.invHeight = 1.0f / traceData.height;
 
-	// Ray origin considering camera
-	traceData.Origin = camera->view * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+	traceData.Origin = camera->position;/// camera->view* TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	camera->dim.y = glm::tan(fov / 2.0f);
+	camera->dim.x = camera->dim.y * traceData.aspect;
 
 	/*int i = 0;
 	for (TYint y = height - 1; y >= 0; y--)
@@ -89,22 +95,15 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	TYint hitIndex = -1;
 
 	// Intersect ray with scene
-	for (TYuint i = 0; i < scene->geometry.size(); i++)
+	//for (TYuint i = 0; i < scene->geometry.size(); i++)
+	for (TYuint i = 0; i < scene->entityList.size(); i++)
 	{
 		if (i == ignore) continue;
 		TYvec norm = TYvec(0.0f);
 		TYfloat t0 = TYinf, t1 = TYinf;
-		/*if (scene->geometry[i]->bvh != TYnull)
-		{
-			TYbool inter = scene->geometry[i]->bvh->head->Intersect(rayOrigin, rayDir);
 
-			if (inter)
-			{
-				Global::DevCounter++;
-				return PixelColorF(1.0f);
-			}
-		}*/
-		if (scene->geometry[i]->Intersect(rayOrigin, rayDir, t0, t1, norm))
+		//if (scene->geometry[i]->Intersect(rayOrigin, rayDir, t0, t1, norm))
+		if (Geometry::Intersect(scene->entityList[i], rayOrigin, rayDir, t0, t1, norm))
 		{
 			if (t0 < 0)
 			{
@@ -113,8 +112,10 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 			if (t0 < tnear) 
 			{
+				Mesh* mesh = scene->entityList[i]->Get<MeshPtr>();
+
 				tnear = t0;
-				hit = scene->geometry[i];
+				hit = mesh->GetGeometry(-1);// scene->geometry[i];
 				normal = norm;
 				hitIndex = i;
 			}
@@ -232,12 +233,17 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	// Shadow Step
 	PixelColorF trans = PixelColorF(1.0f);
 
-	for (TYuint j = 1; j < scene->geometry.size(); j++)
+	//for (TYuint j = 1; j < scene->geometry.size(); j++)
+	for (TYuint j = 0; j < scene->entityList.size(); j++)
 	{
 		TYfloat t0, t1;
-		if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
+		//if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
+		if (Geometry::Intersect(scene->entityList[j], phit + nhit * bias, lightDir, t0, t1, normal))
 		{
-			TYfloat t = scene->geometry[j]->transparency;
+			Mesh* mesh = scene->entityList[j]->Get<MeshPtr>();
+			Material* mat = mesh->Get<Material*>();
+
+			TYfloat t = mat->GetTransparency();// scene->geometry[j]->transparency;
 			if (t != 0.0f)
 			{
 				t = t <= 1.0f ? 1.0f : glm::clamp(1.0f - (t - 1.0f), 0.4f, 0.95f);
@@ -274,7 +280,7 @@ TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffe
 			{
 				if (rt->traceData.dirty)
 				{
-					TYfloat xx = (2.0f * ((x_ + 0.5f) * rt->traceData.invWidth) - 1.0f) * rt->traceData.aspect * rt->traceData.angle;
+					/*TYfloat xx = (2.0f * ((x_ + 0.5f) * rt->traceData.invWidth) - 1.0f) * rt->traceData.aspect * rt->traceData.angle;
 					TYfloat yy = (1.0f - 2.0f * ((y_ + 0.5f) * rt->traceData.invHeight)) * rt->traceData.angle;
 
 					// Ray direction considering camera
@@ -282,7 +288,18 @@ TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffe
 					ir = ir - rt->traceData.Origin;
 					ir = glm::normalize(ir);
 
-					rt->traceData.Direction[i] = ir;
+					rt->traceData.Direction[i] = ir;*/
+
+					/////////////////////////////////////////////
+					TYvec2 screenCoord;
+					screenCoord.x = (2.0f * x_) / rt->traceData.width - 1.0f;
+					screenCoord.y = (-2.0f * (rt->traceData.height - y_)) / rt->traceData.height + 1.0f;
+
+					TYvec dir = rt->camera->front + screenCoord.x * rt->camera->dim.x * rt->camera->right + 
+						screenCoord.y * rt->camera->dim.y * rt->camera->up;
+
+					rt->traceData.Direction[i] = glm::normalize(dir);
+					/////////////////////////////////////////////
 				}
 
 				TYint rays = 0;
@@ -407,6 +424,13 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 
 	BloomShader->Use();
 	BloomShader->DrawQuad(Frame, true);
+
+	ImGui::Begin("Details");
+
+	ImGui::Text("Camera Pos: %.3f, %.3f, %.3f", camera->position.x, camera->position.y, camera->position.z);
+	ImGui::Text("Camera Front: %.3f, %.3f, %.3f", camera->front.x, camera->front.y, camera->front.z);
+
+	ImGui::End();
 }
 
 TYvoid RenderRayTraceCPU::PostRender()
@@ -415,6 +439,20 @@ TYvoid RenderRayTraceCPU::PostRender()
 	QuadShader->DrawQuad(RenderTexture);
 
 	GenericDraw::DrawSphere(TYvec(0.0f), 2.0f, TYvec(1.0f, 0.0f, 0.0f));
+
+	if (TY::in->isMouseReleased(MouseRight))
+	{
+		for (TYuint i = 0; i < scene->geometry.size(); i++)
+		{
+			if (scene->geometry[i]->GetType() == geoModel)
+			{
+				if (((Model*)scene->geometry[i])->octree)
+				{
+					((Model*)scene->geometry[i])->octree->Traverse(((Model*)scene->geometry[i])->octree->root);
+				}
+			}
+		}
+	}
 
 	/* Draw BVH */
 	if (Global::DevBool)
@@ -457,7 +495,7 @@ TYvoid RenderRayTraceCPU::ThreadHeight()
 
 	traceData.ThreadCount = height;
 
-	rayCount = TYvector< atomwrapper<TYint> >(traceData.ThreadCount);
+	rayCount = TYvector<TyAtomic<TYint>>(traceData.ThreadCount);
 
 	tracingThreads = new std::thread[traceData.ThreadCount];
 
@@ -483,7 +521,7 @@ TYvoid RenderRayTraceCPU::ThreadWidth()
 
 	traceData.ThreadCount = width;
 
-	rayCount = TYvector< atomwrapper<TYint> >(traceData.ThreadCount);
+	rayCount = TYvector< TyAtomic<TYint> >(traceData.ThreadCount);
 
 	tracingThreads = new std::thread[traceData.ThreadCount];
 
@@ -511,7 +549,7 @@ TYvoid RenderRayTraceCPU::ThreadGrid()
 
 	traceData.ThreadCount = grid * grid;
 
-	rayCount = TYvector< atomwrapper<TYint> >(traceData.ThreadCount);
+	rayCount = TYvector< TyAtomic<TYint> >(traceData.ThreadCount);
 
 	tracingThreads = new std::thread[traceData.ThreadCount];
 
@@ -542,7 +580,7 @@ TYvoid RenderRayTraceCPU::ThreadStrip()
 
 	traceData.ThreadCount = Global::DevThreadCount; //6;
 
-	rayCount = TYvector< atomwrapper<TYint> >(traceData.ThreadCount);
+	rayCount = TYvector< TyAtomic<TYint> >(traceData.ThreadCount);
 
 	tracingThreads = new std::thread[traceData.ThreadCount];
 
@@ -629,7 +667,7 @@ RenderRayTraceCPU::RenderRayTraceCPU() : Renderer()
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 	ColorShader = new Shader("color.vs", "color.fs");
 
-	scene = new Scene();
+	scene = new Scene(1);
 	scene->GenOctree();
 }
 

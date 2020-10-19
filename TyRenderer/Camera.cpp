@@ -11,6 +11,7 @@
 #endif // TYAMOE3D
 
 #include "Camera.h"
+#include "Globals.h"
 
 static GLfloat mapToRange(GLfloat value, GLfloat ogRange1, GLfloat ogRange2, GLfloat newRange1, GLfloat newRange2)
 {
@@ -42,12 +43,21 @@ Camera::Camera()
 
 TYbool Camera::Update(TYfloat dt)
 {
-	float currSpeed = 4 * dt;
+	TYfloat currSpeed = 50.0f * dt;
 	input = TY::in;
+
+	if (input->keyboard.keyCtrl)
+	{
+		currSpeed *= 0.2f;
+	}
+	if (input->keyboard.keyShift)
+	{
+		currSpeed *= 3.0f;
+	}
 
 	if (input->isKeyDown(GLFW_KEY_W))
 	{
-		position += currSpeed * multiplier * front;
+		position += currSpeed * front;
 
 		iposition += currSpeed * front;
 
@@ -55,7 +65,7 @@ TYbool Camera::Update(TYfloat dt)
 	}
 	else if (input->isKeyDown(GLFW_KEY_S))
 	{
-		position -= currSpeed * multiplier * front;
+		position -= currSpeed * front;
 
 		iposition -= currSpeed * front;
 
@@ -63,23 +73,23 @@ TYbool Camera::Update(TYfloat dt)
 	}
 	if (input->isKeyDown(GLFW_KEY_A))
 	{
-		position -= glm::normalize(glm::cross(front, up)) * currSpeed * multiplier;
+		position -= right * currSpeed * multiplier;
 
-		iposition -= glm::normalize(glm::cross(front, up)) * currSpeed;
+		iposition -= right * currSpeed;
 
 		dirty = true;
 	}
 	else if (input->isKeyDown(GLFW_KEY_D))
 	{
-		position += glm::normalize(glm::cross(front, up)) * currSpeed * multiplier;
+		position += right * currSpeed * multiplier;
 
-		iposition += glm::normalize(glm::cross(front, up)) * currSpeed;
+		iposition += right * currSpeed;
 
 		dirty = true;
 	}
 	if (input->isKeyDown(GLFW_KEY_E))
 	{
-		position += currSpeed * multiplier * up;
+		position += currSpeed * up;
 
 		iposition += currSpeed * up;
 
@@ -87,7 +97,7 @@ TYbool Camera::Update(TYfloat dt)
 	}
 	else if (input->isKeyDown(GLFW_KEY_Q))
 	{
-		position -= currSpeed * multiplier * up;
+		position -= currSpeed * up;
 
 		iposition -= currSpeed * up;
 
@@ -97,7 +107,7 @@ TYbool Camera::Update(TYfloat dt)
 	if (input->isKeyDown(GLFW_KEY_C))
 	{
 		yaw += input->mouse.screenOffset.x * sensitivity * multiplier;
-		pitch += input->mouse.screenOffset.y * sensitivity * multiplier;
+		pitch += input->mouse.screenOffset.y * sensitivity;
 
 		iyaw += input->mouse.screenOffset.x * sensitivity;
 		ipitch += input->mouse.screenOffset.y * sensitivity;
@@ -131,8 +141,10 @@ TYbool Camera::Update(TYfloat dt)
 	temp.z = cos(glm::radians(ipitch)) * sin(glm::radians(iyaw));
 	ifront = glm::normalize(temp);
 
-	view = glm::lookAt(position, position + front, up);
+	right = glm::normalize(glm::cross(front, up));
 
+	view = glm::lookAt(position, position + front, up);
+	
 	iview = glm::lookAt(iposition, iposition + ifront, iup);
 
 	dirty = false;

@@ -13,10 +13,43 @@
 
 #endif // TYAMOE3D
 
-#include "GenericDraw.h"
-
 typedef class Triangle Triangle;
 typedef class Geometry Geometry;
+
+class Plane
+{
+public:
+	Plane() {}
+	Plane(TYfloat c, TYvec orientation, TYvec pos) : Distance(c), Center(pos), Normal(orientation)
+	{
+
+	}
+
+	TYvec Center;
+	TYvec Normal;
+	TYfloat Distance;
+
+	TYfloat RayDistance(TYvec rayOrig, TYvec rayDir) // Gives the distance along the ray (+direction) where intersection with the plane occurs
+	{
+		TYfloat dis = TYinf;
+		if(!Intersect(rayOrig, rayDir, dis))
+			dis = TYinf;;
+		return dis;
+	}
+
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t)
+	{
+		TYfloat denom = glm::dot(Normal, rayDir);
+		if (abs(denom) > TYepsilon)
+		{
+			t = glm::dot((Center - rayOrig), Normal) / denom;
+			if (t >= 0) return true;
+		}
+		return false;
+	}
+};
+
+class Segment;
 
 struct Triangle_
 {
@@ -52,9 +85,20 @@ public:
 
 struct AABB
 {
+public:
+	AABB() {}
 	TYvec min = TYvec(0.0f);
 	TYvec max = TYvec(0.0f);
 	TYvec mid = TYvec(0.0f);
+
+	Plane midPlanes[3];
+
+	TYvoid Planify()
+	{
+		midPlanes[0] = Plane(mid.z, TYvec(0, 0, 1), mid);
+		midPlanes[1] = Plane(mid.y, TYvec(0, 1, 0), mid);
+		midPlanes[2] = Plane(mid.x, TYvec(1, 0, 0), mid);
+	}
 
 	TYvoid Gen(TYvector<Triangle>& triangles);
 
@@ -64,13 +108,50 @@ struct AABB
 		max = pos + size;
 		mid = (max + min) / 2.0f;
 	}
-	
+
+	TYbool TriInAABB(Triangle& tri);
+	TYbool PointInAABB(TYvec point);
+
+	TYbool IntersectLineAABB(TYvec O, TYvec D, TYfloat t[], TYfloat epsilon);
+
+	TYbool SegmentIntersectsGridAlignedBox3D(Segment segment);
+
 };
+
+
+
+class Segment
+{
+public:
+	Segment(const TYvec& startPoint, const TYvec& endPoint) :
+		origin(startPoint), direction(endPoint - startPoint),
+		inverseDirection(TYvec(1.0f) / direction),
+		sign{ (inverseDirection.x < 0.0f),(inverseDirection.y < 0.0f),(inverseDirection.z < 0.0f) }
+	{}
+
+	TYfloat length() {
+		return sqrtf(direction.x * direction.x + direction.y * direction.y +
+			direction.z * direction.z);
+	}
+	TYvec origin, endpoint, direction;
+	TYvec inverseDirection;
+	TYint sign[3];
+};
+
 
 class Node
 {
 public:
 	Node(AABB bound_, TYint depth_, TYvector<Triangle>& Triangles_) : bound(bound_), depth(depth_), Triangles(Triangles_)
+	{
+		for (TYint i = 0; i < 8; i++)
+		{
+			children[i] = TYnull;
+		}
+
+		if (Triangles_.size() > 0) empty = true;
+	}
+	Node(AABB bound_, TYint depth_) : bound(bound_), depth(depth_)
 	{
 		for (TYint i = 0; i < 8; i++)
 		{
@@ -87,9 +168,17 @@ public:
 
 	Node* children[8];
 
+	TYbool empty = false;
+
 	TYint depth;
 
+	TYvec* color = TYnull;
+
 	TYvector<Triangle> Triangles;
+
+	TYint childID = 0;
+
+	Node* Intersect(TYvec rayOrig, TYvec rayDir);
 
 private:
 
@@ -99,100 +188,27 @@ class Octree
 {
 
 public:
-	TYvector3 culs;
+	TYvector3 colors;
 	TYint  tempint = 0;
 
 	TYfloat colorBias = 0.0f;
 
-	TYfloat CulerDiff(TYvec cul)
-	{
-		TYfloat smol = 100.0f;
-		for (TYint i = 0; i < tempint; i++)
-		{
-			TYfloat r = abs(cul.r - culs[i].r);
-			TYfloat g = abs(cul.g - culs[i].g);
-			TYfloat b = abs(cul.b - culs[i].b);
+	TYfloat ColorDiff(TYvec cul);
 
-			if (r + g + b < smol)
-			{
-				smol = r + g + b;
-			}
-		}
+	TYvoid GenColors();
 
-		return smol;
-	}
-
-	TYvoid GenColors()
-	{
-		tempint = 0;
-		for (TYint i = 0; i < 20; i++)
-		{
-			TYfloat r = GetRand(0.0f, 1.0f);
-			TYfloat g = GetRand(0.0f, 1.0f);
-			TYfloat b = GetRand(0.0f, 1.0f);
-			TYvec c = TYvec(r, g, b);
-
-			TYfloat d = CulerDiff(c);
-
-			while (d < (colorBias))
-			{
-				r = GetRand(0.0f, 1.0f);
-				g = GetRand(0.0f, 1.0f);
-				b = GetRand(0.0f, 1.0f);
-				c = TYvec(r, g, b);
-
-				d = CulerDiff(c);
-			}
-
-			culs[i] = c;
-			tempint++;
-		}
-	}
-
-	Octree(Geometry* parentGeometry_) : parentGeometry(parentGeometry_)
-	{
-		maxDepth = 0;
-		root = TYnull;
-		colorBias = 0.05f;
-		culs = TYvector3(20);
-		GenColors();
-	}
+	Octree(Geometry* parentGeometry_);
 
 	~Octree()
 	{
 		//Delete(root);
 	}
 
-	TYvoid Draw(Node* node)
-	{
-		if (node == TYnull) return;
+	TYvoid Traverse(Node* node);
 
-		TYvec color;
-
-		if (node->depth != -1)
-		{
-			TYfloat width = 1.5f + (node->depth / 10.0f);
-			color = culs[node->depth];
-			GenericDraw::DrawCube(node->bound.mid, (node->bound.max - node->bound.min), color, width);
-
-			for (int i = 0; i < 8; i++)
-			{
-				Draw(node->children[i]);
-			}
-		}
-		else
-		{
-			if (drawEmpty)
-			{
-				color = TYvec(1.0f, 0.0f, 0.0f);
-				GenericDraw::DrawCube(node->bound.mid, (node->bound.max - node->bound.min), color, 1.0f);
-			}
-		}
-	}
+	TYvoid Draw(Node* node);
 
 	Node* Intersect(TYvec rayOrig, TYvec rayDir);
-
-	TYbool TriInAABB(Triangle tri, AABB aabb);
 
 	TYvoid MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries);
 

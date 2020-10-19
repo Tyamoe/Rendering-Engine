@@ -23,30 +23,6 @@
 #include "Geometry.h"
 #include "RenderingUtils.h"
 
-template <typename T>
-struct atomwrapper
-{
-	std::atomic<T> _a;
-
-	atomwrapper()
-		:_a(0)
-	{}
-
-	atomwrapper(const std::atomic<T>& a)
-		:_a(a.load())
-	{}
-
-	atomwrapper(const atomwrapper& other)
-		:_a(other._a.load())
-	{}
-
-	atomwrapper& operator=(const atomwrapper& other)
-	{
-		_a.store(other._a.load());
-		return *this;
-	}
-};
-
 class RenderRayTraceCPU : public Renderer
 {
 	struct TraceData

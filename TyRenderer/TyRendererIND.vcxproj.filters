@@ -49,6 +49,15 @@
     <Filter Include="Engine\Rendering\Mesh">
       <UniqueIdentifier>{ffff0029-931e-4522-9526-9d67d84f106f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Rendering\Animation">
+      <UniqueIdentifier>{ff7a2c3f-8437-4e3a-9d9b-0638b8fc71cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Rendering\Utils">
+      <UniqueIdentifier>{aeacbcc1-a72c-4843-9a17-c63b65b0dce9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\IO">
+      <UniqueIdentifier>{50285e94-b70d-4a22-a328-d4b387c34f9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Shader.cpp">
@@ -152,6 +161,24 @@
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="TyRenderer.cpp" />
+    <ClCompile Include="AllocationTracker.cpp">
+      <Filter>Engine\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationController.cpp">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animator.cpp">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryIntersection.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="TyFile.cpp">
+      <Filter>Engine\IO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -271,9 +298,6 @@
     <ClInclude Include="WindowUtils.h">
       <Filter>Engine\System\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="RenderingUtils.h">
-      <Filter>Engine\System\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="BVH.h">
       <Filter>Engine\Rendering\Mesh</Filter>
     </ClInclude>
@@ -296,6 +320,33 @@
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="TyRenderer.h" />
+    <ClInclude Include="AllocationTracker.h">
+      <Filter>Engine\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationController.h">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Animator.h">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Engine\Rendering\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingUtils.h">
+      <Filter>Engine\Rendering\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationUtils.h">
+      <Filter>Engine\Rendering\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshUtils.h">
+      <Filter>Engine\Rendering\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TyFile.h">
+      <Filter>Engine\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpUtils.h">
+      <Filter>Engine\Rendering\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\quad.fs">
@@ -341,6 +392,15 @@
       <Filter>Resources</Filter>
     </None>
     <None Include="resources\shaders\deferredPhong.fs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\deferredBuffer_Anim.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\PBR.vs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\shaders\PBR.fs">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>

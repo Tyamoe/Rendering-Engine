@@ -14,6 +14,7 @@
 #endif // TYAMOE3D
 
 #include "GenericDraw.h"
+#include "Utils.h"
 
 class BoundingVolume
 {
@@ -28,6 +29,13 @@ public:
 class BoundingSphere : public BoundingVolume
 {
 public:
+	BoundingSphere(TYvec Min = {}, TYvec Max = {}) : BoundingVolume()
+	{
+		TYvec rad = Max - Min / 2.0f;
+		radius = TyMax({ rad.x, rad.y, rad.z });
+		center = (Max + Min) / 2.0f;
+	}
+
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir) 
 	{
 		TYvec l = center - rayOrig;

@@ -91,9 +91,14 @@ uniform float initSeed;
 uniform float FOV;
 
 uniform vec3 voidColor;
-uniform vec3 CamPos;
 
-uniform mat4 view;
+uniform vec3 camPos;
+
+uniform vec3 camFront;
+uniform vec3 camRight;
+uniform vec3 camUp;
+
+uniform vec2 camDim;
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
@@ -323,7 +328,7 @@ vec3 trace_r(Ray ray, int ignore)
     vec3 diffuse = diff * surfaces[0].e;
 
     float specularStrength = 0.5f;
-    vec3 viewDir = normalize(CamPos - phit);
+    vec3 viewDir = normalize(ray.origin - phit);
     vec3 reflectDir = reflect(-lightDir, nhit);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32.0f);
     vec3 specular = specularStrength * spec * surfaces[0].e;
@@ -517,24 +522,15 @@ vec3 trace(Ray ray)
 
 Ray createRay(vec2 uv, vec2 dim)
 {
-    float aspect = dim.x / dim.y;
-    float angle = tan(TYpi * 0.5f * FOV / 180.0f);
+    vec2 screenCoord;
+    screenCoord.x = (2.0f * uv.x) / dim.x - 1.0f;
+    screenCoord.y = (-2.0f * (dim.y - uv.y)) / dim.y + 1.0f;
 
-    float invWidth = 1.0f / dim.x;
-    float invHeight = 1.0f / dim.y;
-
-    vec3 origin = (view * vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
-
-    float xx = (2.0f * ((uv.x + 0.5f) * invWidth) - 1.0f) * aspect * angle;
-    float yy = (1.0f - 2.0f * ((uv.y + 0.5f) * invHeight)) * angle;
-
-    vec3 direction = (view * vec4(xx, yy, -1.0f, 1.0f)).xyz;
-    direction = direction - origin;
-    direction = normalize(direction);
+    vec3 direction = camFront + screenCoord.x * camDim.x * camRight + screenCoord.y * camDim.y * camUp;
 
     Ray res;
-    res.origin = origin;
-    res.direction = direction;
+    res.origin = camPos;
+    res.direction = normalize(direction);
     return res;
 }
 

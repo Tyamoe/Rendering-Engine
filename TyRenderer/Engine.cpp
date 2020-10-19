@@ -40,11 +40,15 @@ TYvoid Engine::Tick()
 {
 	if (!EngineInitialized) return;
 
+	ImGui::LoadIniSettingsFromDisk("imgui.ini");
+
 	while (running && !WindowClosed())
 	{
 		Update();
 		LateUpdate();
 	}
+
+	ImGui::SaveIniSettingsToDisk("imgui.ini");
 }
 
 TYvoid Engine::Update()

@@ -10,30 +10,101 @@
 #include EngineInc(Types.h)
 
 #endif // TYAMOE3D
-//#include "Geometry.h"
+
+#include "MeshUtils.h"
+
+class Scene;
+class Material;
+class Animation;
+class Geometry;
+enum GeoType;
+class Renderer;
 
 class Mesh
 {
-	public:
-		Mesh();
-		~Mesh();
+public:
+	Mesh(Geometry* geometry_ = TYnull, Material* mat = TYnull);
+	Mesh(TYvector<Geometry*>& geoList_, Material* mat = TYnull);
+	~Mesh();
 
-		TYvoid CreateBuffers();
-		Mesh& operator+=(Mesh& m);
+	TYvoid GenHandle_GL();
+	TYvoid GenOctree();
 
-		TYuint size() { return (TYuint)indices.size(); }
+	Mesh(TYstring);
 
-	private:
-		TYvector3 vertices;
-		TYvectorUI indices;
-		TYvector3 normals;
-		TYvector<TYvec2> texcoords;
+	GeoType geoType();
 
-		//TYvector<Geometry> geometry;
+	TYsizet geoCount()
+	{
+		return geoList.size();
+	}
 
-		TYuint VAO;
-		TYuint VBO;
-		TYuint IBO;
+	MeshHandle GetHandle()
+	{
+		return meshHandle;
+	}
+
+	MeshHandle GetHandle(TYint i)
+	{
+		return meshHandles[i];
+	}
+
+	Geometry* GetGeometry(TYint i = 0)
+	{
+		if (i == -1) return geoList[hitIndex];
+		return geoList[i];
+	}
+
+	TYvoid SetHitIndex(TYint i) { hitIndex = i; }
+
+	TYvector<Geometry*>& GetGeometryList()
+	{
+		return geoList;
+	}
+
+	TYbool IsAnimated()
+	{
+		return isAnimated;
+	}
+
+	friend class Scene;
+
+private:
+	TYvector<Geometry*> geoList;
+	TYvector<MeshHandle> meshHandles;
+
+	Geometry* geometry;
+	Material* material;
+
+	MeshHandle meshHandle;
+
+	TYbool isAnimated = false;
+
+	TYint hitIndex = 0;
+
+	static TYpair<Mesh*, Animation*> CreateMesh(TYstring filename, TYbool&, TYbool&, Material* m = TYnull);
+
+	friend class Renderer;
+
+// Template
+public:
+	template<typename t>
+	t Get(t p = 0)
+	{
+		return t();
+	}
+
+	template<>
+	Material* Get(Material*)
+	{
+		return material;
+	}
+
+	template<>
+	Geometry* Get(Geometry*)
+	{
+		return geometry;
+	}
 };
 
 typedef Mesh* MeshPtr;

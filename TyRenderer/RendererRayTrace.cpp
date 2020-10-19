@@ -12,6 +12,12 @@
 #endif // TYAMOE3D
 
 #include "RendererRayTrace.h"
+#include "Camera.h"
+
+#include "Mesh.h"
+#include "Entity.h"
+#include "Material.h"
+#include "Transform.h"
 
 TYvoid RenderRayTrace::PreRender() 
 {
@@ -25,6 +31,9 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 	TYint height = layout.height;
 
 	camera->Update(dt);
+
+	camera->dim.y = glm::tan(Global::FOV / 2.0f);
+	camera->dim.x = camera->dim.y * (TYfloat(width) / height);
 
 	GenericDraw::dt = dt;
 	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);;
@@ -40,21 +49,8 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Frame);
-	//glUniform1i(RayTraceShader->Uniforms["frameTex"], 0);
 	RayTraceShader->Uniforms["frame"](0);
 	glBindImageTexture(0, Frame, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-
-	/*TYint loc = glGetUniformLocation(RayTraceShader->Program, "DevI");
-	RayTraceShader->setInt(loc, Global::DevComputeShaderI);
-
-	loc = glGetUniformLocation(RayTraceShader->Program, "DevB");
-	RayTraceShader->setBool(loc, Global::DevComputeShaderB);
-
-	loc = glGetUniformLocation(RayTraceShader->Program, "DevF");
-	RayTraceShader->setFloat(loc, Global::DevComputeShaderF);
-
-	loc = glGetUniformLocation(RayTraceShader->Program, "DevV");
-	RayTraceShader->setVec3(loc, Global::DevComputeShaderV);*/
 
 	RayTraceShader->Uniforms["DevI"](Global::DevComputeShaderI);
 	RayTraceShader->Uniforms["DevB"](Global::DevComputeShaderB);
@@ -68,9 +64,12 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 	RayTraceShader->Uniforms["initSeed"](GetRand(0.0f, 1.0f));
 
 	RayTraceShader->Uniforms["voidColor"](TYvec(0.35f, 0.6f, 0.392f));
-	RayTraceShader->Uniforms["CamPos"](camera->position);
 
-	RayTraceShader->Uniforms["view"](camera->view);
+	RayTraceShader->Uniforms["camPos"](camera->position);
+	RayTraceShader->Uniforms["camFront"](camera->front);
+	RayTraceShader->Uniforms["camRight"](camera->right);
+	RayTraceShader->Uniforms["camUp"](camera->up);
+	RayTraceShader->Uniforms["camDim"](camera->dim);
 
 	glDispatchCompute(width, height, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -84,20 +83,19 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 
 	BloomShader->Use();
 	BloomShader->DrawQuad(Frame);
+
+	ImGui::Begin("Details");
+
+	ImGui::Text("Camera Pos: %.3f, %.3f, %.3f", camera->position.x, camera->position.y, camera->position.z);
+	ImGui::Text("Camera Front: %.3f, %.3f, %.3f", camera->front.x, camera->front.y, camera->front.z);
+
+	ImGui::End();
 }
 
 TYvoid RenderRayTrace::PostRender() 
 {
 	QuadShader->Use();
 	QuadShader->DrawQuad(RenderTexture);
-}
-
-TYuint RenderRayTrace::AddMesh(Mesh& mesh)
-{
-	TYuint offset = (TYuint)scene->geometry.size();
-	//Scene += mesh;
-
-	return offset;
 }
 
 TYvoid RenderRayTrace::Init()
@@ -144,56 +142,64 @@ TYvoid RenderRayTrace::Init()
 	TYvector<SURFACE> surfaces;
 
 	// Load scene
-	for (Geometry* geo : scene->geometry)
+
+	for (Entity* entity : scene->entityList)
 	{
-		if (geo->GetType() == geoSphere)
+		Mesh* mesh = entity->Get<Mesh*>();
+		Transform* transform = entity->Get<Transform*>();
+
+		TYvector<Geometry*> geoList = mesh->GetGeometryList();
+		for (Geometry* geo : geoList)
 		{
-			spheres.push_back(SPHERE(geo->center, reinterpret_cast<Sphere*>(geo)->radius));
-		}
-		else if (geo->GetType() == geoTriangle)
-		{
-			Triangle* tt = reinterpret_cast<Triangle*>(geo);
-
-			TYvec a, b, c;
-			a = tt->vertices[0].position;
-			b = tt->vertices[1].position;
-			c = tt->vertices[2].position;
-
-			models.push_back(MODEL((TYint)triangles.size(), 1));
-
-			TYvec ce = (a + b + c) / 3.0f;
-
-			TYfloat r = glm::max(glm::length(a - ce), glm::max(glm::length(b - ce), glm::length(c - ce)));
-
-			bounds.push_back(BOUND(ce, r));
-
-			triangles.push_back(TRIANGLE(a, b, c));
-		}
-		else if (geo->GetType() == geoModel)
-		{
-			Model* ss = reinterpret_cast<Model*>(geo);
-			models.push_back(MODEL((TYint)triangles.size(), (TYint)ss->triangles.size()));
-
-			BoundingSphere* bs = reinterpret_cast<BoundingSphere*>(ss->bvh->head);
-
-			bounds.push_back(BOUND( bs->center, bs->radius));
-
-			for (Triangle t : ss->triangles)
+			if (geo->GetType() == geoSphere)
 			{
+				spheres.push_back(SPHERE(geo->center, reinterpret_cast<Sphere*>(geo)->radius));
+			}
+			else if (geo->GetType() == geoTriangle)
+			{
+				Triangle* tt = reinterpret_cast<Triangle*>(geo);
+
 				TYvec a, b, c;
-				a = t.vertices[0].position;
-				b = t.vertices[1].position;
-				c = t.vertices[2].position;
+				a = tt->vertices[0].position;
+				b = tt->vertices[1].position;
+				c = tt->vertices[2].position;
+
+				models.push_back(MODEL((TYint)triangles.size(), 1));
+
+				TYvec ce = (a + b + c) / 3.0f;
+
+				TYfloat r = glm::max(glm::length(a - ce), glm::max(glm::length(b - ce), glm::length(c - ce)));
+
+				bounds.push_back(BOUND(ce, r));
 
 				triangles.push_back(TRIANGLE(a, b, c));
 			}
-		}
-		else
-		{
-			continue;
-		}
+			else if (geo->GetType() == geoModel)
+			{
+				Model* ss = reinterpret_cast<Model*>(geo);
+				models.push_back(MODEL((TYint)triangles.size(), (TYint)ss->triangles.size()));
 
-		surfaces.push_back(SURFACE(geo->surfaceColor, geo->transparency, geo->emissionColor, geo->reflection));
+				BoundingSphere* bs = reinterpret_cast<BoundingSphere*>(ss->bvh->head);
+
+				bounds.push_back(BOUND(bs->center + transform->Get<Transformation::Position>(), bs->radius));
+
+				for (Triangle t : ss->triangles)
+				{
+					TYvec a, b, c;
+					a = t.vertices[0].position + transform->Get<Transformation::Position>();
+					b = t.vertices[1].position + transform->Get<Transformation::Position>();
+					c = t.vertices[2].position + transform->Get<Transformation::Position>();
+
+					triangles.push_back(TRIANGLE(a, b, c));
+				}
+			}
+			else
+			{
+				continue;
+			}
+
+			surfaces.push_back(SURFACE(geo->surfaceColor, geo->transparency, geo->emissionColor, geo->reflection));
+		}
 	}
 
 	lightCount = 1;
@@ -231,7 +237,7 @@ RenderRayTrace::RenderRayTrace() : Renderer()
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 
-	scene = new Scene();
+	scene = new Scene(1);
 	scene->GenOctree();
 }
 

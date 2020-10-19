@@ -43,7 +43,7 @@ BVH* BVH::GenerateBVH(Triangle* triangle)
 	TYvec v1 = triangle->vertices[1].position;
 	TYvec v2 = triangle->vertices[2].position;
 
-	for (Vertex vertex : triangle->vertices.v)
+	for (const Vertex& vertex : triangle->vertices.v)
 	{
 		if (vertex.position.x > bmax.x) bmax.x = vertex.position.x;
 		if (vertex.position.x < bmin.x) bmin.x = vertex.position.x;
@@ -71,9 +71,9 @@ BVH* BVH::GenerateBVH(Model* model)
 	TYvec bmin(std::numeric_limits<TYfloat>::max());
 	TYvec bmax(-std::numeric_limits<TYfloat>::max());
 
-	for (Triangle triangle : model->triangles)
+	for (const Triangle& triangle : model->triangles)
 	{
-		for (Vertex vertex : triangle.vertices.v)
+		for (const Vertex& vertex : triangle.vertices.v)
 		{
 			if (vertex.position.x > bmax.x) bmax.x = vertex.position.x;
 			if (vertex.position.x < bmin.x) bmin.x = vertex.position.x;

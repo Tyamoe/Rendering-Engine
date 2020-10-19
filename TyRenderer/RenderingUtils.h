@@ -43,7 +43,7 @@ union PixelColor
 		return PixelColor(r + a1.r, g + a1.g, b + a1.b, a);
 	}
 
-	PixelColor operator*(const float& a1) const
+	PixelColor operator*(const TYfloat& a1) const
 	{
 		TYvec c1 = TYvec(r / 255.0f, b / 255.0f, g / 255.0f);
 		c1 *= a1;
@@ -77,6 +77,12 @@ union PixelColorF
 	PixelColorF(TYfloat red, TYfloat green, TYfloat blue) :
 		r(red), g(green), b(blue), a(1.0f) {}
 
+	PixelColorF(TYfloat all, TYfloat a_)
+	{
+		r = g = b = all;
+		a = a_;
+	}
+
 	PixelColorF(TYfloat all)
 	{
 		r = g = b = all;
@@ -89,6 +95,11 @@ union PixelColorF
 	operator TYvec()
 	{
 		return TYvec(r, g, b);
+	}
+
+	operator TYvec4()
+	{
+		return TYvec4(r, g, b, a);
 	}
 
 	operator PixelColor()

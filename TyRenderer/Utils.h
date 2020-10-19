@@ -13,7 +13,7 @@ T GetRand(T low, T high, TYbool fast = false)
 {
 	if (fast)
 	{
-		return ((TYfloat(rand()) / TYfloat(RAND_MAX)) * (high - low)) + low;
+		return ((T(rand()) / T(RAND_MAX)) * (high - low)) + low;
 	}
 
 	static std::random_device rd;
@@ -28,3 +28,17 @@ T Mix(T a, T b, T mix)
 {
 	return b * mix + a * (1 - mix);
 }
+
+template<typename T>
+T TyMax(std::initializer_list<T> valueList)
+{
+	T maxValue = 0;
+	for (T value : valueList)
+	{
+		maxValue = glm::max(maxValue, value);
+	}
+
+	return maxValue;
+}
+
+TYint Hash(TYstring str);

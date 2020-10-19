@@ -15,11 +15,27 @@
 #include <sstream>
 #include <iostream>
 
+struct CharPointerHash
+{
+	//BKDR hash algorithm
+	TYint operator()(TYchar* str) const
+	{
+		TYint seed = 131;//31  131 1313 13131131313 etc//
+		TYint hash = 0;
+		while (*str)
+		{
+			hash = (hash * seed) + (*str);
+			str++;
+		}
+		return hash & (0x7FFFFFFF);
+	}
+};
+
 struct CharPointerCMP
 {
 	TYbool operator()(TYchar const* a, TYchar const* b) const
 	{
-		return std::strcmp(a, b) < 0;
+		return std::strcmp(a, b) == 0;
 	}
 };
 
@@ -39,6 +55,9 @@ struct UniformSetter
 	TYvoid operator()(TYvectorI& value, TYint count);
 	TYvoid operator()(TYvectorF& value, TYint count);
 
+	TYvoid operator()(TYvector3& value, TYint count);
+	TYvoid operator()(TYvector<TYmat>& value, TYint count);
+
 	TYint loc = -1;
 	TYint type = -1;
 };
@@ -48,7 +67,7 @@ typedef class Shader
 public:
 	TYuint Program;
 
-	TYmap<TYchar*, UniformSetter, CharPointerCMP> Uniforms;
+	TYumap<TYchar*, UniformSetter, CharPointerHash, CharPointerCMP> Uniforms;
 
 	Shader(TYstring computePath);
 	Shader(TYstring vertexPath, TYstring fragmentPath);
@@ -88,7 +107,7 @@ public:
 	void setMat3(TYint uniformLoc, const TYmat3 &mat);
 	void setMat4(TYint uniformLoc, const TYmat &mat);*/
 
-	TYvoid DrawQuad(TYuint texture, TYbool invert = false)
+	TYvoid DrawQuad(TYint texture = -1, TYbool invert = false)
 	{
 		static TYuint quadVAO = 0;
 		static TYuint quadVBO;
@@ -116,10 +135,12 @@ public:
 			glBindVertexArray(quadVAO);
 			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
+			
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
+			
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
@@ -129,18 +150,23 @@ public:
 			glBindVertexArray(quadVAO1);
 			glBindBuffer(GL_ARRAY_BUFFER, quadVBO1);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices2), &quadVertices2, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
+
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
+			
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
 		}
 
-		Uniforms["texture1"](0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		if (texture != -1)
+		{
+			Uniforms["texture1"](0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, (TYuint)texture);
+		}
 
 		if (invert)
 		{

@@ -2,13 +2,6 @@
 
 #include "Types.h"
 
-typedef enum MouseButton
-{
-	MouseLeft,
-	MouseRight,
-	MouseMiddle,
-}MouseButton;
-
 struct Keyboard
 {
 	TYbool keyDown[350];
@@ -35,3 +28,10 @@ struct Mouse
 	TYvec2 prevScreenPos;
 	TYvec2 screenOffset;
 };
+
+typedef enum MouseButton
+{
+	MouseLeft,
+	MouseRight,
+	MouseMiddle,
+}MouseButton;

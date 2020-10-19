@@ -72,3 +72,19 @@ private:
 	std::mutex sMutex;
 	std::condition_variable sCond;
 };
+
+template <typename T>
+struct TyAtomic
+{
+	std::atomic<T> value;
+
+	TyAtomic() : value(0) {}
+	TyAtomic(const std::atomic<T>& v) : value(v.load()) {}
+	TyAtomic(const TyAtomic& v) : value(v.value.load()) {}
+
+	TyAtomic& operator=(const TyAtomic& v)
+	{
+		value.store(v.value.load());
+		return *this;
+	}
+};

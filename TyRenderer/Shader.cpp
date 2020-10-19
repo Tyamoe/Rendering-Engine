@@ -20,9 +20,10 @@ static TYstring path = "TyRenderer/TyRenderer/resources/shaders/";
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 ////////////////////////////////////////////////////////////////////////////////
+
 TYvoid ErrorSet(...)
 {
-	std::cout << "ErrorSet()" << std::endl;
+	//std::cout << "Uniform possibly optimized away. ErrorSet()" << std::endl;
 }
 
 TYvoid setBool(TYint uniformLoc, TYbool value)
@@ -71,6 +72,16 @@ TYvoid set4FloatArray(TYint uniformLoc, TYvector<TYvec4>& value, TYint count)
 	glUniform4fv(uniformLoc, count, &value[0].x);
 }
 
+TYvoid setVec3Array(TYint uniformLoc, TYvector3& value, TYint count)
+{
+	glUniform3fv(uniformLoc, count, &value[0].x);
+}
+
+TYvoid setMat4Array(TYint uniformLoc, TYvector<TYmat>& value, TYint count)
+{
+	glUniformMatrix4fv(uniformLoc, count, GL_FALSE, &value[0][0].x);
+}
+
 TYvoid setVec2(TYint uniformLoc, TYvec2 value)
 {
 	glUniform2fv(uniformLoc, 1, &value[0]);
@@ -106,6 +117,7 @@ typedef TYvoid(*GenericSetter)(TYint);
 TYumap<TYint, GenericSetter> TypeFuncs =
 {
 	{-1, (GenericSetter)ErrorSet},
+
 	{GL_BOOL, (GenericSetter)setBool},
 	{GL_INT, (GenericSetter)setInt},
 	{GL_FLOAT, (GenericSetter)setFloat},
@@ -117,8 +129,11 @@ TYumap<TYint, GenericSetter> TypeFuncs =
 	{GL_FLOAT_MAT3, (GenericSetter)setMat3},
 	{GL_FLOAT_MAT4, (GenericSetter)setMat4},
 
-	{GL_INT + 1, (GenericSetter)setIntArray},
-	{GL_FLOAT + 1, (GenericSetter)set1FloatArray},
+	{GL_INT + 987, (GenericSetter)setIntArray},
+	{GL_FLOAT + 987, (GenericSetter)set1FloatArray},
+
+	{GL_FLOAT_VEC3 + 987, (GenericSetter)setVec3Array},
+	{GL_FLOAT_MAT4 + 987, (GenericSetter)setMat4Array},
 
 	{GL_SAMPLER_1D, (GenericSetter)setInt},
 	{GL_SAMPLER_2D, (GenericSetter)setInt},
@@ -132,6 +147,8 @@ TYumap<TYint, GenericSetter> TypeFuncs =
 	{GL_IMAGE_2D, (GenericSetter)setInt},
 	{GL_IMAGE_3D, (GenericSetter)setInt},
 	{GL_IMAGE_CUBE, (GenericSetter)setInt},
+
+	{GL_UNSIGNED_INT_SAMPLER_2D, (GenericSetter)setInt},
 };
 
 typedef TYvoid(*IntSetter)(TYint, TYint);
@@ -147,6 +164,9 @@ typedef TYvoid(*Mat4Setter)(TYint, TYmat);
 
 typedef TYvoid(*IntArrSetter)(TYint, TYvectorI&, TYint);
 typedef TYvoid(*FloatArrSetter)(TYint, TYvectorF&, TYint);
+
+typedef TYvoid(*Mat4ArrSetter)(TYint, TYvector3&, TYint);
+typedef TYvoid(*Vec3ArrSetter)(TYint, TYvector<TYmat>&, TYint);
 
 TYvoid UniformSetter::operator()(TYint value)
 {
@@ -196,6 +216,16 @@ TYvoid UniformSetter::operator()(TYvectorI& value, TYint count)
 TYvoid UniformSetter::operator()(TYvectorF& value, TYint count)
 {
 	((FloatArrSetter)TypeFuncs[type])(loc, value, count);
+}
+
+TYvoid UniformSetter::operator()(TYvector3& value, TYint count)
+{
+	((Mat4ArrSetter)TypeFuncs[type])(loc, value, count);
+}
+
+TYvoid UniformSetter::operator()(TYvector<TYmat>& value, TYint count)
+{
+	((Vec3ArrSetter)TypeFuncs[type])(loc, value, count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -327,7 +357,7 @@ Shader::Shader(TYstring pComputePath)
 	{
 		std::cout << "Files: " << pComputePath << std::endl;
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << e.what() << std::endl;
-		TYlog << std::string(e.what()) << TYlogbreak;
+		//TYlog << std::string(e.what()) << TYlogbreak;
 	}
 
 	const GLchar* vShaderCode = computeCode.c_str();
@@ -395,7 +425,7 @@ TYvoid Shader::SetupUniforms()
 		if (size > 1)
 		{
 			pname1[written - 3] = '\0';
-			type += 1;
+			type += 987;
 		}
 
 		TYint loc = glGetUniformLocation(Program, pname1);

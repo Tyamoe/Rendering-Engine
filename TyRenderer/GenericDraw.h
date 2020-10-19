@@ -25,6 +25,7 @@ namespace GenericDraw
 	TYvoid Init();
 	TYvoid DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width);
 	TYvoid DrawSphere(TYvec pos, TYfloat radius, TYvec color);
+	TYvoid DrawLine(TYvec start, TYvec end, TYvec color, TYfloat width);
 };
 
 inline TYvector3 SphereVertices;

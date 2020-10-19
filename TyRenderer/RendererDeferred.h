@@ -62,13 +62,13 @@ public:
 	TYvoid PostRender();
 
 private:
-	TYvoid Draw(Geometry* geometry);
-	TYvoid LightPass();
-	TYvoid Deferred();
-	TYvoid Forward();
+	ShaderPtr animBufferShader = TYnull;
 
 	ShaderPtr BufferShader = TYnull;
 	ShaderPtr PhongShader = TYnull;
+
+	ShaderPtr BufferPBRShader = TYnull;
+	ShaderPtr PBRShader = TYnull;
 
 	ShaderPtr QuadShader = TYnull;
 
@@ -76,10 +76,23 @@ private:
 	TYuint RenderTexture;
 
 	GLuint gBuffer = -1;
+
+	GLuint gDepth = -1;
+
 	GLuint gPosition = -1;
 	GLuint gNormal = -1;
-	GLuint gAlbedoSpec = -1;
-	GLuint gDepth = -1;
+	GLuint gAlbedo = -1;
+	GLuint gExtra = -1;
+
+	TYint PBRCount = 0;
+
+	TYvoid Draw(Entity*);
+	TYvoid Draw(Entity*, TYbool);
+	TYvoid LightPass();
+	TYvoid Deferred();
+	TYvoid Forward();
+
+	TYvoid CompileShaders();
 };
 
 typedef RenderDeferred* RenderDeferredPtr;
