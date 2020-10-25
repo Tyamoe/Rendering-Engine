@@ -2,12 +2,11 @@
 
 #include "Types.h"
 
-#include "Window.h"
-#include "Input.h"
-#include "TyRenderer.h"
-
-typedef class Window* WindowPtr;
-typedef enum RendererType RendererType;
+struct GLFWwindow;
+class Window;
+class Input;
+class TyRenderer;
+enum class RendererType;
 
 class Engine
 {
@@ -24,8 +23,7 @@ class Engine
 		void LateUpdate();
 
 	private:
-		TyRendererPtr renderer = nullptr;
-		InputPtr input = nullptr;
+		TyRenderer* renderer = nullptr;
 
 		TYbool EngineInitialized = false;
 
@@ -38,11 +36,6 @@ class Engine
 		TYbool WindowClosed();
 
 	public:
-		InputPtr GetInput()
-		{
-			return input;
-		}
-
 		template<typename t>
 		t GetWindow(t p = 0)
 		{
@@ -50,16 +43,8 @@ class Engine
 		}
 
 		template<>
-		GLFWwindow* GetWindow(GLFWwindow* p)
-		{
-			return renderer->window->window;
-		}
+		GLFWwindow* GetWindow(GLFWwindow* p);
 
 		template<>
-		WindowPtr GetWindow(WindowPtr p)
-		{
-			return renderer->window;
-		}
+		Window* GetWindow(Window* p);
 };
-
-typedef Engine* EnginePtr;

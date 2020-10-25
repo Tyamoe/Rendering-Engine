@@ -12,12 +12,21 @@ struct Settings
 	TYbool maximize;
 	TYbool fullscreen;
 };
+
 struct Layout
 {
-	Layout(TYint pW = 0, TYint pH = 0, TYint pL = 0, TYint pT = 0) : width(pW), height(pH), left(pL), top(pT) {}
+	Layout(TYint pW = 800, TYint pH = 600, TYint pL = 0, TYint pT = 0) : width(pW), height(pH), left(pL), top(pT) {}
 	TYint width;
 	TYint height;
 
 	TYint left;
 	TYint top;
+};
+
+struct Monitor
+{
+	TYint width;
+	TYint height;
+
+	TYint refreshRate;
 };

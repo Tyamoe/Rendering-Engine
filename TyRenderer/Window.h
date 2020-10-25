@@ -1,13 +1,11 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include "Types.h"
 
 #include "WindowUtils.h"
-#include "Input.h"
 
-typedef class Engine* EnginePtr;
+class Engine;
+struct GLFWwindow;
 
 class Window
 {
@@ -25,6 +23,8 @@ class Window
 		TYbool GetDirtyLayout() { return DirtyLayout; }
 		TYbool& rDirtyLayout() { return DirtyLayout; }
 
+		TYcstring GetName() { return name; }
+
 		friend class TyRenderer;
 		friend class Engine;
 
@@ -34,27 +34,18 @@ class Window
 		TYbool WindowInitialized = false;
 		TYbool DirtyLayout = false;
 
-		TYbool fullscreen = false;
-		TYbool maximize = false;
-		TYbool vsync = false;
-		TYint MSAA = 0;
-
 		Settings settings;
 		Layout layout;
 
 		TYvoid cCreateWindow();
+
+		static inline GLFWwindow* MainWindow = nullptr;
+		static inline TYvector<Monitor> Monitors;
+		static inline TYint PrimaryMonitor;
 
 	protected:
 		GLFWwindow* window = nullptr;
 
 };
 
-typedef Window* WindowPtr;
-
-#ifdef HEADLESS
-
-extern TYumap<GLFWwindow*, WindowPtr> WindowManager;
-
-#else
-
-#endif // HEADLESS
+extern TYumap<GLFWwindow*, Window*> WindowManager;

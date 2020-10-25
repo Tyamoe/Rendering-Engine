@@ -76,5 +76,3 @@ class Transform
 
 		TYmat model;
 };
-
-typedef Transform* TransformPtr;

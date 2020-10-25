@@ -1,18 +1,8 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-
-#endif // TYAMOE3D
-
 #include "Material.h"
 
 #include <SOIL2.h>
+
+#include "GLUtils.h"
 
 TYuint Material::CreateTexture(TYstring filename)
 {

@@ -1,16 +1,5 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-
-#endif // TYAMOE3D
-
 #include "Octree.h"
+
 #include "Geometry.h"
 #include "GenericDraw.h"
 #include "Debugger.h"
@@ -507,9 +496,9 @@ TYvoid AABB::Gen(TYvector<Triangle>& triangles)
 	TYvec mi(std::numeric_limits<TYfloat>::max());
 	TYvec ma(-std::numeric_limits<TYfloat>::max());
 
-	for (Triangle tri : triangles)
+	for (Triangle& tri : triangles)
 	{
-		for (Vertex vert : tri.vertices.v)
+		for (Vertex& vert : tri.vertices.v)
 		{
 			TYvec v = vert.position;
 			if (v.x > ma.x) ma.x = v.x;

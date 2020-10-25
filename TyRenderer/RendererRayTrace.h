@@ -1,23 +1,11 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
-#include "Scene.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-#include EngineInc(Scene.h)
-
-#endif // TYAMOE3D
 
 #include "Renderer.h"
-#include "Shader.h"
-
-#include "Geometry.h"
 #include "RenderingUtils.h"
+
+class Shader;
 
 class RenderRayTrace : public Renderer
 {
@@ -31,16 +19,12 @@ class RenderRayTrace : public Renderer
 		TYvoid Render(TYfloat dt);
 		TYvoid PostRender();
 
-		TYvoid RecompileRaytracer()
-		{
-			delete RayTraceShader;
-			RayTraceShader = new Shader("raytracer.cs");
-		}
+		TYvoid RecompileRaytracer();
 
 	private:
-		ShaderPtr RayTraceShader = TYnull;
-		ShaderPtr QuadShader = TYnull;
-		ShaderPtr BloomShader = TYnull;
+		Shader* RayTraceShader = TYnull;
+		Shader* QuadShader = TYnull;
+		Shader* BloomShader = TYnull;
 
 		TYuint Frame = 0;
 
@@ -122,5 +106,3 @@ class RenderRayTrace : public Renderer
 		TYuint SSBO_Bound = 0;
 		TYuint SSBO_Surface = 0;
 };
-
-typedef RenderRayTrace* RenderRayTracePtr;

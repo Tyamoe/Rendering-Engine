@@ -1,20 +1,15 @@
-#include "Tyamoe3DHelper.h"
+#include "Renderer.h"
 
-#ifndef TYAMOE3D
+#include "Window.h"
+#include "Scene.h"
 
-#include "stdafx.h"
+#include "GenericDraw.h"
+#include "Camera.h"
+#include "Shader.h"
+
+#include "GLUtils.h"
 #include "Utils.h"
 #include "Globals.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-#include EngineInc(Utils.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
-
-#include "Renderer.h"
 
 TYvoid Renderer::PreRender()
 {
@@ -28,10 +23,6 @@ TYvoid Renderer::Render(TYfloat dt)
 	TYint height = layout.height;
 
 	camera->Update(dt);
-
-	GenericDraw::dt = dt;
-	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);;
-	GenericDraw::view = camera->view;
 }
 
 TYvoid Renderer::PostRender()
@@ -47,7 +38,7 @@ TYvoid Renderer::Init()
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	camera = new Camera(TYnull, true);
+	camera = new Camera(true);
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);

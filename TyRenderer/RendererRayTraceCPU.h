@@ -1,27 +1,13 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
-#include "Scene.h"
-#include "ThreadingUtils.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-#include EngineInc(Scene.h)
-#include EngineInc(ThreadingUtils.h)
-
-#endif // TYAMOE3D
 
 #include "Renderer.h"
-#include "Shader.h"
-#include "Mesh.h"
 
-#include "Camera.h"
-#include "Geometry.h"
 #include "RenderingUtils.h"
+#include "ThreadingUtils.h"
+
+class Shader;
 
 class RenderRayTraceCPU : public Renderer
 {
@@ -72,8 +58,6 @@ class RenderRayTraceCPU : public Renderer
 		TYvoid Render(TYfloat dt);
 		TYvoid PostRender();
 
-		TYuint AddMesh(Mesh& mesh);
-
 		PixelColorF Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDepth, TYint& rayCounter, TYint ignore);
 
 		TYvoid ThreadHeight();
@@ -91,9 +75,9 @@ class RenderRayTraceCPU : public Renderer
 		TYvector<TYvec> lines;
 
 	private:
-		ShaderPtr ColorShader = TYnull;
-		ShaderPtr BloomShader = TYnull;
-		ShaderPtr QuadShader = TYnull;
+		Shader* ColorShader = TYnull;
+		Shader* BloomShader = TYnull;
+		Shader* QuadShader = TYnull;
 
 		TYuint RenderBuffer;
 		TYuint RenderTexture;
@@ -109,5 +93,3 @@ class RenderRayTraceCPU : public Renderer
 		TYvoid UpdateData();
 		TYvoid TraceRays();
 };
-
-typedef RenderRayTraceCPU* RenderRayTraceCPUPtr;

@@ -1,23 +1,9 @@
-#include "stdafx.h"
-
 #include "Input.h"
+
 #include "Window.h"
 
-TYumap<GLFWwindow*, Input*> InputManagers;
-#define INPUT TY::in//WindowManager[window]->GetInput()
-
-Input::Input(GLFWwindow* pWindow)
-{
-	window = pWindow;
-	glfwSetKeyCallback(window, KeyCB);
-	glfwSetMouseButtonCallback(window, MouseCB);
-	glfwSetScrollCallback(window, ScrollCB);
-	glfwSetCursorPosCallback(window, CursorCB);
-	glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
-
-	InputManagers[window] = this;
-	TY::in = this;
-}
+#include "ImGuiUtils.h"
+#include "GLUtils.h"
 
 TYvoid Input::Update(TYfloat dt)
 {
@@ -37,9 +23,9 @@ TYvoid Input::Update(TYfloat dt)
 	mouse.wheelVertDiff = 0;
 }
 
-TYvec2* Input::getMouseWorldPosition()
+TYvec2 Input::GetMouseWorldPosition()
 {
-	return &mouse.worldPos;
+	return mouse.worldPos;
 }
 
 TYvoid Input::UpdateMouseWorldPosition()
@@ -52,14 +38,21 @@ TYvoid Input::UpdateMouseWorldPosition()
 	mouse.worldPos.y = y;
 }
 
+GLFWwindow* Input::GetHighlightWindow()
+{
+	return highlightedWindow;
+}
+
 TYbool Input::isMousePressed(MouseButton button)
 {
 	return mouse.mousePressed[button];
 }
+
 TYbool Input::isMouseDown(MouseButton button)
 {
 	return mouse.mouseDown[button];
 }
+
 TYbool Input::isMouseReleased(MouseButton button)
 {
 	return mouse.mouseReleased[button];
@@ -67,8 +60,7 @@ TYbool Input::isMouseReleased(MouseButton button)
 
 TYbool Input::isKeyDown(TYint key)
 {
-	ImGuiIO& io = ImGui::GetIO();
-	return io.KeysDown[key];
+	return keyboard.keyDown[key];
 }
 
 TYbool Input::isKeyReleased(TYint key)
@@ -86,56 +78,52 @@ TYvoid Input::KeyCB(GLFWwindow* window, TYint key, TYint scancode, TYint action,
 	if (key < 0) return;
 
 	ImGuiIO& io = ImGui::GetIO();
-	if (action == GLFW_PRESS)
-		io.KeysDown[key] = true;
-	if (action == GLFW_RELEASE)
-		io.KeysDown[key] = false;
+	if (action == GLFW_PRESS) io.KeysDown[key] = true;
+	if (action == GLFW_RELEASE) io.KeysDown[key] = false;
 
-	(TYvoid)mods; // Modifiers are not reliable across systems
+	(TYvoid)mods;
 	io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
 	io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
 	io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
 	io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
-
-	if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action)
-	{
-		
-	}
 	
 	if (action == GLFW_PRESS)
 	{
-		INPUT->keyboard.keyPressed[key] = true;
-		INPUT->keyboard.keyDown[key] = true;
-		INPUT->keyboard.keyReleased[key] = false;
+		Input::keyboard.keyPressed[key] = true;
+		Input::keyboard.keyDown[key] = true;
+		Input::keyboard.keyReleased[key] = false;
 	}
 
 	if (action == GLFW_RELEASE)
 	{
-		INPUT->keyboard.keyPressed[key] = false;
-		INPUT->keyboard.keyDown[key] = false;
-		INPUT->keyboard.keyReleased[key] = true;
+		Input::keyboard.keyPressed[key] = false;
+		Input::keyboard.keyDown[key] = false;
+		Input::keyboard.keyReleased[key] = true;
 	}
 
-	(TYvoid)mods; // Modifiers are not reliable across systems
-	INPUT->keyboard.keyCtrl = INPUT->keyboard.keyDown[GLFW_KEY_LEFT_CONTROL] || INPUT->keyboard.keyDown[GLFW_KEY_RIGHT_CONTROL];
-	INPUT->keyboard.keyShift = INPUT->keyboard.keyDown[GLFW_KEY_LEFT_SHIFT] || INPUT->keyboard.keyDown[GLFW_KEY_RIGHT_SHIFT];
-	INPUT->keyboard.keyAlt = INPUT->keyboard.keyDown[GLFW_KEY_LEFT_ALT] || INPUT->keyboard.keyDown[GLFW_KEY_RIGHT_ALT];
+	Input::keyboard.keyCtrl = Input::keyboard.keyDown[GLFW_KEY_LEFT_CONTROL] || Input::keyboard.keyDown[GLFW_KEY_RIGHT_CONTROL];
+	Input::keyboard.keyShift = Input::keyboard.keyDown[GLFW_KEY_LEFT_SHIFT] || Input::keyboard.keyDown[GLFW_KEY_RIGHT_SHIFT];
+	Input::keyboard.keyAlt = Input::keyboard.keyDown[GLFW_KEY_LEFT_ALT] || Input::keyboard.keyDown[GLFW_KEY_RIGHT_ALT];
 
 }
 
 TYvoid Input::CursorCB(GLFWwindow* window, TYdouble xpos, TYdouble ypos)
 {
+	//TYlog << InputManagers[window]->name << " | " << xpos << ", " << ypos << TYlogbreak;
+
+	highlightedWindow = window;
+
 	TYfloat x = (TYfloat)xpos, y = (TYfloat)ypos;
-	INPUT->mouse.screenPos.x = x;
-	INPUT->mouse.screenPos.y = y;
+	Input::mouse.screenPos.x = x;
+	Input::mouse.screenPos.y = y;
 
-	INPUT->mouse.worldPos.x = x;
-	INPUT->mouse.worldPos.y = y;
+	Input::mouse.worldPos.x = x;
+	Input::mouse.worldPos.y = y;
 
-	INPUT->mouse.screenOffset.x = x - INPUT->mouse.prevScreenPos.x;
-	INPUT->mouse.screenOffset.y = INPUT->mouse.prevScreenPos.y - y;
-	INPUT->mouse.prevScreenPos = TYvec2(x, y);
-	INPUT->mouse.screenOffset *= .05f;
+	Input::mouse.screenOffset.x = x - Input::mouse.prevScreenPos.x;
+	Input::mouse.screenOffset.y = Input::mouse.prevScreenPos.y - y;
+	Input::mouse.prevScreenPos = TYvec2(x, y);
+	Input::mouse.screenOffset *= 0.05f;
 }
 
 TYvoid Input::MouseCB(GLFWwindow* window, TYint button, TYint action, TYint mods)
@@ -144,16 +132,16 @@ TYvoid Input::MouseCB(GLFWwindow* window, TYint button, TYint action, TYint mods
 
 	if (action == GLFW_PRESS && button >= 0)
 	{
-		INPUT->mouse.mouseDown[button] = true;
-		INPUT->mouse.mousePressed[button] = true;
+		Input::mouse.mouseDown[button] = true;
+		Input::mouse.mousePressed[button] = true;
 	}
 	if (action == GLFW_RELEASE && button >= 0)
 	{
-		INPUT->mouse.mousePressed[button] = false;
-		INPUT->mouse.mouseDown[button] = false;
-		INPUT->mouse.mouseReleased[button] = true;
+		Input::mouse.mousePressed[button] = false;
+		Input::mouse.mouseDown[button] = false;
+		Input::mouse.mouseReleased[button] = true;
 	}
-	//TYlog << INPUT->mouse.screenPos.x << ", " << INPUT->mouse.screenPos.y << TYlogbreak;
+	//TYlog << Input::mouse.screenPos.x << ", " << Input::mouse.screenPos.y << TYlogbreak;
 }
 
 TYvoid Input::ScrollCB(GLFWwindow* window, TYdouble xoffset, TYdouble yoffset)
@@ -162,7 +150,7 @@ TYvoid Input::ScrollCB(GLFWwindow* window, TYdouble xoffset, TYdouble yoffset)
 	io.MouseWheelH += (TYfloat)xoffset;
 	io.MouseWheel += (TYfloat)yoffset;
 
-	INPUT->mouse.wheelHorizontal += (TYfloat)xoffset;
-	INPUT->mouse.wheelVertDiff = (TYfloat)yoffset;
-	INPUT->mouse.wheelVertical += (TYfloat)yoffset;
+	Input::mouse.wheelHorizontal += (TYfloat)xoffset;
+	Input::mouse.wheelVertDiff = (TYfloat)yoffset;
+	Input::mouse.wheelVertical += (TYfloat)yoffset;
 }

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "Utils.h"
 
 TYint Hash(TYstring str)
@@ -13,4 +11,9 @@ TYint Hash(TYstring str)
 	}
 
 	return hash & (0x7FFFFFFF);
+}
+
+TYfloat lerp_t(TYfloat a, TYfloat b, TYfloat t, TYfloat dt)
+{
+	return (a + ((b - a) * (1.0f - pow(t, dt))));
 }

@@ -1,26 +1,14 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
-#include "Window.h"
-#include "Scene.h"
 
-#else
+class Engine;
+class Camera;
+class Window;
+class Shader;
+class Scene;
 
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Window.h)
-#include EngineInc(Types.h)
-#include EngineInc(Scene.h)
-
-#endif // TYAMOE3D
-
-#include "GenericDraw.h"
-#include "Camera.h"
-
-typedef class Engine* EnginePtr;
-
-typedef enum class RendererType
+enum class RendererType
 {
 	Base,
 	RayTraceCPU,
@@ -28,7 +16,7 @@ typedef enum class RendererType
 	RayTrace,
 	Editor,
 	Deferred,
-} RendererType;
+};
 
 class Renderer
 {
@@ -49,13 +37,13 @@ class Renderer
 		RendererType GetType() { return type; }
 		RendererType type = RendererType::Base;
 
-		ScenePtr scene;
-		CameraPtr camera;
+		Scene* scene;
+		Camera* camera;
 
 		friend struct RendererCMP;
 
 	private:
-		ShaderPtr QuadShader = TYnull;
+		Shader* QuadShader = TYnull;
 
 		TYuint RenderBuffer;
 		TYuint RenderTexture;
@@ -69,12 +57,10 @@ class Renderer
 
 	protected:
 		// (Meta) Data
-		WindowPtr window;
+		Window* window;
 
 	public:
-		TYvoid SetWindow(WindowPtr pWindow) { window = pWindow; }
+		TYvoid SetWindow(Window* pWindow) { window = pWindow; }
 		//TYvoid AttachDebugger(DebuggerPtr pDebugger){ debugger = pDebugger;}
 		//TYvoid AttachProfiler(ProfilerPtr pProfiler){ profiler = pProfiler;}
 };
-
-typedef Renderer* RendererPtr;

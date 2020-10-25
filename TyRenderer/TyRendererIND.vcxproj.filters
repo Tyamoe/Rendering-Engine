@@ -28,9 +28,6 @@
     <Filter Include="Engine\Entity">
       <UniqueIdentifier>{7a19e989-d6cf-46bf-9d5f-2617ab02a9b3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Entity\Nodes">
-      <UniqueIdentifier>{fce4f496-273d-4a18-8a0a-392e11e29bc6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{e7918a5b-380b-4ea9-9ca9-9fe1ba933d1b}</UniqueIdentifier>
     </Filter>
@@ -54,9 +51,6 @@
     </Filter>
     <Filter Include="Engine\Rendering\Utils">
       <UniqueIdentifier>{aeacbcc1-a72c-4843-9a17-c63b65b0dce9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\IO">
-      <UniqueIdentifier>{50285e94-b70d-4a22-a328-d4b387c34f9a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -103,18 +97,6 @@
     <ClCompile Include="Debugger.cpp">
       <Filter>Engine\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Engine\Entity\Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="Shape.cpp">
-      <Filter>Engine\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics.cpp">
-      <Filter>Engine\Entity\Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Engine\Entity\Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="WindowCB.cpp">
       <Filter>Engine\Core\Util</Filter>
     </ClCompile>
@@ -130,14 +112,8 @@
     <ClCompile Include="RendererRayTraceCPU.cpp">
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="tiny_obj_loader.cpp">
-      <Filter>Editor\External</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Engine\Core\Util</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Engine\Rendering\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Geometry.cpp">
       <Filter>Engine\Rendering\Mesh</Filter>
@@ -164,9 +140,6 @@
     <ClCompile Include="AllocationTracker.cpp">
       <Filter>Engine\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Engine\Rendering\Animation</Filter>
-    </ClCompile>
     <ClCompile Include="AnimationController.cpp">
       <Filter>Engine\Rendering\Animation</Filter>
     </ClCompile>
@@ -176,8 +149,17 @@
     <ClCompile Include="GeometryIntersection.cpp">
       <Filter>Engine\Rendering\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="TyFile.cpp">
-      <Filter>Engine\IO</Filter>
+    <ClCompile Include="Material.cpp">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Engine\Entity\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,23 +217,11 @@
     <ClInclude Include="Entity.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Engine\Entity\Nodes</Filter>
-    </ClInclude>
     <ClInclude Include="Profiler.h">
       <Filter>Engine\Debug</Filter>
     </ClInclude>
     <ClInclude Include="Debugger.h">
       <Filter>Engine\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="Shape.h">
-      <Filter>Engine\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Engine\Entity\Nodes</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Engine\Entity\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="WindowCB.h">
       <Filter>Engine\Core\Util</Filter>
@@ -271,23 +241,14 @@
     <ClInclude Include="RendererRayTrace.h">
       <Filter>Engine\Rendering\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Structs.h">
-      <Filter>Engine\Core\Util</Filter>
-    </ClInclude>
     <ClInclude Include="RendererRayTraceCPU.h">
       <Filter>Engine\Rendering\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\tinyobj\tiny_obj_loader.h">
-      <Filter>Editor\External</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Engine\Core\Util</Filter>
     </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Engine\Core\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Engine\Rendering\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Geometry.h">
       <Filter>Engine\Rendering\Mesh</Filter>
@@ -329,9 +290,6 @@
     <ClInclude Include="Animator.h">
       <Filter>Engine\Rendering\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Engine\Rendering\Animation</Filter>
-    </ClInclude>
     <ClInclude Include="RenderingUtils.h">
       <Filter>Engine\Rendering\Utils</Filter>
     </ClInclude>
@@ -341,11 +299,29 @@
     <ClInclude Include="MeshUtils.h">
       <Filter>Engine\Rendering\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="TyFile.h">
-      <Filter>Engine\IO</Filter>
-    </ClInclude>
     <ClInclude Include="AssimpUtils.h">
       <Filter>Engine\Rendering\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="GLUtils.h">
+      <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiUtils.h">
+      <Filter>Engine\Core\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

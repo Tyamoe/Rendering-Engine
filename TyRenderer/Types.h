@@ -12,10 +12,7 @@
 #include <tuple>
 #include <limits>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "MathUtils.h"
 
 #define TYmaxf std::numeric_limits<float>::max()
 #define TYpi 3.141592653589793f
@@ -77,4 +74,4 @@ typedef glm::ivec2 TYivec2;
 typedef glm::ivec3 TYivec3;
 typedef glm::ivec4 TYivec4;
 
-typedef glm::uvec4 TYuvec4;
+typedef glm::uvec4 TYuvec4; 

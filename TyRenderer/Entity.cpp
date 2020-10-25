@@ -1,12 +1,10 @@
-#include "stdafx.h"
-
 #include "Entity.h"
-#include "Utils.h"
 
 #include "Transform.h"
 #include "Animation.h"
 #include "Mesh.h"
 
+#include "Utils.h"
 
 Entity::Entity(TYstring name_)
 {

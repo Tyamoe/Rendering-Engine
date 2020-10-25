@@ -1,34 +1,87 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
 
-#else
+class Camera;
+class Shader;
 
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-
-#endif // TYAMOE3D
-
-#include "Shader.h"
-
-namespace GenericDraw
+class GenericDraw
 {
-	inline ShaderPtr ColorShader = TYnull;
+public:
+	static TYvoid Init();
 
-	inline TYmat projection;
-	inline TYmat view;
+	static TYvoid DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width = 2.0f);
 
-	inline TYfloat dt;
+	static TYvoid DrawSphere(TYvec pos, TYfloat radius, TYvec color, TYfloat width = 2.0f);
 
-	TYvoid Init();
-	TYvoid DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width);
-	TYvoid DrawSphere(TYvec pos, TYfloat radius, TYvec color);
-	TYvoid DrawLine(TYvec start, TYvec end, TYvec color, TYfloat width);
+	static TYvoid DrawLine(TYvec start, TYvec end, TYvec color, TYfloat width = 2.0f);
+
+	static TYvoid DrawQuad(TYvec2 pos, TYvec2 size, TYuint texture);
+	static TYvoid DrawQuad(TYvec2 pos, TYvec2 size, TYvec color);
+
+	static TYvoid DrawCircle(TYvec2 pos, TYfloat size, TYuint texture);
+	static TYvoid DrawCircle(TYvec2 pos, TYfloat size, TYvec color);
+
+	static TYvoid DrawFSQuad(TYuint texture);
+
+	static TYvoid DrawText(TYstring text, TYvec2 pos, TYfloat scale, TYvec4 color);
+
+	friend class Camera;
+
+	static inline const Camera* MainCamera = TYnull;
+private:
+
+	static inline Shader* ColorShader = TYnull;
+	static inline Shader* Color2DShader = TYnull;
+	static inline Shader* TextureShader = TYnull;
+	static inline Shader* Texture2DShader = TYnull;
+	static inline Shader* TextShader = TYnull;
+
+	static inline TYuint vboCubeHandle;
+	static inline TYuint CubeHandle;
+	static inline TYuint SphereHandle;
+	static inline TYuint QuadHandle;
+	static inline TYuint QuadUVHandle;
+	static inline TYuint CircleHandle;
+	static inline TYuint CircleUVHandle;
+
+	static inline TYuint fsQuadHandle;
 };
 
-inline TYvector3 SphereVertices;
+inline const TYfloat FSQuadVertices[] =
+{
+	-1.0f,  1.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 0.0f,
+	1.0f,  1.0f, 1.0f, 1.0f,
+	1.0f, -1.0f, 1.0f, 0.0f,
+};
+
+inline const TYfloat QuadVertices2[] =
+{
+	0.5f,  0.5f, 
+	0.5f, -0.5f, 
+	-0.5f, -0.5f,
+	-0.5f,  0.5f
+};
+
+inline const TYfloat QuadVertices[] =
+{
+	0.5f,  0.5f,  1.0f, 1.0f,
+	0.5f, -0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f, 0.0f, 0.0f,
+	-0.5f,  0.5f, 0.0f, 1.0f
+
+	//0.5f,  0.5f,  1.0f, 0.0f,
+	//0.5f, -0.5f,  1.0f, 1.0f,
+	//-0.5f, -0.5f, 0.0f, 1.0f,
+	//-0.5f,  0.5f, 0.0f, 0.0f
+};
+
+inline const TYuint QuadIndices[] =
+{
+	0, 1, 3,
+	1, 2, 3
+};
 
 inline const TYfloat CubeVertices[] =
 {

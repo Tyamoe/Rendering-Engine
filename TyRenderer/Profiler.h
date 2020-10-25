@@ -21,5 +21,3 @@ private:
 	TYbool stopped;
 	TYbool paused;
 };
-
-typedef Profiler* ProfilerPtr;

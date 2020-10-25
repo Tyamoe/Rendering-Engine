@@ -2,31 +2,43 @@
 
 #include "Types.h"
 
+class Input;
+
 struct Keyboard
 {
-	TYbool keyDown[350];
-	TYbool keyReleased[350];
-	TYbool keyPressed[350];
-	TYbool keyCtrl;
-	TYbool keyShift;
-	TYbool keyAlt;
+public:
+	static inline TYbool keyCtrl;
+	static inline TYbool keyShift;
+	static inline TYbool keyAlt;
+
+	friend class Input;
+
+private:
+	static inline TYbool keyDown[350];
+	static inline TYbool keyReleased[350];
+	static inline TYbool keyPressed[350];
 };
 
 struct Mouse
 {
-	TYbool mouseDown[5];
-	TYbool mouseReleased[5];
-	TYbool mousePressed[5];
+public:
+	static inline TYvec2 screenPos;
+	static inline TYvec2 screenOffset;
 
-	TYfloat wheelHorizontal = 0.0f;
-	TYfloat wheelVertical = 0.0f;
+	friend class Input;
 
-	TYfloat wheelVertDiff = 0.0f;
+private:
+	static inline TYbool mouseDown[5];
+	static inline TYbool mouseReleased[5];
+	static inline TYbool mousePressed[5];
 
-	TYvec2 screenPos;
-	TYvec2 worldPos;
-	TYvec2 prevScreenPos;
-	TYvec2 screenOffset;
+	static inline TYfloat wheelHorizontal = 0.0f;
+	static inline TYfloat wheelVertical = 0.0f;
+
+	static inline TYfloat wheelVertDiff = 0.0f;
+
+	static inline TYvec2 worldPos;
+	static inline TYvec2 prevScreenPos;
 };
 
 typedef enum MouseButton

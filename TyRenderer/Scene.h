@@ -4,11 +4,11 @@
 
 #include "Mesh.h"
 
-#include "Camera.h"
 #include "Geometry.h"
 #include "BVH.h"
 
 class Entity;
+class Camera;
 
 class Scene
 {
@@ -21,7 +21,7 @@ public:
 	TYvoid GenOctree();
 	TYvoid GenHandles_GL();
 
-	CameraPtr camera;
+	Camera* camera;
 
 	TYvector<Entity*> entityList;
 

@@ -1,19 +1,22 @@
-#include "stdafx.h"
+#include "TyRenderer.h"
 
 #include "Window.h"
-#include "GenericDraw.h"
+#include "Renderer.h"
 
 #include "Debugger.h"
 
-#include "TyRenderer.h"
+#include "GenericDraw.h"
 
 #include "RendererRayTrace.h"
 #include "RendererDeferred.h"
 #include "RendererRayTraceCPU.h"
 
+#include "ImGuiUtils.h"
+#include "GLUtils.h"
+
 TyRenderer::TyRenderer()
 {
-	window = new Window("TyRenderer", Settings(), Layout(1000, 700, 200, 100));
+	window = new Window("TyRenderer", Settings(), Layout(1000, 700, 700, 100));
 
 	GenericDraw::Init();
 
@@ -21,9 +24,9 @@ TyRenderer::TyRenderer()
 	renderer->SetWindow(window);
 	renderer->Init();
 
-	ImGuiContext* context = ImGui::CreateContext();
+	imGuiContext = ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window->window, false);
-	ImGui_ImplOpenGL3_Init();
+	ImGui_ImplOpenGL3_Init("#version 460");
 	ImGui::StyleColorsDark();
 }
 
@@ -34,8 +37,6 @@ TYvoid TyRenderer::Update(TYfloat dt)
 	PreRender();
 	Render();
 	PostRender();
-
-	glfwSwapBuffers(window->window);
 }
 
 TYvoid TyRenderer::PreRender()
@@ -94,7 +95,7 @@ TYvoid TyRenderer::PostRender()
 
 	if (renderer->GetType() == RendererType::RayTrace && ImGui::Button("Recompile"))
 	{
-		((RenderRayTracePtr)renderer)->RecompileRaytracer();
+		((RenderRayTrace*)renderer)->RecompileRaytracer();
 	}
 
 	ImGui::End();
@@ -102,4 +103,6 @@ TYvoid TyRenderer::PostRender()
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	ImGui::EndFrame();
+
+	glfwSwapBuffers(window->window);
 }

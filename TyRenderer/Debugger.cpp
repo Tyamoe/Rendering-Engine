@@ -1,8 +1,8 @@
-#include "stdafx.h"
-
 #include "Debugger.h"
 
 #include <algorithm>
+
+#include "ImGuiUtils.h"
 
 TYvoid Debug::Update(TYfloat dt)
 {

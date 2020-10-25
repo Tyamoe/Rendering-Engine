@@ -1,20 +1,5 @@
-/******************************************************************************/
-/*!
-\file   MemoryManager.cpp
-\author Chris Thomas
-\par    email: chris.thomas\@digipen.edu
-\par    DigiPen login: chris.thomas
-\par    Course: GAM200
-\par    Copyright © 2018 DigiPen (USA) Corporation.
-\brief
-	 Implementation for Memory manager system.
-
-*/
-/******************************************************************************/
-
-#include "stdafx.h"
-
 #include "AllocationTracker.h"
+
 #include "Debugger.h"
 
 void* __CRTDECL operator new(size_t n)

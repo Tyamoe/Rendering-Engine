@@ -1,30 +1,22 @@
-#include "stdafx.h"
+#include "Window.h"
 
-#include "Globals.h"
 #include "WindowCB.h"
 #include "Input.h"
 
-#include "Window.h"
-#include "RendererRayTrace.h"
+#include "TyRenderer.h"
 
-TYumap<GLFWwindow*, WindowPtr> WindowManager;
+#include "Globals.h"
+#include "GLUtils.h"
+#include "ImGuiUtils.h"
+
+TYumap<GLFWwindow*, Window*> WindowManager;
 
 TYbool Window::Focus()
 {
 	glfwMakeContextCurrent(window);
 
-	// MSAA
-	glfwWindowHint(GLFW_SAMPLES, MSAA);
-	glEnable(GL_MULTISAMPLE);
-
-	if (vsync)
-	{
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-	}
-	else
-	{
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	}
+	TyRenderer::width = layout.width;
+	TyRenderer::height = layout.height;
 
 	return true;
 }
@@ -46,28 +38,53 @@ TYvoid Window::cCreateWindow()
 		glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, GLFW_RELEASE_BEHAVIOR_FLUSH);
 	}
 
-	int numberOfMonitors = 0;
-	GLFWmonitor** monitors = glfwGetMonitors(&numberOfMonitors);
-	//const GLFWvidmode* desktopMode = glfwGetVideoMode(monitors[0]);
+	TYint numMonitors = 0;
+	GLFWmonitor** monitors = glfwGetMonitors(&numMonitors);
 
-	//const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-	if (fullscreen)
+	if (numMonitors > 0)
 	{
-		layout.width = 1920;// desktopMode->width;
-		layout.height = 1080;// desktopMode->height;
+		for (TYint i = 0; i < numMonitors; i++)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+
+			Monitor monitor;
+			monitor.width = mode->width;
+			monitor.height = mode->height;
+			monitor.refreshRate = mode->refreshRate;
+
+			if (monitors[i] == glfwGetPrimaryMonitor())
+			{
+				PrimaryMonitor = i;
+			}
+
+			Monitors.push_back(monitor);
+		}
+	}
+	else
+	{
+		Monitor monitor;
+		monitor.width = 1920;
+		monitor.height = 1080;
+		monitor.refreshRate = 60;
+
+		PrimaryMonitor = 0;
+
+		Monitors.push_back(monitor);
+	}
+
+	if (settings.fullscreen)
+	{
+		layout.width = Monitors[PrimaryMonitor].width;
+		layout.height = Monitors[PrimaryMonitor].height;
 
 		layout.left = 0;
 		layout.top = 0;
 	}
 
-	GLint width = layout.width == 0 ? /*desktopMode->width*/1920 : layout.width;
-	GLint height = layout.height == 0 ? /*desktopMode->height*/1080 - 63 : layout.height;
+	GLFWwindow* prevWindow = glfwGetCurrentContext();
+	glfwMakeContextCurrent(NULL);
 
-	layout.width = width;
-	layout.height = height;
-
-	window = glfwCreateWindow(width, height, name, NULL, NULL);
+	window = glfwCreateWindow(layout.width, layout.height, name, NULL, MainWindow);
 
 	if (window == NULL)
 	{
@@ -78,7 +95,25 @@ TYvoid Window::cCreateWindow()
 		return;
 	}
 
-	Focus();
+	glfwMakeContextCurrent(window);
+
+	if (!MainWindow)
+	{
+		TyRenderer::width = layout.width;
+		TyRenderer::height = layout.height;
+	}
+
+	glfwWindowHint(GLFW_SAMPLES, settings.MSAA);
+	if(settings.MSAA > 0) glEnable(GL_MULTISAMPLE);
+
+	if (settings.vsync)
+	{
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+	}
+	else
+	{
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	}
 
 	if (!Global::GlewInit)
 	{
@@ -93,6 +128,7 @@ TYvoid Window::cCreateWindow()
 		}
 		else
 		{
+			MainWindow = window;
 			Global::GlewInit = true;
 		}
 	}
@@ -102,8 +138,9 @@ TYvoid Window::cCreateWindow()
 	glfwSetWindowPos(window, layout.left, layout.top);
 
 	glfwSetFramebufferSizeCallback(window, ViewportCB);
+	glfwSetWindowFocusCallback(window, FocusCB);
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, layout.width, layout.height);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -121,27 +158,32 @@ TYvoid Window::cCreateWindow()
 
 	glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 
-	WindowInitialized = true;
+	// Input Callbacks
+	glfwSetKeyCallback(window, Input::KeyCB);
+	glfwSetMouseButtonCallback(window, Input::MouseCB);
+	glfwSetScrollCallback(window, Input::ScrollCB);
+	glfwSetCursorPosCallback(window, Input::CursorCB);
+	glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
 
-	if (maximize)
+	if (settings.maximize)
 	{
 		glfwMaximizeWindow(window);
 	}
+
 	GLenum e;
 	if ((e = glGetError()) != GL_NO_ERROR)
 	{
 		//TYlog << "5-00 " << glewGetErrorString(e) << TYlogbreak;
 		printf("5-00 %s\n", glewGetErrorString(e));
 	}
+
+	glfwMakeContextCurrent(MainWindow);
+
+	WindowInitialized = true;
 }
 
 Window::Window(TYcstring pName, Settings pSettings, Layout pLayout) : layout(pLayout), settings(pSettings)
 {
-	maximize = pSettings.maximize;
-	vsync = pSettings.vsync;
-	MSAA = pSettings.MSAA;
-	fullscreen = pSettings.fullscreen;
-
 	name = pName;
 
 	cCreateWindow();

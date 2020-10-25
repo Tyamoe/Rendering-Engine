@@ -6,32 +6,34 @@
 
 */
 
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-#include "Utils.h"
-#include "Globals.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(stdafx.h)
-#include EngineInc(Utils.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
-
 #include "RendererRayTraceCPU.h"
+
+#include "Window.h"
+#include "Input.h"
+
+#include "GenericDraw.h"
+#include "Scene.h"
+#include "Shader.h"
+#include "Camera.h"
+#include "Geometry.h"
 
 #include "Entity.h"
 #include "Mesh.h"
 #include "Material.h"
 
-TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPUPtr rt, TYint index);
+#include "Octree.h"
+#include "BoundingVolume.h"
+
+#include "Utils.h"
+#include "GLUtils.h"
+#include "ImGuiUtils.h"
+#include "Globals.h"
+
+TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPU* rt, TYint index);
 
 struct ThreadData
 {
-	ThreadData(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PB, RenderRayTraceCPUPtr rt, TYint index) :
+	ThreadData(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PB, RenderRayTraceCPU* rt, TYint index) :
 		x_(x), y_(y), sx_(sx), sy_(sy), PB_(PB), rt_(rt), index_(index)
 	{}
 
@@ -41,7 +43,7 @@ struct ThreadData
 	TYint sy_;
 	TYint index_;
 	PixelColor*& PB_;
-	RenderRayTraceCPUPtr rt_;
+	RenderRayTraceCPU* rt_;
 };
 
 #define MAX_RAY_DEPTH 2 
@@ -112,7 +114,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 
 			if (t0 < tnear) 
 			{
-				Mesh* mesh = scene->entityList[i]->Get<MeshPtr>();
+				Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
 
 				tnear = t0;
 				hit = mesh->GetGeometry(-1);// scene->geometry[i];
@@ -240,7 +242,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		//if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
 		if (Geometry::Intersect(scene->entityList[j], phit + nhit * bias, lightDir, t0, t1, normal))
 		{
-			Mesh* mesh = scene->entityList[j]->Get<MeshPtr>();
+			Mesh* mesh = scene->entityList[j]->Get<Mesh*>();
 			Material* mat = mesh->Get<Material*>();
 
 			TYfloat t = mat->GetTransparency();// scene->geometry[j]->transparency;
@@ -262,7 +264,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	return surfaceColor + emis;
 }
 
-TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPUPtr rt, TYint index)
+TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffer, RenderRayTraceCPU* rt, TYint index)
 {
 	while (rt->traceData.tracing)
 	{
@@ -385,10 +387,6 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 
 	traceData.dirty = camera->Update(dt);
 
-	GenericDraw::dt = dt;
-	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);;
-	GenericDraw::view = camera->iview;
-
 	glBindTexture(GL_TEXTURE_2D, Frame);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, PBO);
 
@@ -440,7 +438,7 @@ TYvoid RenderRayTraceCPU::PostRender()
 
 	GenericDraw::DrawSphere(TYvec(0.0f), 2.0f, TYvec(1.0f, 0.0f, 0.0f));
 
-	if (TY::in->isMouseReleased(MouseRight))
+	if (Input::isMouseReleased(MouseRight))
 	{
 		for (TYuint i = 0; i < scene->geometry.size(); i++)
 		{
@@ -476,14 +474,6 @@ TYvoid RenderRayTraceCPU::PostRender()
 
 		lines.clear();
 	}
-}
-
-TYuint RenderRayTraceCPU::AddMesh(Mesh& mesh)
-{
-	TYuint offset = (TYuint)scene->geometry.size();
-	//Scene += mesh;
-
-	return offset;
 }
 
 TYvoid RenderRayTraceCPU::ThreadHeight()
@@ -611,7 +601,7 @@ TYvoid RenderRayTraceCPU::Init()
 
 	traceData.Direction = TYvector3(width * height, TYvec(0));
 
-	camera = new Camera(TYnull, true);
+	camera = new Camera(true);
 
 	pixelCount = width * height;
 	GLsizei byteCount = pixelCount * sizeof(PixelColor);

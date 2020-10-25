@@ -1,23 +1,22 @@
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-#include "Globals.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(stdafx.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
-
 #include "RendererRayTrace.h"
+
 #include "Camera.h"
+#include "Shader.h"
+#include "Geometry.h"
+
+#include "Window.h"
+#include "Scene.h"
 
 #include "Mesh.h"
 #include "Entity.h"
 #include "Material.h"
 #include "Transform.h"
+
+#include "BoundingVolume.h"
+#include "Globals.h"
+
+#include "GLUtils.h"
+#include "ImGuiUtils.h"
 
 TYvoid RenderRayTrace::PreRender() 
 {
@@ -34,10 +33,6 @@ TYvoid RenderRayTrace::Render(TYfloat dt)
 
 	camera->dim.y = glm::tan(Global::FOV / 2.0f);
 	camera->dim.x = camera->dim.y * (TYfloat(width) / height);
-
-	GenericDraw::dt = dt;
-	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.1f, 1000.0f);;
-	GenericDraw::view = camera->view;
 
 	RayTraceShader->Use();
 
@@ -98,6 +93,12 @@ TYvoid RenderRayTrace::PostRender()
 	QuadShader->DrawQuad(RenderTexture);
 }
 
+TYvoid RenderRayTrace::RecompileRaytracer()
+{
+	delete RayTraceShader;
+	RayTraceShader = new Shader("raytracer.cs");
+}
+
 TYvoid RenderRayTrace::Init()
 {
 	Layout layout = window->GetLayout();
@@ -105,7 +106,7 @@ TYvoid RenderRayTrace::Init()
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	camera = new Camera(TYnull, true);
+	camera = new Camera(true);
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);

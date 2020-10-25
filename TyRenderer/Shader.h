@@ -1,15 +1,6 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-
-#endif // TYAMOE3D
 
 #include <fstream>
 #include <sstream>
@@ -62,7 +53,7 @@ struct UniformSetter
 	TYint type = -1;
 };
 
-typedef class Shader
+class Shader
 {
 public:
 	TYuint Program;
@@ -107,80 +98,5 @@ public:
 	void setMat3(TYint uniformLoc, const TYmat3 &mat);
 	void setMat4(TYint uniformLoc, const TYmat &mat);*/
 
-	TYvoid DrawQuad(TYint texture = -1, TYbool invert = false)
-	{
-		static TYuint quadVAO = 0;
-		static TYuint quadVBO;
-		static TYuint quadVAO1 = 0;
-		static TYuint quadVBO1;
-		if (quadVAO == 0)
-		{
-			TYfloat quadVertices[] =
-			{
-				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-				 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-			};
-			TYfloat quadVertices2[] =
-			{
-				-1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
-				-1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-				 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-				 1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-			};
-
-			glGenVertexArrays(1, &quadVAO);
-			glGenBuffers(1, &quadVBO);
-			glBindVertexArray(quadVAO);
-			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-			
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
-
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
-
-			glGenVertexArrays(1, &quadVAO1);
-			glGenBuffers(1, &quadVBO1);
-			glBindVertexArray(quadVAO1);
-			glBindBuffer(GL_ARRAY_BUFFER, quadVBO1);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices2), &quadVertices2, GL_STATIC_DRAW);
-
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(TYfloat), (void*)(3 * sizeof(TYfloat)));
-			
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
-		}
-
-		if (texture != -1)
-		{
-			Uniforms["texture1"](0);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, (TYuint)texture);
-		}
-
-		if (invert)
-		{
-			glBindVertexArray(quadVAO1);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		}
-		else
-		{
-			glBindVertexArray(quadVAO);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		}
-
-		glBindVertexArray(0);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-
-}Shader, *ShaderPtr;
+	TYvoid DrawQuad(TYint texture = -1, TYbool invert = false);
+};

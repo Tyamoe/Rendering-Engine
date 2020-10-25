@@ -1,15 +1,6 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-
-#endif // TYAMOE3D
 
 #include <algorithm>
 
@@ -64,7 +55,7 @@ union PixelColor
 
 	TYubyte val[4];
 
-	GLuint raw;
+	TYuint raw;
 };
 
 union PixelColorF

@@ -1,17 +1,7 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
 #include "Utils.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-#include EngineInc(Utils.h)
-
-#endif // TYAMOE3D
 
 typedef class Triangle Triangle;
 typedef class Geometry Geometry;

@@ -1,24 +1,14 @@
 #pragma once
 
-
-#ifndef TYAMOE3D
-
-#include "Types.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-
-#endif // TYAMOE3D
-
-#include "BoundingVolume.h"
-#include "Geometry.h"
+class Sphere;
+class Triangle;
+class Model;
+class BoundingVolume;
 
 class BVH
 {
 public:
-	BoundingVolumePtr head;
+	BoundingVolume* head;
 
 	static BVH* GenerateBVH(Sphere* sphere);
 	static BVH* GenerateBVH(Triangle* triangle);

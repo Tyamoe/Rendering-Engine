@@ -1,15 +1,9 @@
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(stdafx.h)
-
-#endif // TYAMOE3D
-
 #include "BVH.h"
+
+#include "Types.h"
+
+#include "Geometry.h"
+#include "BoundingVolume.h"
 
 BVH* BVH::GenerateBVH(Sphere* sphere)
 {

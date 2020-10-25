@@ -9,5 +9,3 @@ class Animator
 {
 
 };
-
-typedef Animator* AnimatorPtr;

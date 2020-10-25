@@ -1,26 +1,18 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-#include "Globals.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
+#include "Geometry.h"
 
 #include <fstream>
 
-#include "Geometry.h"
 #include "BVH.h"
+#include "Octree.h"
 #include "Debugger.h"
+
 #include "Mesh.h"
+#include "Animation.h"
+
+#include "Globals.h"
 #include "AssimpUtils.h"
 #include "AnimationUtils.h"
-#include "Animation.h"
+#include "GLUtils.h"
 
 static MeshHandle sphereHandle;
 
@@ -51,6 +43,13 @@ Geometry::operator Mesh*() const
 }
 
 // Model
+Model::Model() : Geometry()
+{
+	SetType(geoModel);
+
+	octree = new Octree(this);
+}
+
 Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, PixelColorF ec, TYvec ce) :
 	radius(0), radiusSQR(0), Geometry(ce, sc, refl, transp, ec)
 {

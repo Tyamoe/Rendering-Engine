@@ -1,28 +1,17 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-#include "Globals.h"
-#include "Types.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
-
 #include "Geometry.h"
+
+#include "Octree.h"
 #include "BVH.h"
 #include "Entity.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Transform.h"
 
+#include "Globals.h"
+
 TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
 {
-	Mesh* mesh = entity->Get<MeshPtr>();
+	Mesh* mesh = entity->Get<Mesh*>();
 	Transform* transform = entity->Get<Transform*>();
 
 	TYvector<Geometry*> geoList = mesh->GetGeometryList();

@@ -1,21 +1,10 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
 
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-
-#endif // TYAMOE3D
-
-//#include "Window.h"
-//#include "Engine.h"
-#include "Renderer.h"
-
-//typedef Renderer* RendererPtr;
+class Window;
+class Renderer;
+struct ImGuiContext;
 
 class TyRenderer
 {
@@ -27,14 +16,17 @@ public:
 	friend class Engine;
 
 private:
-	RendererPtr renderer = TYnull;
-	WindowPtr window = TYnull;
+	Renderer* renderer = TYnull;
+	Window* window = TYnull;
+	ImGuiContext* imGuiContext = TYnull;
 
 	TYfloat currDT = 0.0f;
 
 	TYvoid PreRender();
 	TYvoid Render();
 	TYvoid PostRender();
-};
 
-typedef TyRenderer* TyRendererPtr;
+public:
+	static inline TYint width = 0;
+	static inline TYint height = 0;
+};

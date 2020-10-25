@@ -1,9 +1,22 @@
-#include "stdafx.h"
-
 #include "WindowCB.h"
-#include "Window.h"
 
-void ViewportCB(GLFWwindow* window, int width, int height)
+#include "Window.h"
+#include "TyRenderer.h"
+
+TYvoid FocusCB(GLFWwindow* window, TYint focus)
+{
+	if (focus == GLFW_TRUE)
+	{
+		//glfwMakeContextCurrent(window);
+
+		TyRenderer::width = WindowManager[window]->GetLayout().width;
+		TyRenderer::height = WindowManager[window]->GetLayout().height;
+
+		TYlog << " Changed Focus " << WindowManager[window]->GetName() <<  "\n";
+	}
+}
+
+TYvoid ViewportCB(GLFWwindow* window, TYint width, TYint height)
 {
 	glViewport(0, 0, width, height);
 
@@ -12,12 +25,12 @@ void ViewportCB(GLFWwindow* window, int width, int height)
 	WindowManager[window]->rDirtyLayout() = true;
 }
 
-void ErrorCB(int error, char const* description)
+TYvoid ErrorCB(TYint error, const char* description)
 {
 	std::cerr << "GLFW error: " << description << std::endl;
 }
 
-void GLAPIENTRY ExErrorCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+TYvoid GLAPIENTRY ExErrorCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 

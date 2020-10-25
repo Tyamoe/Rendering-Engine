@@ -4,38 +4,35 @@
 
 #include "InputUtils.h"
 
+struct GLFWwindow;
+
 class Input
 {
 	public:
-		Input(GLFWwindow* window);
+		static TYvoid Update(TYfloat dt);
 
-		TYvoid Update(TYfloat dt);
+		static TYbool isKeyDown(TYint key);
+		static TYbool isKeyReleased(TYint key);
+		static TYbool isKeyPressed(TYint key);
 
-		TYbool isKeyDown(TYint key);
-		TYbool isKeyReleased(TYint key);
-		TYbool isKeyPressed(TYint key);
+		static TYbool isMousePressed(MouseButton button);
+		static TYbool isMouseDown(MouseButton button);
+		static TYbool isMouseReleased(MouseButton button);
 
-		TYbool isMousePressed(MouseButton button);
-		TYbool isMouseDown(MouseButton button);
-		TYbool isMouseReleased(MouseButton button);
+		static TYvec2 GetMouseWorldPosition();
 
-		TYvec2* getMouseWorldPosition();
-		TYvoid UpdateMouseWorldPosition();
+		static GLFWwindow* GetHighlightWindow();
 
 		static TYvoid KeyCB(GLFWwindow* window, TYint key, TYint scancode, TYint action, TYint mods);
 		static TYvoid CursorCB(GLFWwindow* window, TYdouble xpos, TYdouble ypos);
 		static TYvoid MouseCB(GLFWwindow* window, TYint button, TYint action, TYint mods);
 		static TYvoid ScrollCB(GLFWwindow* window, TYdouble xoffset, TYdouble yoffset);
 
-		Keyboard keyboard;
-		Mouse mouse;
+		static inline Keyboard keyboard;
+		static inline Mouse mouse;
+
 	private:
-		GLFWwindow* window = nullptr;
+		static inline GLFWwindow* highlightedWindow = nullptr;
+
+		static TYvoid UpdateMouseWorldPosition();
 };
-
-typedef Input* InputPtr;
-
-namespace TY
-{
-	inline InputPtr in = TYnull;
-}

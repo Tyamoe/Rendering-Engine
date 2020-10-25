@@ -1,7 +1,7 @@
-#include "stdafx.h"
-
 #include "Scene.h"
+
 #include "Entity.h"
+#include "Camera.h"
 
 #include "Transform.h"
 #include "Animation.h"
@@ -89,7 +89,7 @@ Scene::Scene(TYint i)
 	{
 		Entity* entity1 = CreateEntity("Test1");
 
-		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/Cinema4D.fbx", hasBones, hasAnim);
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewChar.fbx", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun.fbx", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/walking.dae", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX.fbx", hasBones, hasAnim);
@@ -99,7 +99,7 @@ Scene::Scene(TYint i)
 		{
 			entity1->Set<cc::Animation>(mesh.second);
 		}
-		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(1.0f)));
+		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(2.0f)));
 	}
 	/*Entity* entity1;
 	for (int i = 0; i < 50; i++)
@@ -178,7 +178,7 @@ TYvoid Scene::GenHandles_GL()
 {
 	for (Entity* entity : entityList)
 	{
-		entity->Get<MeshPtr>()->GenHandle_GL();
+		entity->Get<Mesh*>()->GenHandle_GL();
 	}
 }
 
@@ -186,7 +186,7 @@ TYvoid Scene::GenOctree()
 {
 	for (Entity* entity : entityList)
 	{
-		entity->Get<MeshPtr>()->GenOctree();
+		entity->Get<Mesh*>()->GenOctree();
 	}
 }
 

@@ -1,18 +1,3 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-
-#endif // TYAMOE3D
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-
 #include "Transform.h"
 
 Transform::Transform(TYvec pos_, TYvec scale_, TYquaternion rot)

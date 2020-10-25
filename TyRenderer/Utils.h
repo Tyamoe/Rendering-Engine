@@ -42,3 +42,5 @@ T TyMax(std::initializer_list<T> valueList)
 }
 
 TYint Hash(TYstring str);
+
+TYfloat lerp_t(TYfloat a, TYfloat b, TYfloat t, TYfloat dt);

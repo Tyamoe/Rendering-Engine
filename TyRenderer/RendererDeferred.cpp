@@ -1,28 +1,58 @@
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-#include "Utils.h"
-#include "Globals.h"
-
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(stdafx.h)
-#include EngineInc(Utils.h)
-#include EngineInc(Globals.h)
-
-#endif // TYAMOE3D
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-
 #include "RendererDeferred.h"
+
 #include "Input.h"
+#include "Window.h"
+#include "Scene.h"
 #include "Entity.h"
+
+#include "GenericDraw.h"
+#include "Octree.h"
+
 #include "Material.h"
 #include "Animation.h"
-#include "AnimationUtils.h"
 #include "Transform.h"
+#include "Mesh.h"
+
+#include "Camera.h"
+#include "Shader.h"
+
+#include "AnimationUtils.h"
+#include "Globals.h"
+#include "ImGuiUtils.h"
+#include "GLUtils.h"
+#include "Utils.h"
+
+#define L_POINT 1
+#define L_DIR   2
+#define L_SPOT  3
+
+struct Light
+{
+	TYint type;
+	TYvec3 ambi = { 1.0f, 0.0f, 0.0f };
+	TYvec3 diff = { 0.0f, 1.0f, 0.0f };
+	TYvec3 spec = { 0.0f, 0.0f, 1.0f };
+
+	TYvec3 pos = { 0.0f, 0.0f, 0.0f };
+	TYfloat c0 = 0.11f;
+	TYfloat c1 = 0.15f;
+	TYfloat c2 = 0.07f;
+
+	TYvec3 dir;
+	TYfloat innerTheta;
+	TYfloat outerTheta;
+	TYfloat spotIntensity;
+};
+
+inline TYvec3 randomVec()
+{
+	return
+	{
+		fmodf((TYfloat)rand(), 155.0f) / 255.0f,
+		fmodf((TYfloat)rand(), 155.0f) / 255.0f,
+		fmodf((TYfloat)rand(), 155.0f) / 255.0f
+	};
+}
 
 static TYvector<Light> Lights;
 
@@ -122,13 +152,13 @@ TYvoid DrawSkeleton(TYumap<TYint, BoneKeyframes*>& skeleton)
 
 TYvoid RenderDeferred::Draw(Entity* entity)
 {
-	MeshPtr mesh = entity->Get<MeshPtr>();
+	Mesh* mesh = entity->Get<Mesh*>();
 	Animation* anim = entity->Get<Animation*>();
 	Material* mat = mesh->Get<Material*>();
 
 	if (mat->mShader == MaterialShader::Phong)
 	{
-		ShaderPtr shader = BufferShader;
+		Shader* shader = BufferShader;
 
 		if (mesh->IsAnimated())
 		{
@@ -140,7 +170,13 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 		TYmat modelMatrix = entity->GetMatrix();
 		TYmat modelInv = glm::inverse(modelMatrix);
 		modelInv = glm::transpose(modelInv);
-		TYmat MVP = GenericDraw::projection * camera->view * modelMatrix;
+		TYmat MVP = camera->proj * camera->view * modelMatrix;
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		//GenericDraw::DrawQuad({ 0.0f, 0.0f }, { 10.0f, 10.0f }, { 1.0f, 0.0f, 0.0f });
+		//GenericDraw::DrawCube({ 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f }, { 1.0f, 0.0f, 0.0f }, -1.0f);
+		//return;
+		/////////////////////////////////////////////////////////////////////////////////////////
 
 		shader->Uniforms["InvTrModel"](modelInv);
 		shader->Uniforms["MVP"](MVP);
@@ -177,7 +213,7 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 
 TYvoid RenderDeferred::Draw(Entity* entity, TYbool)
 {
-	MeshPtr mesh = entity->Get<MeshPtr>();
+	Mesh* mesh = entity->Get<Mesh*>();
 	Animation* anim = entity->Get<Animation*>();
 	Material* mat = mesh->Get<Material*>();
 
@@ -188,7 +224,7 @@ TYvoid RenderDeferred::Draw(Entity* entity, TYbool)
 		BufferPBRShader->Use();
 
 		TYmat modelMatrix = entity->GetMatrix();
-		TYmat MVP = GenericDraw::projection * camera->view * modelMatrix;
+		TYmat MVP = camera->proj * camera->view * modelMatrix;
 
 		BufferPBRShader->Uniforms["MVP"](MVP);
 		BufferPBRShader->Uniforms["Model"](modelMatrix);
@@ -335,6 +371,7 @@ TYvoid RenderDeferred::Deferred()
 	Layout layout = window->GetLayout();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glViewport(0, 0, layout.width, layout.height);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -368,7 +405,7 @@ TYvoid RenderDeferred::Forward()
 
 		ImGui::NewLine();
 
-		TransformPtr t = Entity::Get<TransformPtr>("Test");
+		Transform* t = Entity::Get<Transform*>("Test");
 
 		TYvec p = t->Get<Transformation::Position>();
 		TYvec s = t->Get<Transformation::Scale>();
@@ -410,6 +447,11 @@ TYvoid RenderDeferred::Forward()
 			DrawSkeleton(anim->skeleton->skeleton);
 		}
 	}
+
+	//GenericDraw::DrawCube({ 0,0,0 }, { 3,3,3 }, UI::Color::PURPLE);
+
+	//UI::Use(camera);
+	//UI::DrawBackground(Texture2D::CreateTexture("editorBackground.png"), 10.0f);
 }
 
 TYvoid RenderDeferred::PreRender()
@@ -428,10 +470,6 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 	TYint height = layout.height;
 
 	camera->Update(dt);
-
-	GenericDraw::dt = dt;
-	GenericDraw::projection = glm::perspective(glm::radians(Global::FOV), TYfloat(width) / height, 0.5f, 2000.0f);;
-	GenericDraw::view = camera->view;
 	
 	for (TYuint i = 0; i < scene->entityList.size(); i++)
 	{
@@ -514,7 +552,7 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	if (TY::in->isMouseReleased(MouseRight))
+	if (Input::isMouseReleased(MouseRight))
 	{
 		for (TYuint i = 0; i < scene->geometry.size(); i++)
 		{
@@ -527,12 +565,12 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 			}
 		}
 	}
-	if (TY::in->isMouseReleased(MouseMiddle))
+	if (Input::isMouseReleased(MouseMiddle))
 	{
 		TYfloat y_, x_;
 
-		x_ = width / 2.0f; //TY::in->mouse.screenPos.x;
-		y_ = height / 2.0f; //TY::in->mouse.screenPos.y;
+		x_ = width / 2.0f; //Input::mouse.screenPos.x;
+		y_ = height / 2.0f; //Input::mouse.screenPos.y;
 
 		TYvec2 screenCoord;
 		screenCoord.x = (2.0f * x_) / width - 1.0f;
@@ -631,7 +669,7 @@ TYvoid RenderDeferred::Init()
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	camera = new Camera(TYnull, false);
+	camera = new Camera(false);
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
@@ -765,11 +803,11 @@ RenderDeferred::RenderDeferred() : Renderer()
 	//metallicMap =   Material::CreateTexture("./resources/models/Helmet/Metalness.png");
 	//roughnessMap =  Material::CreateTexture("./resources/models/Helmet/Roughness.png");
 	//aoMap =         Material::CreateTexture("./resources/models/Helmet/AOMap.png");
-	albedoMap =     Material::CreateTexture("./resources/models/test/albedo.png");
+	/*albedoMap =     Material::CreateTexture("./resources/models/test/albedo.png");
 	normalMap =     Material::CreateTexture("./resources/models/test/normal.png");
 	metallicMap =   Material::CreateTexture("./resources/models/test/metallic.png");
 	roughnessMap =  Material::CreateTexture("./resources/models/test/roughness.png");
-	aoMap =         Material::CreateTexture("./resources/models/test/ao.png");
+	aoMap =         Material::CreateTexture("./resources/models/test/ao.png");*/
 }
 
 RenderDeferred::~RenderDeferred()

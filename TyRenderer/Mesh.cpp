@@ -1,20 +1,12 @@
-#include "Tyamoe3DHelper.h"
-
-#ifndef TYAMOE3D
-
-#include "stdafx.h"
-
-#else
-
-#include EngineInc(stdafx.h)
-
-#endif // TYAMOE3D
-
-#include "Scene.h"
 #include "Mesh.h"
+
 #include "Geometry.h"
 #include "Material.h"
 #include "Animation.h"
+
+#include "Scene.h"
+
+#include "BoundingVolume.h"
 
 #include "AssimpUtils.h"
 #include "AnimationUtils.h"
@@ -43,10 +35,10 @@ Mesh::Mesh(TYstring filename)
 TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleton, TYbool& hasAnimations, Material* material)
 {
 	// aiProcess_PreTransformVertices
-	ai_real ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
-	importer.SetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY", 0.01f);
-	ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
-	const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_GlobalScale);
+	//ai_real ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
+	//importer.SetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY", 1.01f);
+	//ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
+	const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes/* | aiProcess_GlobalScale*/);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -131,7 +123,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		geometryList.push_back(geo);
 	}
 
-	MeshPtr mesh = new Mesh(geometryList, mat);
+	Mesh* mesh = new Mesh(geometryList, mat);
 	mesh->isAnimated = hasAnimations;
 
 	return { mesh , anim };

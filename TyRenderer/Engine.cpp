@@ -1,16 +1,20 @@
-#include "stdafx.h"
+#include "Engine.h"
 
 #include <algorithm>
 
-#include "Engine.h"
 #include "Input.h"
 #include "Renderer.h"
+#include "Window.h"
+#include "TyRenderer.h"
+
+#include "GLUtils.h"
+#include "ImGuiUtils.h"
 
 Engine::Engine()
 {
 	renderer = new TyRenderer();
-	GLFWwindow* w = GetWindow<GLFWwindow*>();
-	input = new Input(w);
+
+	GLFWwindow* win = GetWindow<GLFWwindow*>();
 
 	EngineInitialized = true;
 }
@@ -64,7 +68,8 @@ TYvoid Engine::LateUpdate()
 	if (!EngineInitialized) return;
 
 	renderer->Update(dt);
-	input->Update(dt);
+
+	Input::Update(dt);
 }
 
 TYvoid Engine::UpdateDT()
@@ -76,6 +81,18 @@ TYbool Engine::WindowClosed()
 {
 	GLFWwindow* w = GetWindow<GLFWwindow*>();
 	return glfwWindowShouldClose(w);
+}
+
+template<>
+GLFWwindow* Engine::GetWindow(GLFWwindow* p)
+{
+	return renderer->window->window;
+}
+
+template<>
+Window* Engine::GetWindow(Window* p)
+{
+	return renderer->window;
 }
 
 Engine::~Engine()

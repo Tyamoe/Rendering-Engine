@@ -1,22 +1,13 @@
 #pragma once
 
-#ifndef TYAMOE3D
-
 #include "Types.h"
+
 #include "Utils.h"
 
-#else
-
-#include "Tyamoe3DHelper.h"
-#include EngineInc(Types.h)
-#include EngineInc(Utils.h)
-
-#endif // TYAMOE3D
-
 #include "RenderingUtils.h"
-#include "Octree.h"
 #include "MeshUtils.h"
 
+class Octree;
 class BVH;
 class MeshHandle;
 class Mesh;
@@ -158,12 +149,7 @@ private:
 class Model : public Geometry
 {
 public:
-	Model() : Geometry()
-	{
-		SetType(geoModel);
-
-		octree = new Octree(this);
-	}
+	Model();
 
 	Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnimations, TYvec Min, TYvec Max);
 
