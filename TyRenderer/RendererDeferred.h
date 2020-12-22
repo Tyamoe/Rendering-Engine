@@ -48,7 +48,6 @@ private:
 
 	TYint PBRCount = 0;
 
-	TYvoid Draw(TYbool);
 	TYvoid Draw(Entity*);
 	TYvoid Draw(Entity*, TYbool);
 	TYvoid LightPass();

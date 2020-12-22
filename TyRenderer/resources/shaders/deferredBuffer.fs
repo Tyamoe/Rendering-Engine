@@ -11,6 +11,7 @@ in vec2 TexCoord;
 
 //uniform sampler2D meshTexture;
 uniform vec4 meshColor;
+uniform sampler2D diffuseTexture;
 
 unsigned int packVec(vec4 value)
 {
@@ -28,7 +29,9 @@ void main()
 {
 	positionTexture = vec4(fragPos, 1.0f);
 	normalTexture = vec4(Normal.xyz, 1.0f);
-	colorTexture = meshColor;
+
+  	vec4 diff = texture(diffuseTexture, TexCoord);
+	colorTexture = meshColor * diff;
 
 	/////////////////////////////////////////////////////
 	unsigned int mColor = packVec(meshColor);

@@ -19,10 +19,12 @@ struct SubMesh
 
 	Geometry* geometry;
 
-	TYuint NumIndices;
+	TYuint NumIndices = 0;
 
-	TYuint OffsetVertex;
-	TYuint OffsetIndex;
+	TYuint OffsetVertex = 0;
+	TYuint OffsetIndex = 0;
+
+	TYuint MaterialIndex = 0;
 };
 
 class Mesh

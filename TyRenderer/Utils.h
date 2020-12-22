@@ -46,5 +46,6 @@ TYvec TyVec3(TYstring hex);
 TYint HexToInt(TYstring hex);
 
 TYint Hash(TYstring str);
+TYint Hash(TYcstring str, TYuint len);
 
 TYfloat lerp_t(TYfloat a, TYfloat b, TYfloat t, TYfloat dt);

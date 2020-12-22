@@ -17,13 +17,27 @@ public:
 	~Material() {}
 
 	TYfloat GetTransparency() { return 0.0f; }
+	TYuint GetTexture(TYuint i) 
+	{ 
+		if (i < TextureList.size()) return TextureList[i];
+		else return WhiteTexture;
+	}
+
+	TYvoid AddTexture(TYuint texture) { TextureList.push_back(texture); }
 
 	TYvec4 color;
 
 	MaterialShader mShader = MaterialShader::Phong;
 
 private:
+	TYvector<TYuint> TextureList;
 
 public:
-	static TYuint CreateTexture(TYstring filename);
+	static TYuint CreateTexture(TYstring& filename);
+	static TYuint CreateTexture(TYvec4 color);
+
+	static inline TYuint WhiteTexture = 0;
+
+private:
+	//static inline TYumap<TYvec4, TYuint> TextureMap;
 };

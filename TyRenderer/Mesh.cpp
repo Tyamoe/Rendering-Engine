@@ -16,9 +16,6 @@ static Assimp::Importer importer;
 
 Mesh::Mesh(Geometry* geometry_, Material* mat)
 {
-	//geometry = geometry_;
-	//geoList.push_back(geometry);
-
 	if (!mat)
 	{
 		mat = new Material();
@@ -46,9 +43,6 @@ Mesh::Mesh(Geometry* geometry_, Material* mat)
 
 Mesh::Mesh(TYvector<Geometry*>& geoList_, Material* mat)
 {
-	//geoList = geoList_;
-	//geometry = geoList_[0];
-
 	if (!mat)
 	{
 		mat = new Material();
@@ -105,14 +99,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 
 	if (hasMaterial && !material)
 	{
-		if (mScene->mMeshes[0]->HasVertexColors(0))
-		{
-			mat->color = AssimpToGlm(*mScene->mMeshes[0]->mColors[0]);
-		}
-		else
-		{
-			mat->color = randColor;
-		}
+		mat->color = TYvec4(1.0f);
 	}
 	else if(!material)
 	{
@@ -148,8 +135,6 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		anim = Animation::CreateAnimation(scene);
 		anim->mScene = mScene;
 
-		//anim->CreateSkeleton(mScene);
-
 		TYmat globalInverseTransform = AssimpToGlm(mScene->mRootNode->mTransformation);
 		anim->globalInvMatrix = glm::inverse(globalInverseTransform);
 	}
@@ -172,6 +157,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 
 		for (TYuint i = 0; i < subMeshes.size(); i++)
 		{
+			subMeshes[i].MaterialIndex = mScene->mMeshes[i]->mMaterialIndex;
 			subMeshes[i].NumIndices = mScene->mMeshes[i]->mNumFaces * 3;
 			subMeshes[i].OffsetVertex = NumVertices;
 			subMeshes[i].OffsetIndex = NumIndices;
@@ -186,7 +172,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		for (TYuint i = 0; i < subMeshes.size(); i++)
 		{
 			const aiMesh* pMesh = mScene->mMeshes[i];
-			subMeshes[i].geometry = new Model(i, pMesh, subMeshes[i].OffsetVertex, gVertices, gIndices, anim, Min, Max);
+			subMeshes[i].geometry = new Model(i, pMesh, subMeshes[i].OffsetVertex, gVertices, gIndices, anim);
 			subMeshes[i].geometry->surfaceColor = PixelColorF(randColor);
 			subMeshes[i].geometry->bvh = new BVH();
 			subMeshes[i].geometry->bvh->head = boundSphere;
@@ -231,7 +217,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		mesh->subMeshes = subMeshes;
 		mesh->meshHandle = mh;
 
-		anim->currentPose.resize(anim->numBones);
+		anim->currentPose = TYvector<TYmat>(anim->numBones, TYmat(1.0f));
 	}
 	else
 	{
@@ -245,6 +231,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 
 		for (TYuint i = 0; i < subMeshes.size(); i++)
 		{
+			subMeshes[i].MaterialIndex = mScene->mMeshes[i]->mMaterialIndex;
 			subMeshes[i].NumIndices = mScene->mMeshes[i]->mNumFaces * 3;
 			subMeshes[i].OffsetVertex = NumVertices;
 			subMeshes[i].OffsetIndex = NumIndices;
@@ -259,7 +246,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		for (TYuint i = 0; i < subMeshes.size(); i++)
 		{
 			const aiMesh* pMesh = mScene->mMeshes[i];
-			subMeshes[i].geometry = new Model(i, pMesh, gVertices, gIndices, Min, Max);
+			subMeshes[i].geometry = new Model(i, pMesh, gVertices, gIndices);
 			subMeshes[i].geometry->surfaceColor = PixelColorF(randColor);
 			subMeshes[i].geometry->bvh = new BVH();
 			subMeshes[i].geometry->bvh->head = boundSphere;
@@ -301,20 +288,61 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		mesh->meshHandle = mh;
 	}
 
-	/*TYvector<Geometry*> geometryList;
-	Geometry* geo = TYnull;
+	// Extract the directory part from the file name
+	TYstring::size_type SlashIndex = filename.find_last_of("/");
+	TYstring Dir;
 
-	for (TYuint m = 0; m < mScene->mNumMeshes; m++)
+	if (SlashIndex == TYstring::npos) 
 	{
-		geo = new Model(anim, mScene, mScene->mMeshes[m], hasAnimations, Min, Max);
-		geo->surfaceColor = PixelColorF(randColor);
-		geo->bvh = new BVH();
-		geo->bvh->head = boundSphere;
-
-		geometryList.push_back(geo);
+		Dir = ".";
+	}
+	else if (SlashIndex == 0) 
+	{
+		Dir = "/";
+	}
+	else 
+	{
+		Dir = filename.substr(0, SlashIndex);
 	}
 
-	Mesh* mesh = new Mesh(geometryList, mat); */
+	bool Ret = true;
+
+	// Initialize the materials
+	for (TYuint i = 0; i < mScene->mNumMaterials; i++) 
+	{
+		const aiMaterial* pMaterial = mScene->mMaterials[i];
+
+		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) 
+		{
+			aiString Path;
+
+			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) 
+			{
+				TYstring p(Path.data);
+
+				if (p.substr(0, 2) == ".\\") 
+				{
+					p = p.substr(2, p.size() - 2);
+				}
+
+				TYstring FullPath = Dir + "/" + p;
+
+				if (p.find(":") != TYstring::npos || p.find("..") != TYstring::npos)
+				{
+					FullPath = p;
+				}
+
+				TYuint texture = Material::CreateTexture(FullPath);
+				if (texture == 0)
+				{
+					mesh->material->color = randColor;
+					texture = Material::CreateTexture(TYvec4(1.0f));
+				}
+
+				mesh->material->AddTexture(texture);
+			}
+		}
+	}
 
 	return { mesh , anim };
 }

@@ -10,7 +10,7 @@ out vec3 fragPos;
 out vec4 Normal;
 out vec2 TexCoord;
 
-const int MAX_BONES = 100;
+const int MAX_BONES = 120;
 
 uniform mat4 MVP;
 uniform mat4 Model;
@@ -42,7 +42,8 @@ void main()
 		
 	fragPos = vec3(Model * pos);
 		
-	TexCoord = vertTexCoord;
+	TexCoord.x = vertTexCoord.x;
+	TexCoord.y = 1.0f - vertTexCoord.y;
 		
 	Normal = transpose(inverse(Model * boneTransform)) * vec4(vertNormal, 1.0f);
 	Normal = normalize(Normal);

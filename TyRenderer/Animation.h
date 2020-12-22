@@ -23,10 +23,26 @@ struct BoneInfo1;
 class Animation
 {
 public:
+	friend class Mesh;
 
-	TYumap<TYstring, TYuint> boneMapping;
+	Animation();
+	~Animation();
+	
+	TYvoid Update(TYfloat dt);
+
+	TYvoid UpdatePose();
+	TYvoid UpdatePose(const aiNode* pNode, const TYmat& ParentTransform);
+
+	TYvoid DrawSkeleton();
+
+	TYvoid SetFrame(TYfloat frame);
+	TYvoid SetFrame(TYint frame);
+	
+	TYumap<TYint, aiNodeAnim*> nodeMapping;
+	TYumap<TYint, TYuint> boneMapping;
 	TYvector<BoneInfo1> boneInfo;
-	TYuint numBones;
+
+	TYuint numBones = 0;
 
 	TYfloat timeElapsed = 0.05f;
 
@@ -41,39 +57,19 @@ public:
 
 	TYvector<TYmat4> currentPose = {};
 
-	//////////////////////////////////////
-
-	Animation();
-	~Animation();
-	
-	TYvoid Update(TYfloat dt);
-
-	TYvoid SetFrame(TYfloat frame);
-	TYvoid SetFrame(TYint frame);
-
-	Skeleton* skeleton;
-
-	TYvector<BoneKeyframes*> skeleton1;
-
-	TYvoid CreateSkeleton(const aiScene* scene);
-	TYvoid LoadKeyframes(TYumap<TYint, BoneKeyframes*>&);
-
-	TYvoid UpdatePose();
-	TYvoid UpdatePose(const aiNode* pNode, const TYmat& ParentTransform);
-
-	friend class Mesh;
-
 private:
-	TYbool globalKeyframes = false;
-
 	const aiNodeAnim* GetNodeAnim(const aiAnimation* pAnimation, TYstring& NodeName);
 
 	TYvec GetPosePosition(const aiNodeAnim* pNodeAnim);
 	TYvec GetPoseScale(const aiNodeAnim* pNodeAnim);
 	TYquaternion GetPoseRotation(const aiNodeAnim* pNodeAnim);
 
-	TYvoid GenGlobalKeyframes();
-
+	void CalcInterpolatedScaling(TYvec& Out, const aiNodeAnim* pNodeAnim);
+	void CalcInterpolatedRotation(TYquaternion& Out, const aiNodeAnim* pNodeAnim);
+	void CalcInterpolatedPosition(TYvec& Out, const aiNodeAnim* pNodeAnim);
+	TYuint FindScaling(const aiNodeAnim* pNodeAnim);
+	TYuint FindRotation(const aiNodeAnim* pNodeAnim);
+	TYuint FindPosition(const aiNodeAnim* pNodeAnim);
 private:
 	static Animation* CreateAnimation(const aiScene* scene);
 

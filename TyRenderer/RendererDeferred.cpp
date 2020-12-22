@@ -68,131 +68,9 @@ static TYuint aoMap = 0;
 
 static TYvec tmpVec = {0, 0, 0};
 
-TYvoid DrawSkeleton(TYumap<TYint, BoneKeyframes*>& skeleton)
-{
-	//glDisable(GL_DEPTH_TEST);
-	for (TYpair<TYint, BoneKeyframes*> boneKeyframe : skeleton)
-	{
-		BoneKeyframes* keyframe = boneKeyframe.second;
-		Bone* bone = keyframe->bone;
-
-		TYvec parentPosition = TYvec();
-		if (bone->parent != TYnull)
-		{
-			//parentPosition = bone->parent->transform->Get<Transformation::Position>();
-		}
-
-		TYvec position = bone->transform->Get<Transformation::Position>() + parentPosition;
-
-		//TYmat r = glm::toMat4(TYquaternion(glm::radians(tmpVec)));
-		TYmat r = TYmat(1.0f);
-		r = glm::rotate(r, glm::radians(90.0f), TYvec(1, 0, 0));
-		r = glm::rotate(r, glm::radians(90.0f), TYvec(0, 1, 0));
-		r = glm::rotate(r, glm::radians(0.0f), TYvec(0, 0, 1));
-
-		//r = glm::translate(r, bone->transform->Get<Transformation::Position>());
-		//r = glm::translate(r, parentPosition);
-
-		//r = anim->globalInvMatrix * bone->local * bone->offset;
-
-		TYvec pp = bone->local * TYvec4(0, 0, 0, 1.0f);
-		//pp += parentPosition;
-
-		//pp += dpp;
-		//skeleton2->skeleton[hashStr]->bone->transform->Set<Transformation::Position>(pp);
-
-		if(!tempPlay)
-			pp = bone->transform->Get<Transformation::Position>();
-
-		TYvec dpp = r * TYvec4(pp, 1.0f);
-
-		//pp = dpp;
-
-		bone->globalPosition = position;
-
-		if (keyframe->id != INT_MAX)
-		{
-			TYvec color = {};
-			{
-				if (keyframe->id == 0)
-				{
-					color = { 1, 0, 0 };
-				}
-				else if (keyframe->id <= 4)
-				{
-					color = { 0, 0.5f, 1 };
-				}
-				else if (keyframe->id <= 8)
-				{
-					color = { 0, 0, 1 };
-				}
-				else if (keyframe->id <= 10)
-				{
-					color = { 0, 1, 0 };
-				}
-				else if (keyframe->id == 19)
-				{
-					color = { 1, 1, 1 };
-				}
-				else if (keyframe->id == 20)
-				{
-					color = { 1, 1, 1 };
-				}
-				else if (keyframe->id >= 15)
-				{
-					color = { 0.6f, 0.6f, 0 };
-				}
-				else if (keyframe->id >= 11)
-				{
-					color = { 1, 1, 0 };
-				}
-			}
-			GenericDraw::DrawLine(parentPosition, pp, TYvec(0), 1.0f);
-			GenericDraw::DrawSphere(pp, 0.4f, color);
-		}
-	}
-	//glEnable(GL_DEPTH_TEST);
-}
-
-static TYvector<TYmat> tTransforms;
-
 static TYvec PositionBitss = { 0.0f, 0.0f, 0.0f };
 static TYfloat ScaleBithc = 1.0f;
 static TYvec4 RotationBatch = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-TYvoid RenderDeferred::Draw(TYbool)
-{
-	if (tTransforms.size() == 0) return;
-
-	Shader* shader = animBufferShader;
-
-	shader->Use();
-
-	TYmat modelMatrix(1.0f);
-
-	TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
-	TYmat rtMatrix = glm::mat4_cast(TYquaternion(RotationBatch));
-	TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(ScaleBithc));
-
-	modelMatrix = trMatrix * rtMatrix * scMatrix;
-
-	TYmat modelInv = glm::inverse(modelMatrix);
-	modelInv = glm::transpose(modelInv);
-	TYmat MVP = camera->proj * camera->view * modelMatrix;
-
-	shader->Uniforms["InvTrModel"](modelInv);
-	shader->Uniforms["MVP"](MVP);
-	shader->Uniforms["Model"](modelMatrix);
-
-	shader->Uniforms["SkeletonTransform"](tTransforms, (TYint)tTransforms.size());
-
-	TYvec4 c = TYvec4(0.44f, 0.8f, 0.54f, 1.0f);
-	shader->Uniforms["meshColor"](c);
-
-	skinnyMesh->Render();
-
-	tTransforms.clear();
-}
 
 TYvoid RenderDeferred::Draw(Entity* entity)
 {
@@ -212,6 +90,14 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 		shader->Use();
 
 		TYmat modelMatrix = entity->GetMatrix();
+		if (mesh->IsAnimated())
+		{
+			/*TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
+			TYmat rtMatrix = glm::mat4_cast(TYquaternion(RotationBatch));
+			TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(ScaleBithc));
+
+			modelMatrix = trMatrix * rtMatrix * scMatrix;*/
+		}
 		TYmat modelInv = glm::inverse(modelMatrix);
 		modelInv = glm::transpose(modelInv);
 
@@ -223,41 +109,22 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 
 		shader->Uniforms["meshColor"](mat->color);
 
-		/*for (TYsizet i = 0; i < mesh->geoCount(); i++)
-		{
-			if (mesh->IsAnimated())
-			{
-				//TYvector<TYmat> Transforms;
-				//anim->BoneTransform((TYint)i, Transforms);
-				//shader->Uniforms["SkeletonTransform"](Transforms, (TYint)Transforms.size());
-				shader->Uniforms["SkeletonTransform"](anim->currPose, (TYint)anim->currPose.size());
-
-				//shader->Uniforms["SkeletonTransform"](anim->currentPoseList[i], (TYint)anim->currentPoseList[i].size());
-			}
-
-			TYvec4 c = TYvec4(0.54f);
-			c[i % 3] = 0.0f;
-			c.a = 1.0f;
-			shader->Uniforms["meshColor"](mat->color);
-
-			MeshHandle& mHandle = mesh->GetHandle((TYint)i);
-
-			glBindVertexArray(mHandle.VAO);
-			glDrawElements(GL_TRIANGLES, (TYint)mHandle.indexCount, GL_UNSIGNED_INT, 0);
-		}*/
-
-		MeshHandle& mHandle = mesh->GetHandle();
-
 		if (mesh->IsAnimated())
 		{
 			shader->Uniforms["SkeletonTransform"](anim->currentPose, (TYint)anim->currentPose.size());
 		}
+
+		MeshHandle& mHandle = mesh->GetHandle();
 
 		glBindVertexArray(mHandle.VAO);
 
 		for (TYuint i = 0; i < mesh->SubMeshCount(); i++)
 		{
 			const SubMesh& subMesh = mesh->GetSubMesh(i);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, mat->GetTexture(subMesh.MaterialIndex));
+
 			glDrawElementsBaseVertex(GL_TRIANGLES, subMesh.NumIndices, GL_UNSIGNED_INT,
 				(void*)(sizeof(TYuint) * subMesh.OffsetIndex), subMesh.OffsetVertex);
 		}
@@ -475,8 +342,6 @@ TYvoid RenderDeferred::Deferred()
 		Draw(scene->entityList[i]);
 	}
 
-	//Draw(true);
-
 	//glEnable(GL_BLEND);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
@@ -499,7 +364,7 @@ TYvoid RenderDeferred::Forward()
 
 		ImGui::NewLine();
 
-		Transform* t = Entity::Get<Transform*>("Test");
+		/*Transform* t = Entity::Get<Transform*>("Test");
 
 		TYvec p = t->Get<Transformation::Position>();
 		TYvec s = t->Get<Transformation::Scale>();
@@ -510,7 +375,7 @@ TYvoid RenderDeferred::Forward()
 		t->Set<Transformation::Position>(p);
 		t->Set<Transformation::Scale>(s);
 
-		Lights[1].pos = p;
+		Lights[1].pos = p;*/
 
 		ImGui::NewLine();
 
@@ -553,7 +418,8 @@ TYvoid RenderDeferred::Forward()
 			Animation* anim = scene->entityList[i]->Get<Animation*>();
 			if (anim)
 			{
-				DrawSkeleton(anim->skeleton->skeleton);
+				anim->DrawSkeleton();
+				//DrawSkeleton(anim->skeleton->skeleton);
 			}
 		}
 	}
@@ -591,7 +457,7 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 		{
 			//UI
 			{
-				ImGui::Begin("Animations");
+				ImGui::Begin("Animation");
 
 				ImGui::Checkbox("Play Animation", &tempPlay);
 				ImGui::Checkbox("Draw Skeleton", &tempDrawSkeleton);
@@ -794,13 +660,6 @@ TYvoid RenderDeferred::Init()
 
 	camera = new Camera(false);
 
-	///////////////////////////////////////////////////////////////////////////////
-	//skinnyMesh = new SkinnedMesh();
-	//skinnyMesh->LoadMesh("./resources/models/modls/boblampclean.md5mesh"); 
-	//skinnyMesh->LoadMesh("./resources/models/modls/SeaLife_Rigged/Green_Sea_Turtle.fbx");
-	//skinnyMesh->LoadMesh("./resources/models/krieg_walk2.fbx");
-	///////////////////////////////////////////////////////////////////////////////
-
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
@@ -874,6 +733,7 @@ RenderDeferred::RenderDeferred() : Renderer()
 	SetType(RendererType::Deferred);
 
 	Mesh::GenHandles = true;
+	Material::WhiteTexture = Material::CreateTexture(TYvec4(1.0f));
 
 	animBufferShader = new Shader("deferredBuffer_Anim.vs", "deferredBuffer.fs");
 	BufferShader = new Shader("deferredBuffer.vs", "deferredBuffer.fs");

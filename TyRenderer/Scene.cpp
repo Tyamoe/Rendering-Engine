@@ -81,18 +81,50 @@ Scene::Scene(TYint i)
 	{
 		Entity* entity1 = CreateEntity("Test1");
 
-		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
-		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX2.fbx", hasBones, hasAnim);
-		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun.fbx", hasBones, hasAnim);
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun2.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/modls/boblampclean.md5mesh", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/walking.dae", hasBones, hasAnim);
-		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX2.fbx", hasBones, hasAnim);
 		using cc = Component;
 		entity1->Set<cc::Mesh>(mesh.first);
 		if (hasAnim)
 		{
 			entity1->Set<cc::Animation>(mesh.second);
 		}
-		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(1)));
+		entity1->Set<cc::Transform>(new Transform(TYvec(-30.0f, 0.0f, 0.0f), TYvec(1)));
+	}
+	{
+		Entity* entity1 = CreateEntity("Test12");
+
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun2.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/modls/boblampclean.md5mesh", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/walking.dae", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX2.fbx", hasBones, hasAnim);
+		using cc = Component;
+		entity1->Set<cc::Mesh>(mesh.first);
+		if (hasAnim)
+		{
+			entity1->Set<cc::Animation>(mesh.second);
+		}
+		entity1->Set<cc::Transform>(new Transform(TYvec(40.0f, 0.0f, 0.0f), TYvec(8.5f)));
+	}
+	{
+		Entity* entity1 = CreateEntity("Test123");
+
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun2.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/modls/boblampclean.md5mesh", hasBones, hasAnim);
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/walking.dae", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX2.fbx", hasBones, hasAnim);
+		using cc = Component;
+		entity1->Set<cc::Mesh>(mesh.first);
+		if (hasAnim)
+		{
+			entity1->Set<cc::Animation>(mesh.second);
+		}
+		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 20.0f, 40.0f), TYvec(1.0f)));
 	}
 
 	/*Entity* entity1;
@@ -190,10 +222,10 @@ Scene::~Scene()
 	{
 		delete entity;
 	}
-	for (BVH* bvh_ : bvh)
+	/*for (BVH* bvh_ : bvh)
 	{
 		delete bvh_;
-	}
+	}*/
 }
 
 TYvoid Scene::Init()

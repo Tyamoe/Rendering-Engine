@@ -27,8 +27,8 @@ Animation::Animation()
 
 Animation::~Animation()
 {
-	skeleton1.clear();
-	delete skeleton;
+	//skeleton1.clear();
+	//delete skeleton;
 }
 
 Animation* Animation::CreateAnimation(const aiScene* scene)
@@ -44,6 +44,14 @@ Animation* Animation::CreateAnimation(const aiScene* scene)
 
 	animation->duration = (TYfloat)anim->mDuration * (TYfloat)anim->mTicksPerSecond;
 	animation->duration = (TYfloat)anim->mDuration;
+
+	for (TYuint i = 0; i < anim->mNumChannels; i++)
+	{
+		const aiNodeAnim* pNodeAnim = anim->mChannels[i];
+		TYstring NodeName(pNodeAnim->mNodeName.data);
+		TYint hashStr = Hash(pNodeAnim->mNodeName.C_Str(), pNodeAnim->mNodeName.length);
+		animation->nodeMapping.insert({ hashStr, (aiNodeAnim*)pNodeAnim });
+	}
 
 	return animation;
 }
@@ -77,81 +85,18 @@ TYvoid Animation::UpdatePose()
 	{
 		currentPose[i] = boneInfo[i].FinalTransformation;
 	}
-
-	/*for (BoneKeyframes* keyframe : skeleton1)
-	{
-		TYvec position = GetPosePosition(keyframe->positionTimestamps, keyframe->positions);
-		TYvec scale = GetPoseScale(keyframe->scaleTimestamps, keyframe->scales);
-		TYquaternion rotation = GetPoseRotation(keyframe->rotationTimestamps, keyframe->rotations);
-
-		//BoneKeyframes* keyframe = boneKeyframe.second;
-		Bone* bone = keyframe->bone;
-
-		TYmat parentMat = TYmat(1.0f);
-
-		TYvec pt = TYvec();
-		TYvec ps = TYvec(1);
-		TYquaternion pr = TYvec();
-
-		TYvec t = bone->transform->Get<Transformation::Position>();
-		TYvec s = bone->transform->Get<Transformation::Scale>();
-		TYquaternion r = bone->transform->GetRotation();
-
-		Bone* parent = bone->parent;
-
-		TYmat localMat = TYmat(1.0f);
-
-		if (!parent)
-		{
-			localMat = glm::translate(TYmat(1.0f), position) * glm::mat4_cast(rotation) * glm::scale(TYmat(1.0f), scale);
-		}
-		else
-		{
-			pt = parent->transform->Get<Transformation::Position>();
-			ps = parent->transform->Get<Transformation::Scale>();
-			pr = parent->transform->GetRotation();
-
-			t = pt + position * ps;
-			bone->transform->Set<Transformation::Position>(t);
-
-			bone->transform->Set<Transformation::Scale>(scale * s);
-
-			t = t - pt;
-			bone->transform->Set<Transformation::Position>(t);
-
-			t = TYmat3(glm::mat4_cast(pr)) * t;
-			bone->transform->Set<Transformation::Position>(t);
-
-			t = t + pt;
-			bone->transform->Set<Transformation::Position>(t);
-
-			bone->transform->Set(rotation * pr);
-
-			t = bone->transform->Get<Transformation::Position>();
-			s = bone->transform->Get<Transformation::Scale>();
-			r = bone->transform->GetRotation();
-
-			localMat = glm::translate(TYmat(1.0f), t) * glm::mat4_cast(r) * glm::scale(TYmat(1.0f), s);
-		}
-
-		bone->local = localMat;
-
-		if (keyframe->id != INT_MAX)
-		{
-			currPose[keyframe->id] = globalInvMatrix * bone->local * bone->offset;
-		}
-	}*/
 }
 
 TYvoid Animation::UpdatePose(const aiNode* pNode, const TYmat& ParentTransform)
 {
-	TYstring NodeName(pNode->mName.data);
-
+	//TYstring NodeName(pNode->mName.C_Str());
+	TYint hashStr = Hash(pNode->mName.C_Str(), pNode->mName.length);
+	
 	const aiAnimation* pAnimation = mScene->mAnimations[0];
 
 	TYmat NodeTransformation = AssimpToGlm(pNode->mTransformation);
-
-	const aiNodeAnim* pNodeAnim = GetNodeAnim(pAnimation, NodeName);
+	
+	const aiNodeAnim* pNodeAnim = nodeMapping[hashStr];// GetNodeAnim(pAnimation, NodeName);//
 
 	if (pNodeAnim)
 	{
@@ -167,7 +112,7 @@ TYvoid Animation::UpdatePose(const aiNode* pNode, const TYmat& ParentTransform)
 		CalcInterpolatedPosition(Translation, timeElapsed, pNodeAnim);
 		TYmat TranslationM = glm::translate(TYmat(1.0f), { Translation.x, Translation.y, Translation.z });*/
 
-		TYvec position = GetPosePosition(pNodeAnim);
+		/*TYvec position = GetPosePosition(pNodeAnim);
 		TYvec scale = GetPoseScale(pNodeAnim);
 		TYquaternion rotation = GetPoseRotation(pNodeAnim);
 
@@ -175,31 +120,31 @@ TYvoid Animation::UpdatePose(const aiNode* pNode, const TYmat& ParentTransform)
 
 		TYmat RotationM = glm::mat4_cast(rotation);
 
-		TYmat TranslationM = glm::translate(TYmat(1.0f), position);
+		TYmat TranslationM = glm::translate(TYmat(1.0f), position);*/
+
+		TYvec Scaling;
+		CalcInterpolatedScaling(Scaling, pNodeAnim);
+		TYmat ScalingM = glm::scale(TYmat(1.0f), { Scaling.x, Scaling.y, Scaling.z });
+
+		TYquaternion RotationQ;
+		CalcInterpolatedRotation(RotationQ, pNodeAnim);
+		TYmat RotationM = glm::mat4_cast(RotationQ);
+
+		TYvec Translation;
+		CalcInterpolatedPosition(Translation, pNodeAnim);
+		TYmat TranslationM = glm::translate(TYmat(1.0f), { Translation.x, Translation.y, Translation.z });
 
 		NodeTransformation = TranslationM * RotationM * ScalingM;
 	}
 
 	TYmat GlobalTransformation = ParentTransform * NodeTransformation;
 
+	auto it = boneMapping.find(hashStr);
+	if (it != boneMapping.end())
 	{
-		TYvec center = GlobalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
-		TYvec parentCenter = ParentTransform * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-		GenericDraw::DrawLine(parentCenter, center, TYvec(0.0f), 1.5f);
-		GenericDraw::DrawSphere(center, 0.6f, TYvec(1.0f, 0.95f, 0.95f));
-	}
-
-	if (boneMapping.find(NodeName) != boneMapping.end())
-	{
-		TYuint BoneIndex = boneMapping[NodeName];
+		TYuint BoneIndex = it->second;
+		boneInfo[BoneIndex].GlobalTransformation = GlobalTransformation;
 		boneInfo[BoneIndex].FinalTransformation = globalInvMatrix * GlobalTransformation * boneInfo[BoneIndex].BoneOffset;
-
-		{
-			TYvec center = boneInfo[BoneIndex].FinalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-			GenericDraw::DrawSphere(center, 0.3f, TYvec(0.85f, 0.15f, 0.15f));
-		}
 	}
 
 	for (TYuint i = 0; i < pNode->mNumChildren; i++)
@@ -220,7 +165,8 @@ const aiNodeAnim* Animation::GetNodeAnim(const aiAnimation* pAnimation, TYstring
 	}
 	else
 	{
-		for (TYuint i = 0; i < pAnimation->mNumChannels; i++) {
+		for (TYuint i = 0; i < pAnimation->mNumChannels; i++) 
+		{
 			const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
 
 			animMap.insert({ TYstring(pNodeAnim->mNodeName.data), (aiNodeAnim*)pNodeAnim });
@@ -234,387 +180,6 @@ const aiNodeAnim* Animation::GetNodeAnim(const aiAnimation* pAnimation, TYstring
 
 
 	return anim;
-}
-
-TYvoid Animation::CreateSkeleton(const aiScene* scene)
-{
-	TYumap<TYint, TYmat> boneData;
-
-	for (TYuint m = 0; m < scene->mNumMeshes; m++)
-	{
-		aiMesh* mesh = scene->mMeshes[m];
-
-		for (TYuint i = 0; i < mesh->mNumBones; i++)
-		{
-			aiBone* bone = mesh->mBones[i];
-			TYmat m = AssimpToGlm(bone->mOffsetMatrix);
-
-			TYint hashStr = Hash(TYstring(bone->mName.C_Str()));
-			if (boneData.find(hashStr) != boneData.end())
-			{
-				i = i;
-			}
-			boneData[hashStr] = m;
-		}
-	}
-
-	currentPose.resize(boneData.size(), TYmat(1.0f));
-	skeleton = new Skeleton(scene->mRootNode, (TYint)boneData.size(), boneData);
-
-	LoadKeyframes(skeleton->skeleton);
-	//GenGlobalKeyframes();
-
-	TYint boneLess = 0;
-
-	for (TYpair<TYint, BoneKeyframes*> boneKeyframe : skeleton->skeleton)
-	{
-		skeleton1.push_back(boneKeyframe.second);
-		if (boneKeyframe.second->id == INT_MAX) boneLess++;
-	}
-
-	std::sort(skeleton1.begin(), skeleton1.end(),
-		[](const BoneKeyframes* a, const BoneKeyframes* b) -> bool
-	{
-		return a->id < b->id;
-	});
-
-	for (TYint i = 0; i < boneLess; i++)
-	{
-		BoneKeyframes* v = skeleton1[skeleton1.size() - 1];
-		skeleton1.pop_back();
-		skeleton1.insert(skeleton1.begin(), v);
-	}
-}
-
-TYvoid Animation::LoadKeyframes(TYumap<TYint, BoneKeyframes*>& skeleton)
-{
-	const aiAnimation* anim = mScene->mAnimations[0];
-
-	TYumap<TYstring, aiNodeAnim*> channels = {};
-	TYumap<TYstring, TYvector<aiNodeAnim*>> channelsList = {};
-
-	for (TYuint i = 0; i < anim->mNumChannels; i++)
-	{
-		aiNodeAnim* channel = anim->mChannels[i];
-
-		TYstring str = channel->mNodeName.C_Str();
-		channels[str] = channel;
-	}
-
-	for (TYuint i = 0; i < anim->mNumChannels; i++)
-	{
-		aiNodeAnim* channel = anim->mChannels[i];
-
-		TYstring str = channel->mNodeName.C_Str();
-
-		if (channels[str] != TYnull)
-		{
-			/*if (fbx)
-			{
-				TYsizet t = str.find_first_of("$");
-				if (t != std::string::npos)
-				{
-					str = str.substr(0, t - 1);
-
-					channelsList[str].push_back(channel);
-				}
-			}
-			else*/
-			{
-				channelsList[str].push_back(channel);
-			}
-		}
-	}
-
-	for (TYpair<TYstring, TYvector<aiNodeAnim*>> channel : channelsList)
-	{
-		TYstring name = channel.first;
-		TYint hashStr = Hash(name);
-
-		if (skeleton.find(hashStr) == skeleton.end())
-		{
-			continue;
-		}
-
-		if (channel.second.size() == 1)
-		{
-			aiNodeAnim* aNode = channel.second[0];
-			TYuint j = 0;
-			for (j = 0; j < aNode->mNumPositionKeys; j++)
-			{
-				skeleton[hashStr]->positionTimestamps.push_back((TYfloat)aNode->mPositionKeys[j].mTime);
-				skeleton[hashStr]->positions.push_back(AssimpToGlm(aNode->mPositionKeys[j].mValue));
-			}
-			skeleton[hashStr]->positionTimestamps.push_back((TYfloat)aNode->mPositionKeys[j - 1].mTime + 100.0f);
-			skeleton[hashStr]->positions.push_back(AssimpToGlm(aNode->mPositionKeys[0].mValue));
-
-			TYmat r = TYmat(1);
-			TYvec pp = r * TYvec4(skeleton[hashStr]->positions[0], 1.0f);
-			skeleton[hashStr]->bone->transform->Set<Transformation::Position>(pp);
-
-			for (j = 0; j < aNode->mNumRotationKeys; j++)
-			{
-				skeleton[hashStr]->rotationTimestamps.push_back((TYfloat)aNode->mRotationKeys[j].mTime);
-				skeleton[hashStr]->rotations.push_back(AssimpToGlm(aNode->mRotationKeys[j].mValue));
-			}
-			skeleton[hashStr]->rotationTimestamps.push_back((TYfloat)aNode->mRotationKeys[j - 1].mTime + 100.0f);
-			skeleton[hashStr]->rotations.push_back(AssimpToGlm(aNode->mRotationKeys[0].mValue));
-
-			for (j = 0; j < aNode->mNumScalingKeys; j++)
-			{
-				skeleton[hashStr]->scaleTimestamps.push_back((TYfloat)aNode->mScalingKeys[j].mTime);
-				skeleton[hashStr]->scales.push_back(AssimpToGlm(aNode->mScalingKeys[j].mValue));
-			}
-			skeleton[hashStr]->scaleTimestamps.push_back((TYfloat)aNode->mScalingKeys[j - 1].mTime + 100.0f);
-			skeleton[hashStr]->scales.push_back(AssimpToGlm(aNode->mScalingKeys[0].mValue));
-
-			frameCount = TyMax({ frameCount, aNode->mNumPositionKeys, aNode->mNumRotationKeys, aNode->mNumScalingKeys });
-		}
-		else
-		{
-			for (aiNodeAnim* node : channel.second)
-			{
-				for (TYuint j = 0; j < node->mNumPositionKeys; j++)
-				{
-					aiVectorKey v = node->mPositionKeys[j];
-					aiVector3D vv = v.mValue;
-					vv.x += 0.0f;
-				}
-
-				TYstring cName = node->mNodeName.C_Str();
-
-				if (cName.find("Translation") != TYstring::npos)
-				{
-					TYuint j = 0;
-					for (; j < node->mNumPositionKeys; j++)
-					{
-						skeleton[hashStr]->positionTimestamps.push_back((TYfloat)node->mPositionKeys[j].mTime);
-						skeleton[hashStr]->positions.push_back(AssimpToGlm(node->mPositionKeys[j].mValue));
-					}
-					skeleton[hashStr]->positionTimestamps.push_back((TYfloat)node->mPositionKeys[j - 1].mTime + 100.0f);
-					skeleton[hashStr]->positions.push_back(AssimpToGlm(node->mPositionKeys[0].mValue));
-
-					TYmat r = TYmat(1.0f);// glm::toMat4(TYquaternion(glm::radians(TYvec(-90, -90, 0))));
-					//r = glm::translate(r, {});
-					TYvec pp = r * TYvec4(skeleton[hashStr]->positions[0], 1.0f);
-					skeleton[hashStr]->bone->transform->Set<Transformation::Position>(pp);
-				}
-				else if (cName.find("Rotation") != TYstring::npos)
-				{
-					TYuint j = 0;
-					for (; j < node->mNumRotationKeys; j++)
-					{
-						skeleton[hashStr]->rotationTimestamps.push_back((TYfloat)node->mRotationKeys[j].mTime);
-						skeleton[hashStr]->rotations.push_back(AssimpToGlm(node->mRotationKeys[j].mValue));
-					}
-					skeleton[hashStr]->rotationTimestamps.push_back((TYfloat)node->mRotationKeys[j - 1].mTime + 100.0f);
-					skeleton[hashStr]->rotations.push_back(AssimpToGlm(node->mRotationKeys[0].mValue));
-				}
-				else if (cName.find("Scaling") != TYstring::npos)
-				{
-					TYuint j = 0;
-					for (; j < node->mNumScalingKeys; j++)
-					{
-						skeleton[hashStr]->scaleTimestamps.push_back((TYfloat)node->mScalingKeys[j].mTime);
-						skeleton[hashStr]->scales.push_back(AssimpToGlm(node->mScalingKeys[j].mValue));
-					}
-					skeleton[hashStr]->scaleTimestamps.push_back((TYfloat)node->mScalingKeys[j - 1].mTime + 100.0f);
-					skeleton[hashStr]->scales.push_back(AssimpToGlm(node->mScalingKeys[0].mValue));
-				}
-
-				frameCount = TyMax({ frameCount, node->mNumPositionKeys, node->mNumRotationKeys, node->mNumScalingKeys });
-			}
-		}
-	}
-}
-
-Skeleton::Skeleton(aiNode* root, TYint count, TYumap<TYint, TYmat>& boneData) : boneCount(count)
-{
-	name = root->mChildren[0]->mName.C_Str();
-
-	TYint id = 0;
-	GenSkeleton(root, TYnull, boneData, id);
-}
-
-Skeleton::~Skeleton()
-{
-	for (TYpair<TYint, BoneKeyframes*> b : skeleton)
-	{
-		delete b.second;
-	}
-}
-
-TYvoid Skeleton::GenSkeleton(aiNode* node, Bone* parent, TYumap<TYint, TYmat>& boneData, TYint& id)
-{
-	TYstring str = node->mName.C_Str();
-	TYint hashStr = Hash(str);
-
-	Bone* newParent = parent;
-
-	Bone* bone = TYnull;
-
-	if (str.find("$") == TYstring::npos && node->mNumMeshes == 0)
-	{
-		TYuint ID = id;
-
-		if (boneData.find(hashStr) != boneData.end())
-		{
-			bone = new Bone(str, parent, hashStr, boneData[hashStr]);
-			id++;
-		}
-		else
-		{
-			bone = new Bone(str, parent, hashStr);
-			ID = INT_MAX;
-		}
-
-		skeleton[hashStr] = new BoneKeyframes(bone, ID);
-
-		if (parent)
-		{
-			///////////////////////////////////////////////////////////////////////////////////////
-			//printf("\nNew Node: %s Parent: %s\n", node->mName.C_Str(), parent->name.c_str());
-			//printf("***********************************************************************\n\n");
-		}
-		else
-		{
-			///////////////////////////////////////////////////////////////////////////////////////
-			//printf("\nNew Node: %s Parent: NONE\n", node->mName.C_Str());
-			//printf("***********************************************************************\n\n");
-		}
-	}
-
-	for (TYuint i = 0; i < node->mNumChildren; i++)
-	{
-		if(bone) newParent = bone;
-		GenSkeleton(node->mChildren[i], newParent, boneData, id);
-	}
-}
-
-Bone::Bone(TYstring n, Bone* p, TYint keyId, TYmat off)
-{
-	name = n;
-	parent = p;
-	offset = off;
-	keyframeId = keyId;
-
-	transform = new Transform();
-	//transform->Set<Transformation::Rotation>(TYvec(0, 0, 0));
-}
-
-Bone::~Bone()
-{
-	delete transform;
-}
-
-BoneKeyframes::~BoneKeyframes()
-{
-	delete bone;
-}
-
-TYvoid Animation::GenGlobalKeyframes()
-{
-	globalKeyframes = true;
-
-	TYvector<BoneKeyframes*> Keyframes;
-	TYint boneLess = 0;
-	for (TYpair<TYint, BoneKeyframes*> boneKeyframe : skeleton->skeleton)
-	{
-		Keyframes.push_back(boneKeyframe.second);
-		if (boneKeyframe.second->id == INT_MAX) boneLess++;
-	}
-
-	std::sort(Keyframes.begin(), Keyframes.end(),
-		[](const BoneKeyframes* a, const BoneKeyframes* b) -> bool
-	{
-		return a->id < b->id;
-	});
-
-	//TYvector3 center = Keyframes[0]->positions;
-	for (TYuint j = 0; j < Keyframes[0]->positions.size(); j++)
-	{
-		//Keyframes[0]->positions[j] = TYvec(0);
-	}
-
-	for (TYint i = 0; i < boneLess; i++)
-	{
-		BoneKeyframes* v = Keyframes[Keyframes.size() - 1];
-		Keyframes.pop_back();
-		Keyframes.insert(Keyframes.begin(), v);
-	}
-
-	for (BoneKeyframes* keyframe : Keyframes)
-	{
-		Bone* bone = keyframe->bone;
-		if (bone->parent)
-			printf("Me %s Parent %s\n", bone->name.c_str(), bone->parent->name.c_str());
-		else
-			printf("Me %s Parent NONE\n", bone->name.c_str());
-
-		////////////////////////////////////////////////////////////////////////////////////
-		BoneKeyframes* parentKeyframe = TYnull;
-		if (bone->parent)
-			parentKeyframe = skeleton->skeleton[bone->parent->keyframeId];
-
-		if (parentKeyframe /*&& parentKeyframe->id != INT_MAX*/)
-		{
-			TYuint j = 0;
-			for (j = 0; j < keyframe->positions.size(); j++)
-			{
-				TYvec myPos = keyframe->positions[j];
-				TYvec parPos = TYvec(0);
-				if(parentKeyframe->positions.size() > j)
-					parPos = parentKeyframe->positions[j];
-
-				myPos += parPos;
-
-				keyframe->positions[j] = myPos;
-				keyframe->bone->transform->Set<Transformation::Position>(keyframe->positions[0]);
-			}
-			if (keyframe->positions.size() == 0 && parentKeyframe->positions.size() > 0)
-			{
-				keyframe->positions.push_back(parentKeyframe->positions[0]);
-				keyframe->positionTimestamps.push_back(duration);
-				keyframe->bone->transform->Set<Transformation::Position>(keyframe->positions[0]);
-			}
-			for (j = 0; j < keyframe->rotations.size(); j++)
-			{
-				TYquaternion myRot = keyframe->rotations[j];
-				TYquaternion parRot = TYquaternion(TYvec(0));
-				if (parentKeyframe->rotations.size() > j)
-					parRot = parentKeyframe->rotations[j];
-
-				keyframe->rotations[j] = myRot * parRot;
-				keyframe->bone->transform->Set(keyframe->rotations[0]);
-			}
-			for (j = 0; j < keyframe->scales.size(); j++)
-			{
-				TYvec myScale = keyframe->scales[j];
-				TYvec parScale = TYvec(1);
-				if (parentKeyframe->scales.size() > j)
-					parScale = parentKeyframe->scales[j];
-
-				keyframe->scales[j] = myScale * parScale;
-				keyframe->bone->transform->Set<Transformation::Scale>(keyframe->scales[0]);
-			}
-		}
-	}
-	/*for (BoneKeyframes* keyframe : Keyframes)
-	{
-		for (TYuint j = 0; j < keyframe->positions.size(); j++)
-		{
-			TYvec myPos = keyframe->positions[j];
-			TYmat r = TYmat(1.0f);
-			r = glm::rotate(r, glm::radians(90.0f), TYvec(1, 0, 0));
-			r = glm::rotate(r, glm::radians(90.0f), TYvec(0, 1, 0));
-			r = glm::rotate(r, glm::radians(0.0f), TYvec(0, 0, 1));
-
-			myPos = r * TYvec4(myPos, 1.0f);
-
-			keyframe->positions[j] = myPos;
-			keyframe->bone->transform->Set<Transformation::Position>(keyframe->positions[0]);
-		}
-	}*/
 }
 
 TYvec Animation::GetPosePosition(const aiNodeAnim* pNodeAnim)
@@ -788,4 +353,132 @@ TYquaternion Animation::GetPoseRotation(const aiNodeAnim* pNodeAnim)
 	rot.Normalize();
 
 	return AssimpToGlm(rot);
+}
+
+TYvoid Animation::DrawSkeleton()
+{
+	for (TYuint i = 0; i < boneInfo.size(); i++)
+	{
+		{
+			TYvec center = boneInfo[i].GlobalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+			//GenericDraw::DrawLine(parentCenter, center, TYvec(0.0f), 1.5f);
+			GenericDraw::DrawSphere(center, 0.6f, TYvec(1.0f, 0.95f, 0.95f));
+		}
+
+		{
+			TYvec center = boneInfo[i].FinalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+			GenericDraw::DrawSphere(center, 0.3f, TYvec(0.85f, 0.15f, 0.15f));
+		}
+	}
+}
+
+TYuint Animation::FindPosition(const aiNodeAnim* pNodeAnim)
+{
+	for (TYuint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
+	{
+		if (timeElapsed < (float)pNodeAnim->mPositionKeys[i + 1].mTime)
+		{
+			return i;
+		}
+	}
+
+	//assert(0);
+
+	return 0;
+}
+
+TYuint Animation::FindRotation(const aiNodeAnim* pNodeAnim)
+{
+	assert(pNodeAnim->mNumRotationKeys > 0);
+
+	for (TYuint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) {
+		if (timeElapsed < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
+			return i;
+		}
+	}
+
+	//assert(0);
+
+	return 0;
+}
+
+TYuint Animation::FindScaling(const aiNodeAnim* pNodeAnim)
+{
+	assert(pNodeAnim->mNumScalingKeys > 0);
+
+	for (TYuint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) 
+	{
+		if (timeElapsed < (float)pNodeAnim->mScalingKeys[i + 1].mTime) 
+		{
+			return i;
+		}
+	}
+
+	//assert(0);
+
+	return 0;
+}
+
+TYvoid Animation::CalcInterpolatedPosition(TYvec& Out, const aiNodeAnim* pNodeAnim)
+{
+	if (pNodeAnim->mNumPositionKeys == 1)
+	{
+		Out = AssimpToGlm(pNodeAnim->mPositionKeys[0].mValue);
+		return;
+	}
+
+	TYuint PositionIndex = FindPosition(pNodeAnim);
+	TYuint NextPositionIndex = (PositionIndex + 1);
+	assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
+	float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
+	float Factor = (timeElapsed - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+	//assert(Factor >= 0.0f && Factor <= 1.0f);
+	const TYvec& Start = AssimpToGlm(pNodeAnim->mPositionKeys[PositionIndex].mValue);
+	const TYvec& End = AssimpToGlm(pNodeAnim->mPositionKeys[NextPositionIndex].mValue);
+	TYvec Delta = End - Start;
+	Out = Start + Factor * Delta;
+}
+
+TYvoid Animation::CalcInterpolatedRotation(TYquaternion& Out, const aiNodeAnim* pNodeAnim)
+{
+	// we need at least two values to interpolate...
+	if (pNodeAnim->mNumRotationKeys == 1) {
+		Out = AssimpToGlm(pNodeAnim->mRotationKeys[0].mValue);
+		return;
+	}
+
+	TYuint RotationIndex = FindRotation(pNodeAnim);
+	TYuint NextRotationIndex = (RotationIndex + 1);
+	assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
+	float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
+	float Factor = (timeElapsed - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
+	//assert(Factor >= 0.0f && Factor <= 1.0f);
+	const TYquaternion& StartRotationQ = AssimpToGlm(pNodeAnim->mRotationKeys[RotationIndex].mValue);
+	const TYquaternion& EndRotationQ = AssimpToGlm(pNodeAnim->mRotationKeys[NextRotationIndex].mValue);
+	//TYquaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
+	aiQuaternion ooo;
+	aiQuaternion::Interpolate(ooo, pNodeAnim->mRotationKeys[RotationIndex].mValue, pNodeAnim->mRotationKeys[NextRotationIndex].mValue, Factor);
+	ooo.Normalize();
+
+	Out = AssimpToGlm(ooo);
+}
+
+TYvoid Animation::CalcInterpolatedScaling(TYvec& Out, const aiNodeAnim* pNodeAnim)
+{
+	if (pNodeAnim->mNumScalingKeys == 1)
+	{
+		Out = AssimpToGlm(pNodeAnim->mScalingKeys[0].mValue);
+		return;
+	}
+
+	TYuint ScalingIndex = FindScaling(pNodeAnim);
+	TYuint NextScalingIndex = (ScalingIndex + 1);
+	assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
+	float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+	float Factor = (timeElapsed - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
+	//assert(Factor >= 0.0f && Factor <= 1.0f);
+	const TYvec& Start = AssimpToGlm(pNodeAnim->mScalingKeys[ScalingIndex].mValue);
+	const TYvec& End = AssimpToGlm(pNodeAnim->mScalingKeys[NextScalingIndex].mValue);
+	TYvec Delta = End - Start;
+	Out = Start + Factor * Delta;
 }

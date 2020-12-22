@@ -268,6 +268,7 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 	//octree->Make();
 }
 
+/*
 Model::Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnimations_, TYvec Min, TYvec Max)
 {
 	SetType(geoModel);
@@ -429,11 +430,6 @@ Model::Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnim
 
 		if (hasAnimations)
 		{
-			/*VertexAnim v1 = animVertices[i1];
-			VertexAnim v2 = animVertices[i2];
-			VertexAnim v3 = animVertices[i3];
-
-			triangles.push_back(Triangle(v1, v2, v3));*/
 			Vertex v1 = animVertices[i1];
 			Vertex v2 = animVertices[i2];
 			Vertex v3 = animVertices[i3];
@@ -450,8 +446,9 @@ Model::Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnim
 		}
 	}
 }
+*/
 
-Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<VertexAnim>& gVertices, TYvector<TYuint>& gIndices, Animation* animation, TYvec Min, TYvec Max)
+Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<VertexAnim>& gVertices, TYvector<TYuint>& gIndices, Animation* animation)
 {
 	SetType(geoModel);
 	octree = new Octree(this);
@@ -460,8 +457,9 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-	TYvec Centering = (Max + Min) / 2.0f;
+	//TYvec Centering = (Max + Min) / 2.0f;
 
+	// Vertices
 	for (TYuint i = 0; i < pMesh->mNumVertices; i++)
 	{
 		const aiVector3D* pPos = &(pMesh->mVertices[i]);
@@ -469,9 +467,7 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 		const aiVector3D* pTexCoord = pMesh->HasTextureCoords(0) ? &(pMesh->mTextureCoords[0][i]) : &Zero3D;
 
 		VertexAnim vert;
-		TYvec vector = AssimpToGlm(*pPos) - Centering;
-
-		vert.position = vector;// TYvec(pPos->x, pPos->y, pPos->z);
+		vert.position = TYvec(pPos->x, pPos->y, pPos->z);
 		vert.normal = TYvec(pNormal->x, pNormal->y, pNormal->z);
 		vert.texCoord = TYvec2(pTexCoord->x, pTexCoord->y);
 
@@ -479,58 +475,76 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 		animVertices.push_back(vert);
 	}
 
+	// Skeleton
 	for (TYuint i = 0; i < pMesh->mNumBones; i++)
 	{
 		TYuint BoneIndex = 0;
 		TYstring BoneName(pMesh->mBones[i]->mName.data);
 
-		if (animation->boneMapping.find(BoneName) == animation->boneMapping.end())
+		TYint hashStr = Hash(pMesh->mBones[i]->mName.C_Str(), pMesh->mBones[i]->mName.length);
+
+		if (animation->boneMapping.find(hashStr) == animation->boneMapping.end())
 		{
-			// Allocate an index for a new bone
 			BoneIndex = animation->numBones;
 			animation->numBones++;
-			BoneInfo1 bi;
-			animation->boneInfo.push_back(bi);
-			animation->boneInfo[BoneIndex].BoneOffset = AssimpToGlm(pMesh->mBones[i]->mOffsetMatrix);
-			animation->boneMapping[BoneName] = BoneIndex;
+
+			BoneInfo1 bone;
+			bone.BoneOffset = AssimpToGlm(pMesh->mBones[i]->mOffsetMatrix);
+			animation->boneInfo.push_back(bone);
+
+			animation->boneMapping[hashStr] = BoneIndex;
 		}
 		else
 		{
-			BoneIndex = animation->boneMapping[BoneName];
+			BoneIndex = animation->boneMapping[hashStr];
 		}
 
-		for (TYuint j = 0; j < pMesh->mBones[i]->mNumWeights && j < 4; j++)
+		for (TYuint j = 0; j < pMesh->mBones[i]->mNumWeights; j++)
 		{
 			TYuint VertexID = offset + pMesh->mBones[i]->mWeights[j].mVertexId;
 			TYfloat Weight = pMesh->mBones[i]->mWeights[j].mWeight;
 
-			gVertices[VertexID].boneIds[j] = BoneIndex;
-			gVertices[VertexID].boneWeights[j] = Weight;
+			TYint index = 0;
 
-			animVertices[pMesh->mBones[i]->mWeights[j].mVertexId].boneIds[j] = BoneIndex;
-			animVertices[pMesh->mBones[i]->mWeights[j].mVertexId].boneWeights[j] = Weight;
+			for (; index < 4; index++)
+			{
+				if (gVertices[VertexID].boneWeights[index] == 0.0f)
+				{
+					break;
+				}
+			}
+
+			if (index != 4)
+			{
+				gVertices[VertexID].boneIds[index] = BoneIndex;
+				gVertices[VertexID].boneWeights[index] = Weight;
+
+				animVertices[pMesh->mBones[i]->mWeights[j].mVertexId].boneIds[index] = BoneIndex;
+				animVertices[pMesh->mBones[i]->mWeights[j].mVertexId].boneWeights[index] = Weight;
+			}
 		}
 	}
 
+	// Indices
 	for (TYuint i = 0; i < pMesh->mNumFaces; i++)
 	{
 		const aiFace& face = pMesh->mFaces[i];
-		for (TYuint j = 0; j < face.mNumIndices; j++)
+		/*for (TYuint j = 0; j < face.mNumIndices; j++)
 		{
 			Indices.push_back(face.mIndices[j]);
 			gIndices.push_back(face.mIndices[j]);
-		}
-		//assert(face.mNumIndices == 3);
-		//gIndices.push_back(face.mIndices[0]);
-		//gIndices.push_back(face.mIndices[1]);
-		//gIndices.push_back(face.mIndices[2]);
-		//
-		//Indices.push_back(face.mIndices[0]);
-		//Indices.push_back(face.mIndices[1]);
-		//Indices.push_back(face.mIndices[2]);
+		}*/
+		assert(face.mNumIndices == 3);
+		gIndices.push_back(face.mIndices[0]);
+		gIndices.push_back(face.mIndices[1]);
+		gIndices.push_back(face.mIndices[2]);
+		
+		Indices.push_back(face.mIndices[0]);
+		Indices.push_back(face.mIndices[1]);
+		Indices.push_back(face.mIndices[2]);
 	}
 
-
+	// Indices
 	for (TYsizet i = 0; i < Indices.size(); i += 3)
 	{
 		TYuint i1 = Indices[i];
@@ -548,7 +562,7 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 	Indices.clear();
 }
 
-Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices, TYvector<TYuint>& gIndices, TYvec Min, TYvec Max)
+Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices, TYvector<TYuint>& gIndices)
 {
 	SetType(geoModel);
 	octree = new Octree(this);
@@ -557,7 +571,7 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices,
 
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-	TYvec Centering = (Max + Min) / 2.0f;
+	//TYvec Centering = (Max + Min) / 2.0f;
 
 	for (TYuint i = 0; i < pMesh->mNumVertices; i++)
 	{
@@ -566,9 +580,7 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices,
 		const aiVector3D* pTexCoord = pMesh->HasTextureCoords(0) ? &(pMesh->mTextureCoords[0][i]) : &Zero3D;
 
 		VertexAnim vert;
-		TYvec vector = AssimpToGlm(*pPos) - Centering;
-
-		vert.position = vector;// TYvec(pPos->x, pPos->y, pPos->z);
+		vert.position = TYvec(pPos->x, pPos->y, pPos->z);
 		vert.normal = TYvec(pNormal->x, pNormal->y, pNormal->z);
 		vert.texCoord = TYvec2(pTexCoord->x, pTexCoord->y);
 
