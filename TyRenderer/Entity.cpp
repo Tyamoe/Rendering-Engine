@@ -21,7 +21,9 @@ Entity::Entity(TYstring name_)
 
 Entity::~Entity()
 {
-
+	delete transform;
+	delete mesh;
+	delete animation;
 }
 
 TYstring Entity::GetName()

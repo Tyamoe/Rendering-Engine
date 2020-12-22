@@ -121,7 +121,7 @@ void main()
 
   			float att = 1.0f;
 
-  			if(xtra != 3) // Directional
+  			if(xtra != 3 && i != 0) // Directional
   			{
   				att = 1.0f / (attCoef.x + attCoef.y * dis + attCoef.z * (dis * dis));
   			}
@@ -140,7 +140,7 @@ void main()
 		}
 
 		float distance = length(viewPos - defPos);
-		float S = (3600.0f - distance) / (3600.0f - ZNear);
+		float S = (17600.0f - distance) / (17600.0f - ZNear);
 		S = clamp(S, 0.0f, 1.0f);
 
 		result = S * result + (1.0f - S) * fog;

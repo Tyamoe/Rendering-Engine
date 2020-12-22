@@ -17,7 +17,7 @@ public:
 	TYmat proj = TYmat(1.0f);
 
 	// Camera Transform -> used to make View matrix.
-	TYvec position = TYvec(-0.45f, 0.5f, 20.0f);
+	TYvec position = TYvec(-18.45f, 6.5f, 80.0f);
 	TYvec front = TYvec(0.0f, 0.0f, -1.0f);
 	TYvec up = TYvec(0.0f, 1.0f, 0.0f);
 
@@ -25,7 +25,7 @@ public:
 	TYvec2 dim = TYvec2(0.0f, 0.0f);
 
 	TYfloat near = 0.1f;
-	TYfloat far = 2000.0f;
+	TYfloat far = 10000.0f;
 
 	friend class GenericDraw;
 

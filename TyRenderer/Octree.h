@@ -128,6 +128,24 @@ public:
 	TYint sign[3];
 };
 
+enum class Octant
+{
+	Fr_BL = 1,
+	Fr_BR = 5,
+	Fr_TL = 3,
+	Fr_TR = 7,
+
+	Ba_BL = 0,
+	Ba_BR = 4,
+	Ba_TL = 2,
+	Ba_TR = 6,
+
+	Root = 8
+};
+
+static const char* OctantStrings[] = { "Back_BottomL", "Front_BottomL", "Back_TopL", "Front_TopL", 
+									   "Back_BottomR", "Front_BottomR", "Back_TopR", "Front_TopR"
+										,"Root" };
 
 class Node
 {
@@ -138,8 +156,7 @@ public:
 		{
 			children[i] = TYnull;
 		}
-
-		if (Triangles_.size() > 0) empty = true;
+		//if (Triangles_.size() > 0) empty = true;
 	}
 	Node(AABB bound_, TYint depth_) : bound(bound_), depth(depth_)
 	{
@@ -151,8 +168,10 @@ public:
 
 	~Node()
 	{
-
+		delete color;
 	}
+
+	TYfloat T = 0;
 
 	AABB bound;
 
@@ -168,7 +187,7 @@ public:
 
 	TYint childID = 0;
 
-	Node* Intersect(TYvec rayOrig, TYvec rayDir);
+	Node* Intersect(TYvec rayOrig, TYvec rayDir, TYfloat t);
 
 private:
 
@@ -191,7 +210,7 @@ public:
 
 	~Octree()
 	{
-		//Delete(root);
+		Delete(root);
 	}
 
 	TYvoid Traverse(Node* node);
@@ -199,6 +218,7 @@ public:
 	TYvoid Draw(Node* node);
 
 	Node* Intersect(TYvec rayOrig, TYvec rayDir);
+	Node* Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t);
 
 	TYvoid MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries);
 
@@ -228,7 +248,7 @@ public:
 	TYint maxDepth = 0;
 
 	TYbool done = false;
-	TYbool drawEmpty = false;
+	TYbool drawEmpty = true;
 	TYbool drawy = true;
 
 	TYint  BranchCutoff = 300;

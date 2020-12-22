@@ -35,8 +35,6 @@ private:
 	Entity* CreateEntity(TYstring name);
 };
 
-typedef Scene* ScenePtr;
-
 template<typename T>
 TYpair<Geometry*, BVH*> Make()
 {

@@ -149,9 +149,12 @@ TYvoid RenderRayTrace::Init()
 		Mesh* mesh = entity->Get<Mesh*>();
 		Transform* transform = entity->Get<Transform*>();
 
-		TYvector<Geometry*> geoList = mesh->GetGeometryList();
-		for (Geometry* geo : geoList)
+		//TYvector<Geometry*> geoList = mesh->GetGeometryList();
+		const TYvector<SubMesh>& subMeshList = mesh->GetSubMeshList();
+
+		for (const SubMesh& subMesh : subMeshList)
 		{
+			Geometry* geo = subMesh.geometry;
 			if (geo->GetType() == geoSphere)
 			{
 				spheres.push_back(SPHERE(geo->center, reinterpret_cast<Sphere*>(geo)->radius));
@@ -234,6 +237,8 @@ RenderRayTrace::RenderRayTrace() : Renderer()
 {
 	SetType(RendererType::RayTrace);
 
+	Mesh::GenHandles = false;
+
 	RayTraceShader = new Shader("raytracer.cs");
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
@@ -244,5 +249,18 @@ RenderRayTrace::RenderRayTrace() : Renderer()
 
 RenderRayTrace::~RenderRayTrace()
 {
+	delete RayTraceShader;
+	delete QuadShader;
+	delete BloomShader;
 
+	glDeleteTextures(1, &RenderTexture);
+	glDeleteTextures(1, &Frame);
+
+	glDeleteFramebuffers(1, &RenderBuffer);
+
+	glDeleteBuffers(1, &SSBO_Sphere);
+	glDeleteBuffers(1, &SSBO_Triangle);
+	glDeleteBuffers(1, &SSBO_Model);
+	glDeleteBuffers(1, &SSBO_Bound);
+	glDeleteBuffers(1, &SSBO_Surface);
 }

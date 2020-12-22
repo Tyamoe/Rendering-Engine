@@ -10,6 +10,8 @@ class BVH
 public:
 	BoundingVolume* head;
 
+	~BVH();
+
 	static BVH* GenerateBVH(Sphere* sphere);
 	static BVH* GenerateBVH(Triangle* triangle);
 	static BVH* GenerateBVH(Model* model);

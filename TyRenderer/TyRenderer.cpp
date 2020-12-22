@@ -30,6 +30,18 @@ TyRenderer::TyRenderer()
 	ImGui::StyleColorsDark();
 }
 
+TyRenderer::~TyRenderer()
+{
+	GenericDraw::Destroy();
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	delete renderer;
+	delete window;
+}
+
 TYvoid TyRenderer::Update(TYfloat dt)
 {
 	currDT = dt;
@@ -97,6 +109,13 @@ TYvoid TyRenderer::PostRender()
 	{
 		((RenderRayTrace*)renderer)->RecompileRaytracer();
 	}
+
+	TYfloat y_, x_;
+
+	x_ = width / 2.0f; //Input::mouse.screenPos.x;
+	y_ = height / 2.0f; //Input::mouse.screenPos.y;
+	GenericDraw::DrawCircle({ x_, y_ }, 6.0f, { 0, 1, 1 });
+	GenericDraw::DrawCircle({ x_, y_ }, 4.0f, { 0, 0, 0 });
 
 	ImGui::End();
 

@@ -5,6 +5,11 @@
 #include "Geometry.h"
 #include "BoundingVolume.h"
 
+BVH::~BVH()
+{
+	delete head;
+}
+
 BVH* BVH::GenerateBVH(Sphere* sphere)
 {
 	BVH* bvh = new BVH();

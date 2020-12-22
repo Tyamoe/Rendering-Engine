@@ -193,11 +193,6 @@ Window::~Window()
 {
 	if (WindowInitialized)
 	{
-		/*if (ImGUI Renderer Created)
-		{
-			ImGui_ImplOpenGL3_Shutdown();
-		}*/
-
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}

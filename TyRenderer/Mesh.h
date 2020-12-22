@@ -11,12 +11,29 @@ class Geometry;
 enum GeoType;
 class Renderer;
 
+struct SubMesh
+{
+	SubMesh() {}
+	SubMesh(Geometry* geometry_, TYuint NumIndices_, TYuint OffsetVertex_, TYuint OffsetIndex_) : 
+		geometry(geometry_), NumIndices(NumIndices_), OffsetVertex(OffsetVertex_), OffsetIndex(OffsetIndex_) {}
+
+	Geometry* geometry;
+
+	TYuint NumIndices;
+
+	TYuint OffsetVertex;
+	TYuint OffsetIndex;
+};
+
 class Mesh
 {
 public:
-	Mesh(Geometry* geometry_ = TYnull, Material* mat = TYnull);
+	Mesh() {}
+	Mesh(Geometry* geometry_, Material* mat);
 	Mesh(TYvector<Geometry*>& geoList_, Material* mat = TYnull);
 	~Mesh();
+
+	static TYvoid DestroyVAO(TYuint vao);
 
 	TYvoid GenHandle_GL();
 	TYvoid GenOctree();
@@ -25,33 +42,53 @@ public:
 
 	GeoType geoType();
 
-	TYsizet geoCount()
+	/*TYsizet geoCount()
 	{
 		return geoList.size();
+	}*/
+	TYsizet SubMeshCount()
+	{
+		return subMeshes.size();
 	}
 
-	MeshHandle GetHandle()
+	MeshHandle& GetHandle()
 	{
 		return meshHandle;
 	}
 
-	MeshHandle GetHandle(TYint i)
+	/*MeshHandle& GetHandle(TYint i)
 	{
 		return meshHandles[i];
-	}
+	}*/
 
-	Geometry* GetGeometry(TYint i = 0)
+	/*Geometry* GetGeometry(TYint i = 0)
 	{
 		if (i == -1) return geoList[hitIndex];
 		return geoList[i];
+	}*/
+	Geometry* GetGeometry(TYint i = 0)
+	{
+		if (i == -1) return subMeshes[hitIndex].geometry;
+		return  subMeshes[i].geometry;
+	}
+
+	const SubMesh& GetSubMesh(TYint i = 0)
+	{
+		if (i == -1) return subMeshes[hitIndex];
+		return subMeshes[i];
+	}
+	
+	const TYvector<SubMesh>& GetSubMeshList()
+	{
+		return subMeshes;
 	}
 
 	TYvoid SetHitIndex(TYint i) { hitIndex = i; }
 
-	TYvector<Geometry*>& GetGeometryList()
+	/*TYvector<Geometry*>& GetGeometryList()
 	{
 		return geoList;
-	}
+	}*/
 
 	TYbool IsAnimated()
 	{
@@ -61,17 +98,23 @@ public:
 	friend class Scene;
 
 private:
-	TYvector<Geometry*> geoList;
-	TYvector<MeshHandle> meshHandles;
 
-	Geometry* geometry;
-	Material* material;
-
+	TYvector<SubMesh> subMeshes;
 	MeshHandle meshHandle;
+	Material* material;
 
 	TYbool isAnimated = false;
 
 	TYint hitIndex = 0;
+
+	////////////////////////////////////
+
+	//TYvector<Geometry*> geoList;
+	//TYvector<MeshHandle> meshHandles;
+
+	//Geometry* geometry;
+
+	////////////////////////////////////
 
 	static TYpair<Mesh*, Animation*> CreateMesh(TYstring filename, TYbool&, TYbool&, Material* m = TYnull);
 
@@ -91,9 +134,11 @@ public:
 		return material;
 	}
 
-	template<>
+	/*template<>
 	Geometry* Get(Geometry*)
 	{
 		return geometry;
-	}
+	}*/
+
+	static inline TYbool GenHandles = true;
 };

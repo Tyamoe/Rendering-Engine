@@ -3,6 +3,7 @@
 #include "Types.h"
 
 #include "Renderer.h"
+#include "AnimationTemp.h"
 
 class Shader;
 class Entity;
@@ -18,6 +19,8 @@ public:
 	TYvoid PreRender();
 	TYvoid Render(TYfloat dt);
 	TYvoid PostRender();
+
+	SkinnedMesh* skinnyMesh = TYnull;
 
 private:
 	Shader* animBufferShader = TYnull;
@@ -45,6 +48,7 @@ private:
 
 	TYint PBRCount = 0;
 
+	TYvoid Draw(TYbool);
 	TYvoid Draw(Entity*);
 	TYvoid Draw(Entity*, TYbool);
 	TYvoid LightPass();

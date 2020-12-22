@@ -41,6 +41,10 @@ T TyMax(std::initializer_list<T> valueList)
 	return maxValue;
 }
 
+TYvec TyVec3(TYstring hex);
+
+TYint HexToInt(TYstring hex);
+
 TYint Hash(TYstring str);
 
 TYfloat lerp_t(TYfloat a, TYfloat b, TYfloat t, TYfloat dt);

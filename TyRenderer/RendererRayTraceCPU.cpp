@@ -653,6 +653,8 @@ RenderRayTraceCPU::RenderRayTraceCPU() : Renderer()
 {
 	SetType(RendererType::RayTraceCPU);
 
+	Mesh::GenHandles = false;
+
 	QuadShader = new Shader("quad.vs", "quad.fs");
 	BloomShader = new Shader("bloom.vs", "bloom.fs");
 	ColorShader = new Shader("color.vs", "color.fs");
@@ -669,4 +671,19 @@ RenderRayTraceCPU::~RenderRayTraceCPU()
 		tracingThreads[i].join();
 	}
 	delete[] tracingThreads;
+
+	delete block;
+	delete traceWait;
+	delete traceBarrier;
+
+	delete BloomShader;
+	delete QuadShader;
+	delete ColorShader;
+
+	glDeleteBuffers(1, &PBO);
+
+	glDeleteTextures(1, &RenderTexture);
+	glDeleteTextures(1, &Frame);
+
+	glDeleteFramebuffers(1, &RenderBuffer);
 }

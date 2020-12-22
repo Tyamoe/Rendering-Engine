@@ -14,8 +14,6 @@ Engine::Engine()
 {
 	renderer = new TyRenderer();
 
-	GLFWwindow* win = GetWindow<GLFWwindow*>();
-
 	EngineInitialized = true;
 }
 
@@ -97,8 +95,7 @@ Window* Engine::GetWindow(Window* p)
 
 Engine::~Engine()
 {
-	if (EngineInitialized)
-	{
+	running = false;
 
-	}
+	delete renderer;
 }

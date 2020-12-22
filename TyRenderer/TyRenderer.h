@@ -10,6 +10,7 @@ class TyRenderer
 {
 public:
 	TyRenderer();
+	~TyRenderer();
 
 	TYvoid Update(TYfloat dt);
 

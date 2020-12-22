@@ -8,6 +8,8 @@
 
 #include "Globals.h"
 
+// https://github.com/GraphicsProgramming/RVPT/blob/master/src/rvpt/rvpt.cpp
+
 TYvoid RenderRayTraceVulkan::PreRender() 
 {
 
@@ -42,6 +44,8 @@ TYvoid RenderRayTraceVulkan::Init()
 RenderRayTraceVulkan::RenderRayTraceVulkan() : Renderer()
 {
 	SetType(RendererType::RayTraceVulkan);
+
+	Mesh::GenHandles = false;
 
 	scene = new Scene();
 }

@@ -109,6 +109,5 @@ public:
 
 	static inline TYumap<TYint, Entity*> EntityList;
 private:
-};
 
-typedef Entity* EntityPtr;
+};

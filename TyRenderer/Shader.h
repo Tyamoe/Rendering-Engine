@@ -9,7 +9,7 @@
 struct CharPointerHash
 {
 	//BKDR hash algorithm
-	TYint operator()(TYchar* str) const
+	TYint operator()(TYcstring str) const
 	{
 		TYint seed = 131;//31  131 1313 13131131313 etc//
 		TYint hash = 0;
@@ -24,7 +24,7 @@ struct CharPointerHash
 
 struct CharPointerCMP
 {
-	TYbool operator()(TYchar const* a, TYchar const* b) const
+	TYbool operator()(TYcstring a, TYcstring b) const
 	{
 		return std::strcmp(a, b) == 0;
 	}
@@ -58,7 +58,7 @@ class Shader
 public:
 	TYuint Program;
 
-	TYumap<TYchar*, UniformSetter, CharPointerHash, CharPointerCMP> Uniforms;
+	TYumap<TYcstring, UniformSetter, CharPointerHash, CharPointerCMP> Uniforms;
 
 	Shader(TYstring computePath);
 	Shader(TYstring vertexPath, TYstring fragmentPath);

@@ -57,6 +57,8 @@ inline TYvec3 randomVec()
 static TYvector<Light> Lights;
 
 static TYbool tempPlay = false;
+static TYbool tempDrawOctree = false;
+static TYbool tempDrawSkeleton = false;
 
 static TYuint albedoMap = 0;
 static TYuint normalMap = 0;
@@ -90,6 +92,8 @@ TYvoid DrawSkeleton(TYumap<TYint, BoneKeyframes*>& skeleton)
 
 		//r = glm::translate(r, bone->transform->Get<Transformation::Position>());
 		//r = glm::translate(r, parentPosition);
+
+		//r = anim->globalInvMatrix * bone->local * bone->offset;
 
 		TYvec pp = bone->local * TYvec4(0, 0, 0, 1.0f);
 		//pp += parentPosition;
@@ -150,6 +154,46 @@ TYvoid DrawSkeleton(TYumap<TYint, BoneKeyframes*>& skeleton)
 	//glEnable(GL_DEPTH_TEST);
 }
 
+static TYvector<TYmat> tTransforms;
+
+static TYvec PositionBitss = { 0.0f, 0.0f, 0.0f };
+static TYfloat ScaleBithc = 1.0f;
+static TYvec4 RotationBatch = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+TYvoid RenderDeferred::Draw(TYbool)
+{
+	if (tTransforms.size() == 0) return;
+
+	Shader* shader = animBufferShader;
+
+	shader->Use();
+
+	TYmat modelMatrix(1.0f);
+
+	TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
+	TYmat rtMatrix = glm::mat4_cast(TYquaternion(RotationBatch));
+	TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(ScaleBithc));
+
+	modelMatrix = trMatrix * rtMatrix * scMatrix;
+
+	TYmat modelInv = glm::inverse(modelMatrix);
+	modelInv = glm::transpose(modelInv);
+	TYmat MVP = camera->proj * camera->view * modelMatrix;
+
+	shader->Uniforms["InvTrModel"](modelInv);
+	shader->Uniforms["MVP"](MVP);
+	shader->Uniforms["Model"](modelMatrix);
+
+	shader->Uniforms["SkeletonTransform"](tTransforms, (TYint)tTransforms.size());
+
+	TYvec4 c = TYvec4(0.44f, 0.8f, 0.54f, 1.0f);
+	shader->Uniforms["meshColor"](c);
+
+	skinnyMesh->Render();
+
+	tTransforms.clear();
+}
+
 TYvoid RenderDeferred::Draw(Entity* entity)
 {
 	Mesh* mesh = entity->Get<Mesh*>();
@@ -170,19 +214,16 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 		TYmat modelMatrix = entity->GetMatrix();
 		TYmat modelInv = glm::inverse(modelMatrix);
 		modelInv = glm::transpose(modelInv);
-		TYmat MVP = camera->proj * camera->view * modelMatrix;
 
-		/////////////////////////////////////////////////////////////////////////////////////////
-		//GenericDraw::DrawQuad({ 0.0f, 0.0f }, { 10.0f, 10.0f }, { 1.0f, 0.0f, 0.0f });
-		//GenericDraw::DrawCube({ 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f }, { 1.0f, 0.0f, 0.0f }, -1.0f);
-		//return;
-		/////////////////////////////////////////////////////////////////////////////////////////
+		TYmat MVP = camera->proj * camera->view * modelMatrix;
 
 		shader->Uniforms["InvTrModel"](modelInv);
 		shader->Uniforms["MVP"](MVP);
 		shader->Uniforms["Model"](modelMatrix);
 
-		for (TYsizet i = 0; i < mesh->geoCount(); i++)
+		shader->Uniforms["meshColor"](mat->color);
+
+		/*for (TYsizet i = 0; i < mesh->geoCount(); i++)
 		{
 			if (mesh->IsAnimated())
 			{
@@ -199,11 +240,29 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 			c.a = 1.0f;
 			shader->Uniforms["meshColor"](mat->color);
 
-			MeshHandle mHandle = mesh->GetHandle((TYint)i);
+			MeshHandle& mHandle = mesh->GetHandle((TYint)i);
 
 			glBindVertexArray(mHandle.VAO);
 			glDrawElements(GL_TRIANGLES, (TYint)mHandle.indexCount, GL_UNSIGNED_INT, 0);
+		}*/
+
+		MeshHandle& mHandle = mesh->GetHandle();
+
+		if (mesh->IsAnimated())
+		{
+			shader->Uniforms["SkeletonTransform"](anim->currentPose, (TYint)anim->currentPose.size());
 		}
+
+		glBindVertexArray(mHandle.VAO);
+
+		for (TYuint i = 0; i < mesh->SubMeshCount(); i++)
+		{
+			const SubMesh& subMesh = mesh->GetSubMesh(i);
+			glDrawElementsBaseVertex(GL_TRIANGLES, subMesh.NumIndices, GL_UNSIGNED_INT,
+				(void*)(sizeof(TYuint) * subMesh.OffsetIndex), subMesh.OffsetVertex);
+		}
+
+		glBindVertexArray(0);
 	}
 	else
 	{
@@ -240,13 +299,26 @@ TYvoid RenderDeferred::Draw(Entity* entity, TYbool)
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, aoMap);
 
-		for (TYsizet i = 0; i < mesh->geoCount(); i++)
+		/*for (TYsizet i = 0; i < mesh->geoCount(); i++)
 		{
-			MeshHandle mHandle = mesh->GetHandle((TYint)i);
+			MeshHandle& mHandle = mesh->GetHandle((TYint)i);
 
 			glBindVertexArray(mHandle.VAO);
 			glDrawElements(GL_TRIANGLES, (TYint)mHandle.indexCount, GL_UNSIGNED_INT, 0);
+		}*/
+
+		MeshHandle& mHandle = mesh->GetHandle();
+
+		glBindVertexArray(mHandle.VAO);
+
+		for (TYuint i = 0; i < mesh->SubMeshCount(); i++)
+		{
+			const SubMesh& subMesh = mesh->GetSubMesh(i);
+			glDrawElementsBaseVertex(GL_TRIANGLES, subMesh.NumIndices, GL_UNSIGNED_INT, 
+				(void*)(sizeof(TYuint) * subMesh.OffsetIndex), subMesh.OffsetVertex);
 		}
+  
+		glBindVertexArray(0);
 
 		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, albedoMap);
@@ -294,7 +366,7 @@ TYvoid RenderDeferred::Draw(Entity* entity, TYbool)
 
 		for (TYsizet i = 0; i < mesh->geoCount(); i++)
 		{
-			MeshHandle mHandle = mesh->GetHandle((TYint)i);
+			MeshHandle& mHandle = mesh->GetHandle((TYint)i);
 
 			glBindVertexArray(mHandle.VAO);
 			glDrawElements(GL_TRIANGLES, (TYint)mHandle.indexCount, GL_UNSIGNED_INT, 0);
@@ -340,24 +412,43 @@ TYvoid RenderDeferred::LightPass()
 		shader[s]->Uniforms["ZNear"](0.1f);
 		shader[s]->Uniforms["ZFar"](300.0f);
 
+		static TYstring lightUniformCache[128][32] = {""};
+
 		for (TYsizet i = 0; i < Lights.size(); i++)
 		{
-			TYstring lname = "lights[" + std::to_string(i) + "].";
-			shader[s]->Uniforms[(TYchar*)(lname + "type").c_str()](Lights[i].type);
-			shader[s]->Uniforms[(TYchar*)(lname + "ambi").c_str()](Lights[i].ambi);
-			shader[s]->Uniforms[(TYchar*)(lname + "diff").c_str()](Lights[i].diff);
-			shader[s]->Uniforms[(TYchar*)(lname + "spec").c_str()](Lights[i].spec);
+			if (lightUniformCache[i][0] == "")
+			{
+				TYstring lname = "lights[" + std::to_string(i) + "].";
+
+				lightUniformCache[i][0] = lname + "type";
+				lightUniformCache[i][1] = lname + "ambi";
+				lightUniformCache[i][2] = lname + "diff";
+				lightUniformCache[i][3] = lname + "spec";
+				lightUniformCache[i][4] = lname + "pos";
+				lightUniformCache[i][5] = lname + "c0";
+				lightUniformCache[i][6] = lname + "c1";
+				lightUniformCache[i][7] = lname + "c2";
+				lightUniformCache[i][8] = lname + "dir";
+				lightUniformCache[i][9] = lname + "innerTheta";
+				lightUniformCache[i][10] = lname + "outerTheta";
+				lightUniformCache[i][11] = lname + "spotIntensity";
+			}
+
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][0]).c_str()](Lights[i].type);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][1]).c_str()](Lights[i].ambi);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][2]).c_str()](Lights[i].diff);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][3]).c_str()](Lights[i].spec);
 				   
-			shader[s]->Uniforms[(TYchar*)(lname + "pos").c_str()](Lights[i].pos);
-			shader[s]->Uniforms[(TYchar*)(lname + "c0").c_str()](Lights[i].c0);
-			shader[s]->Uniforms[(TYchar*)(lname + "c1").c_str()](Lights[i].c1);
-			shader[s]->Uniforms[(TYchar*)(lname + "c2").c_str()](Lights[i].c2);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][4]).c_str()](Lights[i].pos);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][5]).c_str()](Lights[i].c0);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][6]).c_str()](Lights[i].c1);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][7]).c_str()](Lights[i].c2);
 				   
-			shader[s]->Uniforms[(TYchar*)(lname + "dir").c_str()](Lights[i].dir);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][8]).c_str()](Lights[i].dir);
 				   
-			shader[s]->Uniforms[(TYchar*)(lname + "innerTheta").c_str()](Lights[i].innerTheta);
-			shader[s]->Uniforms[(TYchar*)(lname + "outerTheta").c_str()](Lights[i].outerTheta);
-			shader[s]->Uniforms[(TYchar*)(lname + "spotIntensity").c_str()](Lights[i].spotIntensity);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][9]).c_str()](Lights[i].innerTheta);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][10]).c_str()](Lights[i].outerTheta);
+			shader[s]->Uniforms[(TYchar*)(lightUniformCache[i][11]).c_str()](Lights[i].spotIntensity);
 		}
 
 		shader[s]->DrawQuad();
@@ -384,6 +475,8 @@ TYvoid RenderDeferred::Deferred()
 		Draw(scene->entityList[i]);
 	}
 
+	//Draw(true);
+
 	//glEnable(GL_BLEND);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
@@ -399,6 +492,7 @@ TYvoid RenderDeferred::Forward()
 	// UI
 	{
 		ImGui::Begin("Details");
+		ImGui::Checkbox("Draw Octree", &tempDrawOctree);
 
 		ImGui::Text("Camera Pos: %.3f, %.3f, %.3f", camera->position.x, camera->position.y, camera->position.z);
 		ImGui::Text("Camera Front: %.3f, %.3f, %.3f", camera->front.x, camera->front.y, camera->front.z);
@@ -426,27 +520,45 @@ TYvoid RenderDeferred::Forward()
 		}
 
 		ImGui::End();
+
+		ImGui::Begin("Test Animations");
+
+		ImGui::SliderFloat3("Position##1337", &PositionBitss.x, -100.0f, 100.0f);
+		ImGui::SliderFloat("Scale##1337", &ScaleBithc, 0.0f, 20.0f);
+		ImGui::SliderFloat4("Rotation##1337", &RotationBatch.x, -TYpi, TYpi);
+
+		ImGui::End();
 	}
 
-	for (TYuint i = 0; i < scene->geometry.size(); i++)
+	if (tempDrawOctree)
 	{
-		if (scene->geometry[i]->GetType() == geoModel)
+		for (TYuint i = 0; i < scene->entityList.size(); i++)
 		{
-			if (((Model*)scene->geometry[i])->octree)
+			Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
+			Geometry* g = mesh->GetGeometry();
+			if (g->GetType() == geoModel)
 			{
-				((Model*)scene->geometry[i])->octree->Draw(((Model*)scene->geometry[i])->octree->root);
+				if (((Model*)g)->octree)
+				{
+					((Model*)g)->octree->Draw(((Model*)g)->octree->root);
+				}
 			}
 		}
 	}
 
-	for (TYuint i = 0; i < scene->entityList.size(); i++)
+	if (tempDrawSkeleton)
 	{
-		Animation* anim = scene->entityList[i]->Get<Animation*>();
-		if (anim)
+		for (TYuint i = 0; i < scene->entityList.size(); i++)
 		{
-			DrawSkeleton(anim->skeleton->skeleton);
+			Animation* anim = scene->entityList[i]->Get<Animation*>();
+			if (anim)
+			{
+				DrawSkeleton(anim->skeleton->skeleton);
+			}
 		}
 	}
+
+	//skinnyMesh->BoneTransform(0.01667f, tTransforms);
 
 	//GenericDraw::DrawCube({ 0,0,0 }, { 3,3,3 }, UI::Color::PURPLE);
 
@@ -460,6 +572,7 @@ TYvoid RenderDeferred::PreRender()
 }
 
 static TYvector3 lyons;
+static TYvector3 sirkls;
 static TYfloat frameTime = 0.0f;
 static TYint frameNum = 0;
 
@@ -481,6 +594,7 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 				ImGui::Begin("Animations");
 
 				ImGui::Checkbox("Play Animation", &tempPlay);
+				ImGui::Checkbox("Draw Skeleton", &tempDrawSkeleton);
 
 				ImGui::NewLine();
 
@@ -552,15 +666,17 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 
 	//////////////////////////////////////////////////////////////////////////
 
-	if (Input::isMouseReleased(MouseRight))
+	if (Input::isMouseDown(MouseRight))
 	{
-		for (TYuint i = 0; i < scene->geometry.size(); i++)
+		for (TYuint i = 0; i < scene->entityList.size(); i++)
 		{
-			if (scene->geometry[i]->GetType() == geoModel)
+			Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
+			Geometry* g = mesh->GetGeometry();
+			if (g->GetType() == geoModel)
 			{
-				if (((Model*)scene->geometry[i])->octree)
+				if (((Model*)g)->octree)
 				{
-					((Model*)scene->geometry[i])->octree->Traverse(((Model*)scene->geometry[i])->octree->root);
+					((Model*)g)->octree->Traverse(((Model*)g)->octree->root);
 				}
 			}
 		}
@@ -589,12 +705,12 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 		Geometry* hit = TYnull;
 		TYint hitIndex = -1;
 
-		for (TYuint i = 0; i < scene->geometry.size(); i++)
+		for (TYuint i = 0; i < scene->entityList.size(); i++)
 		{
 			TYvec norm = TYvec(0.0f);
 			TYfloat t0 = TYinf, t1 = TYinf;
 
-			if (scene->geometry[i]->Intersect(rayOrigin, rayDir, t0, t1, norm))
+			if (Geometry::Intersect(scene->entityList[i], rayOrigin, rayDir, t0, t1, norm))
 			{
 				if (t0 < 0)
 				{
@@ -603,12 +719,12 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 
 				if (t0 < tnear)
 				{
+					Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
+
 					tnear = t0;
-					hit = scene->geometry[i];
+					hit = mesh->GetGeometry(-1);// scene->geometry[i];
 					normal = norm;
 					hitIndex = i;
-
-
 				}
 			}
 		}
@@ -623,16 +739,23 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 		}
 		else
 		{
+			TYlog << "Hit: " << scene->entityList[hitIndex]->GetName() << "\n";
 			//GenericDraw::DrawLine(camera->position, hit->center, TYvec(0), 2.0f);
 			lyons.push_back(camera->position);
 			lyons.push_back(camera->position + rayDir * tnear);
 			//lyons.push_back(hit->center);
+
+			sirkls.push_back(camera->position + rayDir * tnear);
 		}
 	}
 
 	for (TYsizet i = 0; i < lyons.size(); i+=2)
 	{
-		GenericDraw::DrawLine(lyons[i], lyons[i+1], TYvec(0), 2.0f);
+		GenericDraw::DrawLine(lyons[i], lyons[i+1], TYvec(0), 1.5f);
+	}
+	for (TYsizet i = 0; i < sirkls.size(); i++)
+	{
+		GenericDraw::DrawSphere(sirkls[i], 0.05f, TYvec(1, 0, 1));
 	}
 
 	Lights[0].pos = camera->position;
@@ -670,6 +793,13 @@ TYvoid RenderDeferred::Init()
 	TYint height = layout.height;
 
 	camera = new Camera(false);
+
+	///////////////////////////////////////////////////////////////////////////////
+	//skinnyMesh = new SkinnedMesh();
+	//skinnyMesh->LoadMesh("./resources/models/modls/boblampclean.md5mesh"); 
+	//skinnyMesh->LoadMesh("./resources/models/modls/SeaLife_Rigged/Green_Sea_Turtle.fbx");
+	//skinnyMesh->LoadMesh("./resources/models/krieg_walk2.fbx");
+	///////////////////////////////////////////////////////////////////////////////
 
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
@@ -743,6 +873,8 @@ RenderDeferred::RenderDeferred() : Renderer()
 {
 	SetType(RendererType::Deferred);
 
+	Mesh::GenHandles = true;
+
 	animBufferShader = new Shader("deferredBuffer_Anim.vs", "deferredBuffer.fs");
 	BufferShader = new Shader("deferredBuffer.vs", "deferredBuffer.fs");
 	PhongShader = new Shader("deferredPhong.vs", "deferredPhong.fs");
@@ -812,5 +944,25 @@ RenderDeferred::RenderDeferred() : Renderer()
 
 RenderDeferred::~RenderDeferred()
 {
+	delete animBufferShader;
+	delete BufferShader;
+	delete PhongShader;
+	delete BufferPBRShader;
+	delete PBRShader;
+	delete QuadShader;
+	delete ColorShader;
 
+	glDeleteTextures(1, &RenderTexture);
+
+	glDeleteFramebuffers(1, &RenderBuffer);
+
+	glDeleteTextures(1, &gBuffer);
+	glDeleteTextures(1, &gDepth);
+	glDeleteTextures(1, &gPosition);
+	glDeleteTextures(1, &gNormal);
+	glDeleteTextures(1, &gAlbedo);
+	glDeleteTextures(1, &gExtra);
+
+	lyons.clear();
+	sirkls.clear();
 }

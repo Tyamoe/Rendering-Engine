@@ -4,8 +4,18 @@
 #include "GenericDraw.h"
 #include "Debugger.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+TYint SignMask(TYfloat comp)
+{
+	return comp < TYfloat{ 0 };
+}
 
+TYint SignMask(TYvec pos)
+{
+	return SignMask(pos.x) | (SignMask(pos.y) << 1) | (SignMask(pos.z) << 2);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//https://old.reddit.com/r/GraphicsProgramming/comments/jlteuj/first_time_implementing_and_rendering_an_octree/
 ///////////////////////////////////////////////////////////////////////////////////////////////
 TYbool intersects_box(Triangle triangle, TYvec box_center, TYvec box_extents)
 {
@@ -208,7 +218,7 @@ TYvoid Octree::Make()
 	aabb.Gen(GlobalTriangles);
 	aabb.Planify();
 
-	root = new Node(aabb, 0, GlobalTriangles);
+	root = new Node(aabb, 0);
 	root->childID = 8;
 
 	MakeRec(root, 0, GlobalTriangles);
@@ -228,29 +238,36 @@ TYvoid Octree::MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries)
 
 		switch (i)
 		{
-		case 0://0:
-			childAABB.Gen(parent->bound.min, dim);
-			break;
-		case 1:
+			// Front - Bottom
+		case 1: // Left
 			childAABB.Gen(parent->bound.min + TYvec(0, 0, dim.z), dim);
 			break;
-		case 2:
-			childAABB.Gen(parent->bound.min + TYvec(0, dim.y, 0), dim);
-			break;
-		case 3://6:
-			childAABB.Gen(parent->bound.min + TYvec(0, dim.y, dim.z), dim);
-			break;
-		case 4://1:
-			childAABB.Gen(parent->bound.min + TYvec(dim.x, 0, 0), dim);
-			break;
-		case 5://3:
+		case 5: // Right
 			childAABB.Gen(parent->bound.min + TYvec(dim.x, 0, dim.z), dim);
 			break;
-		case 6://5:
-			childAABB.Gen(parent->bound.min + TYvec(dim.x, dim.y, 0), dim);
+
+			// Front - Top
+		case 3: // Left
+			childAABB.Gen(parent->bound.min + TYvec(0, dim.y, dim.z), dim);
 			break;
-		case 7://7:
+		case 7: // Right
 			childAABB.Gen(parent->bound.min + TYvec(dim.x, dim.y, dim.z), dim);
+			break;
+
+			// Back - Bottom
+		case 0: // Left
+			childAABB.Gen(parent->bound.min, dim);
+			break;
+		case 4: // Right
+			childAABB.Gen(parent->bound.min + TYvec(dim.x, 0, 0), dim);
+			break;
+
+			// Back - Top
+		case 2: // Left
+			childAABB.Gen(parent->bound.min + TYvec(0, dim.y, 0), dim);
+			break;
+		case 6: // Right
+			childAABB.Gen(parent->bound.min + TYvec(dim.x, dim.y, 0), dim);
 			break;
 		}
 		childAABB.Planify();
@@ -266,33 +283,36 @@ TYvoid Octree::MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries)
 
 		if (childTrisCount == 0)
 		{
-			return;
-		}
-		if (/*childTrisCount <= 200 ||*/ depth > 1)
-		{
-			//Node* child = new Node(childAABB, -1, childTris);
-			Node* child = new Node(childAABB, -1, childTris);
-			child->childID = i;
-			parent->children[i] = child;
-
-			//TYlog << depth << " stopped" << TYlogbreak;
-			maxDepth = depth > maxDepth ? depth : maxDepth;
 			//return;
 		}
 		else
 		{
-			//Node* child = new Node(childAABB, depth, childTris);
-			Node* child = new Node(childAABB, depth, childTris);
-			child->childID = i;
-			parent->children[i] = child;
-			MakeRec(child, depth, childTris);
+			if (childTrisCount <= 10 || depth >= 2)
+			{
+				//Node* child = new Node(childAABB, -1, childTris);
+				Node* child = new Node(childAABB, -1, childTris);
+				child->childID = i;
+				parent->children[i] = child;
+
+				//TYlog << depth << " stopped" << TYlogbreak;
+				maxDepth = depth > maxDepth ? depth : maxDepth;
+				//return;
+			}
+			else
+			{
+				//Node* child = new Node(childAABB, depth, childTris);
+				Node* child = new Node(childAABB, depth);
+				child->childID = i;
+				parent->children[i] = child;
+				MakeRec(child, depth, childTris);
+			}
 		}
 	}
 }
 
 TYbool AABB::TriInAABB(Triangle& tri)
 {
-	TYvec half = (max - min) * 0.5f;
+	/*TYvec half = (max - min) * 0.5f;
 
 	//return intersects_box(tri, mid, (max - min) * 0.5f);
 
@@ -309,7 +329,7 @@ TYbool AABB::TriInAABB(Triangle& tri)
 		return true;
 	}
 
-	return false;
+	return false;*/
 
 	TYint in = 0;
 	for (TYint i = 0; i < 3; i++)
@@ -327,6 +347,7 @@ TYbool AABB::TriInAABB(Triangle& tri)
 
 		if (PointInAABB(tri.vertices[i].position))
 		{
+			return true;
 			in++;
 		}
 	}
@@ -420,7 +441,7 @@ TYbool AABB::IntersectLineAABB(TYvec O, TYvec D, TYfloat t[], TYfloat epsilon)
 
 TYbool AABB::PointInAABB(TYvec point)
 {
-	TYvec half = (max - min) * 0.5f;
+	TYvec half = (max - min) ;
 
 	TYvec d = point - mid;
 	TYbool inside = (abs(glm::dot(d, TYvec(1, 0, 0))) <= half.x) &&
@@ -438,11 +459,13 @@ TYvoid Octree::Draw(Node* node)
 
 	if (node->depth != -1)
 	{
-		TYfloat width = 1.5f + (node->childID / 10.0f);
+		TYfloat width = 1.1f - (node->childID / 10.0f);
+
+		if (node->childID == 8) width = 2.0f;
 
 		if (node->color == TYnull)
 		{
-			color = colors[node->depth];
+			color = colors[node->childID];
 		}
 		else
 		{
@@ -451,10 +474,11 @@ TYvoid Octree::Draw(Node* node)
 			//node->color = TYnull;
 		}
 
-		color = colors[node->childID];
+		//color = colors[node->childID];
 
+		GenericDraw::DrawSphere(node->bound.mid, 0.04f, color);
 		GenericDraw::DrawCube(node->bound.mid, (node->bound.max - node->bound.min), color, width);
-		for (int i = 0; i < 8; i++)
+		for (TYint i = 0; i < 8; i++)
 		{
 			Draw(node->children[i]);
 		}
@@ -463,7 +487,24 @@ TYvoid Octree::Draw(Node* node)
 	{
 		if (drawEmpty)
 		{
-			color = TYvec(1.0f, 0.0f, 0.0f);
+			if (node->color != TYnull)
+			{
+				color = *node->color;
+			}
+			else
+			{
+				color = colors[node->childID];
+			}
+
+			GenericDraw::DrawSphere(node->bound.mid, 0.04f, color);
+			if (node->color != TYnull)
+			{
+				color = *node->color;
+			}
+			else
+			{
+				color = TYvec(1.0f, 1.0f, 1.0f);
+			}
 			GenericDraw::DrawCube(node->bound.mid, (node->bound.max - node->bound.min), color, 1.0f);
 		}
 	}
@@ -480,7 +521,7 @@ TYvoid Octree::Traverse(Node* node)
 
 	if (node->depth != -1)
 	{
-		for (int i = 0; i < 8; i++)
+		for (TYint i = 0; i < 8; i++)
 		{
 			Traverse(node->children[i]);
 		}
@@ -493,31 +534,33 @@ TYvoid Octree::Traverse(Node* node)
 
 TYvoid AABB::Gen(TYvector<Triangle>& triangles)
 {
-	TYvec mi(std::numeric_limits<TYfloat>::max());
-	TYvec ma(-std::numeric_limits<TYfloat>::max());
+	TYvec minCoord(std::numeric_limits<TYfloat>::max());
+	TYvec maxCoord(-std::numeric_limits<TYfloat>::max());
 
 	for (Triangle& tri : triangles)
 	{
 		for (Vertex& vert : tri.vertices.v)
 		{
 			TYvec v = vert.position;
-			if (v.x > ma.x) ma.x = v.x;
-			if (v.x < mi.x) mi.x = v.x;
-			if (v.y > ma.y) ma.y = v.y;
-			if (v.y < mi.y) mi.y = v.y;
-			if (v.z > ma.z) ma.z = v.z;
-			if (v.z < mi.z) mi.z = v.z;
+			if (v.x > maxCoord.x) maxCoord.x = v.x;
+			if (v.x < minCoord.x) minCoord.x = v.x;
+
+			if (v.y > maxCoord.y) maxCoord.y = v.y;
+			if (v.y < minCoord.y) minCoord.y = v.y;
+
+			if (v.z > maxCoord.z) maxCoord.z = v.z;
+			if (v.z < minCoord.z) minCoord.z = v.z;
 		}
 	}
 
-	TYvec center = (ma + mi) / 2.0f;
+	TYvec center = (maxCoord + minCoord) / 2.0f;
 
-	min = mi;
-	max = ma;
+	min = minCoord;
+	max = maxCoord;
 	mid = center;
 }
 
-TYbool Intersect(TYvec rayOrig, TYvec rayDir, AABB aabb, TYfloat& t)
+TYbool Intersect(TYvec rayOrig, TYvec rayDir, AABB& aabb, TYfloat& t)
 {
 	TYfloat tmin = -TYmaxf;
 	TYfloat tmax = TYmaxf;
@@ -537,34 +580,38 @@ TYbool Intersect(TYvec rayOrig, TYvec rayDir, AABB aabb, TYfloat& t)
 	return (tmin < tmax);
 }
 
-Node* Node::Intersect(TYvec rayOrig, TYvec rayDir)
+Node* Node::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat t)
 {
-	if (empty)
+	if (Triangles.size() > 0)
 	{
-		//TYlog << "'" << childID << "'\n";
-		if (Triangles.size() > 0)
+		if (::Intersect(rayOrig, rayDir, bound, t))
 		{
+			T = t;
+			//TYlog << "'" << OctantStrings[childID] << " " << depth << "'\n";
 			return this;
 		}
-		return TYnull;
+		else
+		{
+			//TYlog << "Fake '" << OctantStrings[childID] << " " << depth << "'\n";
+		}
 	}
 	TYvec origin = rayOrig;
 
 	//TYvector<Plane> planes = { bound.midPlanes[0], bound.midPlanes[1], bound.midPlanes[2] };
 
-	TYfloat sx = glm::dot(origin, bound.midPlanes[2].Normal);
-	TYfloat sy = glm::dot(origin, bound.midPlanes[1].Normal);
-	TYfloat sz = glm::dot(origin, bound.midPlanes[0].Normal);
+	TYfloat sx = glm::dot(rayOrig, bound.midPlanes[2].Normal);
+	TYfloat sy = glm::dot(rayOrig, bound.midPlanes[1].Normal);
+	TYfloat sz = glm::dot(rayOrig, bound.midPlanes[0].Normal);
 
-	TYvec side = TYvec(
+	TYivec3 side = TYivec3(
 		sx - bound.midPlanes[2].Distance >= -TYepsilon,
 		sy - bound.midPlanes[1].Distance >= -TYepsilon,
 		sz - bound.midPlanes[0].Distance >= -TYepsilon
 	);
 
-	TYfloat rdx = bound.midPlanes[2].RayDistance(origin, rayDir);
-	TYfloat rdy = bound.midPlanes[1].RayDistance(origin, rayDir);
-	TYfloat rdz = bound.midPlanes[0].RayDistance(origin, rayDir);
+	TYfloat rdx = bound.midPlanes[2].RayDistance(rayOrig, rayDir);
+	TYfloat rdy = bound.midPlanes[1].RayDistance(rayOrig, rayDir);
+	TYfloat rdz = bound.midPlanes[0].RayDistance(rayOrig, rayDir);
 
 	TYfloat xDist = rdx;//(side.x == rayDir.x < 0.0f) ? rdx : TYinf; //
 	TYfloat yDist = rdy;//(side.y == rayDir.y < 0.0f) ? rdy : TYinf; //
@@ -574,14 +621,22 @@ Node* Node::Intersect(TYvec rayOrig, TYvec rayDir)
 	{
 		TYint idx = (side.z ? 1 : 0) | (side.y ? 2 : 0) | (side.x ? 4 : 0);
 
+		//Octant octanct = (Octant)idx;
+		//TYlog << OctantStrings[idx] << " " << depth << TYlogbreak;
+
 		Node* ret = TYnull;
 		if (children[idx])
-			ret = children[idx]->Intersect(origin, rayDir);
+		{
+			ret = children[idx]->Intersect(rayOrig, rayDir, t);
+		}
 
 		/*if (ret != TYnull)
 			TYlog << ret->childID << "\n";*/
 
-		if (ret != TYnull) return ret->Intersect(origin, rayDir);
+		if (ret != TYnull)
+		{
+			return ret;// ->Intersect(origin, rayDir, t);
+		}
 
 		TYfloat minDist = glm::min(glm::min(xDist, yDist), zDist);
 		if (minDist == TYinf) return TYnull;
@@ -610,10 +665,26 @@ Node* Node::Intersect(TYvec rayOrig, TYvec rayDir)
 	return TYnull;
 }
 
+Node* Octree::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t)
+{
+	if (::Intersect(rayOrig, rayDir, root->bound, t))
+	{
+		return root;
+	}
+	return TYnull;
+}
+
 Node* Octree::Intersect(TYvec rayOrig, TYvec rayDir)
 {
 	Node* node = TYnull;
 	TYfloat t = 0.0f;
+	if (::Intersect(rayOrig, rayDir, root->bound, t))
+	{
+		//return root;
+		node = root->Intersect(rayOrig, rayDir, t);
+	}
+
+	return node;
 	TYfloat best_t = TYinf;
 
 	if (::Intersect(rayOrig, rayDir, root->bound, t))

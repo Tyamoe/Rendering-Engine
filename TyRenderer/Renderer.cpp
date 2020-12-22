@@ -66,5 +66,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-
+	delete camera;
+	delete scene;
 }

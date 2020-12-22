@@ -12,6 +12,54 @@
 static TYint CircleIndices = 20;
 static TYint SphereIndices = 0;
 
+struct Character
+{
+	TYuint TextureID;
+	TYivec2 Size;
+	TYivec2 Bearing;
+	TYuint Advance;
+};
+
+static FT_Library library;
+static FT_Face face;
+
+static TYmap<TYint, Character> CharsEng;
+
+static TYbool tmpTextInit = false;
+
+TYvoid GenericDraw::Destroy()
+{
+	if (tmpTextInit)
+	{
+		for (auto& ch : CharsEng)
+		{
+			glDeleteTextures(1, &ch.second.TextureID);
+		}
+		
+		FT_Done_Face(face);
+		FT_Done_FreeType(library);
+	}
+
+	glDeleteVertexArrays(1, &CubeHandle);
+	glDeleteVertexArrays(1, &SphereHandle);
+	glDeleteVertexArrays(1, &QuadHandle);
+	glDeleteVertexArrays(1, &QuadUVHandle);
+	glDeleteVertexArrays(1, &CircleHandle);
+	glDeleteVertexArrays(1, &CircleUVHandle);
+
+	glDeleteBuffers(1, &fsQuadHandle);
+	glDeleteBuffers(1, &vboCubeHandle);
+
+	glDeleteVertexArrays(1, &LineVAO);
+	glDeleteBuffers(1, &LineVBO);
+
+	delete ColorShader;
+	delete Color2DShader;
+	delete TextureShader;
+	delete Texture2DShader;
+	delete TextShader;
+}
+
 TYvoid GenericDraw::Init()
 {
 	ColorShader = new Shader("color.vs", "color.fs");
@@ -66,6 +114,10 @@ TYvoid GenericDraw::Init()
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(TYfloat), (TYvoid*)0);
 
+		glBindVertexArray(0);
+
+		glDeleteBuffers(1, &wireVbo);
+
 		SphereIndices = (TYint)SphereVertices.size();
 	}
 
@@ -81,6 +133,8 @@ TYvoid GenericDraw::Init()
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(TYfloat), (TYvoid*)0);
+
+		glBindVertexArray(0);
 	}
 
 	// FS Quad
@@ -120,6 +174,9 @@ TYvoid GenericDraw::Init()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ibo);
+
 		// Textured
 		glGenBuffers(1, &vbo);
 		glGenVertexArrays(1, &QuadUVHandle);
@@ -142,6 +199,9 @@ TYvoid GenericDraw::Init()
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ibo);
 	}
 
 	// Circle
@@ -151,7 +211,7 @@ TYvoid GenericDraw::Init()
 		TYvector<TYvec2> CircleVertices;
 		TYvector<TYvec2> CircleVertices2;
 
-		TYfloat radius = 1.0f;
+		TYfloat radius = 0.5f;
 		TYint numSeqments = 20;
 
 		for (TYint i = 0; i < CircleIndices; i++)
@@ -186,6 +246,8 @@ TYvoid GenericDraw::Init()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+		glDeleteBuffers(1, &vbo);
+
 		// Textured
 		glGenVertexArrays(1, &CircleUVHandle);
 		glGenBuffers(1, &vbo);
@@ -204,6 +266,8 @@ TYvoid GenericDraw::Init()
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		glDeleteBuffers(1, &vbo);
 	}
 }
 
@@ -213,18 +277,18 @@ TYvoid GenericDraw::DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width)
 
 	TYmat model(1.0f);
 	model = glm::translate(model, pos);
-	model = glm::scale(model, size * 0.5f);
+	model = glm::scale(model, size );
 
 	ColorShader->Uniforms["Model"](model);
 	ColorShader->Uniforms["View"](MainCamera->view);
 	ColorShader->Uniforms["Proj"](MainCamera->proj);
 	ColorShader->Uniforms["oColor"](color);
 
-	//glBindVertexArray(CubeHandle);
+	glBindVertexArray(CubeHandle);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vboCubeHandle);
+	/*glBindBuffer(GL_ARRAY_BUFFER, vboCubeHandle);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(TYfloat), (TYvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(TYfloat), (TYvoid*)0);*/
 
 	if (width > 0.0f)
 	{
@@ -269,9 +333,7 @@ TYvoid GenericDraw::DrawSphere(TYvec pos, TYfloat radius, TYvec color, TYfloat w
 
 TYvoid GenericDraw::DrawLine(TYvec s, TYvec e, TYvec color, TYfloat width)
 {
-	static TYuint quadVAO = 0;
-	static TYuint quadVBO = 0;
-	if (quadVAO == 0)
+	if (LineVAO == 0)
 	{
 		TYfloat quadVertices[] =
 		{
@@ -282,12 +344,12 @@ TYvoid GenericDraw::DrawLine(TYvec s, TYvec e, TYvec color, TYfloat width)
 		//glDeleteBuffers(1, &quadVBO);
 		//glDeleteBuffers(1, &quadVAO);
 
-		glGenVertexArrays(1, &quadVAO);
-		glBindVertexArray(quadVAO);
+		glGenVertexArrays(1, &LineVAO);
+		glBindVertexArray(LineVAO);
 
-		glGenBuffers(1, &quadVBO);
+		glGenBuffers(1, &LineVBO);
 
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, LineVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_DYNAMIC_DRAW);
 
 		glEnableVertexAttribArray(0);
@@ -302,8 +364,8 @@ TYvoid GenericDraw::DrawLine(TYvec s, TYvec e, TYvec color, TYfloat width)
 			e.x,  e.y, e.z
 		};
 
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBindVertexArray(LineVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, LineVBO);
 
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quadVertices), &quadVertices);
 	}
@@ -317,7 +379,7 @@ TYvoid GenericDraw::DrawLine(TYvec s, TYvec e, TYvec color, TYfloat width)
 	ColorShader->Uniforms["Proj"](MainCamera->proj);
 	ColorShader->Uniforms["oColor"](color);
 
-	glBindVertexArray(quadVAO);
+	glBindVertexArray(LineVAO);
 	glLineWidth(width);
 
 	glDrawArrays(GL_LINES, 0, 2);
@@ -406,17 +468,24 @@ TYvoid GenericDraw::DrawCircle(TYvec2 pos, TYfloat radius, TYuint texture)
 
 TYvoid GenericDraw::DrawCircle(TYvec2 pos, TYfloat radius, TYvec color)
 {
+	static TYmat proj(1.0f);
+	if (proj == TYmat(1.0f))
+	{
+		proj = glm::ortho(0.0f, TYfloat(TyRenderer::width), 0.0f, TYfloat(TyRenderer::height), -1.0f, 1.0f);
+	}
 	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
 
 	Color2DShader->Use();
 
+	TYmat ss(1.0f);
 	TYmat model(1.0f);
 	model = glm::translate(model, { pos, 0.0f });
 	model = glm::scale(model, { radius, radius, 1.0f });
 
 	Color2DShader->Uniforms["Model"](model);
-	Color2DShader->Uniforms["View"](MainCamera->view);
-	Color2DShader->Uniforms["Proj"](MainCamera->proj);
+	Color2DShader->Uniforms["View"](ss);
+	Color2DShader->Uniforms["Proj"](proj);
 	Color2DShader->Uniforms["oColor"](color);
 
 	glBindVertexArray(CircleHandle);
@@ -425,6 +494,7 @@ TYvoid GenericDraw::DrawCircle(TYvec2 pos, TYfloat radius, TYvec color)
 	glDrawArrays(GL_TRIANGLE_FAN, 0, CircleIndices);
 
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 }
 
 TYvoid GenericDraw::DrawFSQuad(TYuint texture)
@@ -471,26 +541,11 @@ TYvoid GenericDraw::DrawFSQuad(TYuint texture)
 
 static TYfloat AvgCharacterSize = 0.0f;
 
-struct Character
-{
-	TYuint TextureID;
-	TYivec2 Size;
-	TYivec2 Bearing;
-	TYuint Advance;
-};
-
-static FT_Library library;
-static FT_Face face;
-
-static TYmap<TYint, Character> CharsEng;
-
-static constexpr char* eng_font = "./resources/fonts/Audiowide/Audiowide-Regular.ttf";
-static constexpr char* eng_font2 = "./resources/fonts/Noto_Sans_JP/NotoSansJP-Regular.otf";
+static TYcstring eng_font = "./resources/fonts/Audiowide/Audiowide-Regular.ttf";
+static TYcstring eng_font2 = "./resources/fonts/Noto_Sans_JP/NotoSansJP-Regular.otf";
 
 static TYuint TextVAO = 0;
 static TYuint TextVBO = 0;
-
-static TYbool tmpTextInit = false;
 
 #define PIXEL_TO_SCALE(x) (x / 12.0f) * 0.04f
 

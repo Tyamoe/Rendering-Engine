@@ -161,6 +161,12 @@
     <ClCompile Include="Animation.cpp">
       <Filter>Engine\Entity\Components</Filter>
     </ClCompile>
+    <ClCompile Include="AnimationTemp.cpp">
+      <Filter>Engine\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Engine\Rendering\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -322,6 +328,9 @@
     </ClInclude>
     <ClInclude Include="ImGuiUtils.h">
       <Filter>Engine\Core\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationTemp.h">
+      <Filter>Engine\Entity\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

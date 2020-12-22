@@ -21,17 +21,8 @@ Scene::Scene(TYint i)
 		entity->Set<Component::Mesh>(new Mesh(geometry[0], new Material(TYvec4(0.65f, 0.95f, 0.1f, 1.0f))));
 		entity->Set<Component::Transform>(new Transform(TYvec(0.0f, 30.0f, 0.0f), TYvec(2.0f)));
 
-		Entity* entity1 = CreateEntity("TestRaytrace2");
-		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/cube2.obj", hasBones, hasAnim);
-		entity1->Set<Component::Mesh>(mesh.first);
-		/*if (hasAnim)
-		{
-			entity1->Set<cc::Animation>(mesh.second);
-		}*/
-		entity1->Set<Component::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(1.0f)));
-
-		entity1 = CreateEntity("TestRaytrace52");
-		mesh = Mesh::CreateMesh("./resources/models/trofy.obj", hasBones, hasAnim);
+		Entity* entity1 = CreateEntity("TestRaytrace52");
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/trofy.obj", hasBones, hasAnim);
 		entity1->Set<Component::Mesh>(mesh.first);
 		entity1->Set<Component::Transform>(new Transform(TYvec(7.0f, 0.0f, -5.0f), TYvec(1.0f)));
 
@@ -41,6 +32,7 @@ Scene::Scene(TYint i)
 
 		return;
 	}
+
 	// light
 	AddGeometry(new Sphere(TYvec(0.0, 30, 0), 2.0f, PixelColorF(0.65f, 0.95f, 0.1f), 0.0f, 0.0f, PixelColorF(1.0f, 1.0f, 0.3f)));
 
@@ -89,7 +81,8 @@ Scene::Scene(TYint i)
 	{
 		Entity* entity1 = CreateEntity("Test1");
 
-		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewChar.fbx", hasBones, hasAnim);
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
+		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX2.fbx", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/NewCharAnim_WalkGun.fbx", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/walking.dae", hasBones, hasAnim);
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/TestFBX.fbx", hasBones, hasAnim);
@@ -99,8 +92,9 @@ Scene::Scene(TYint i)
 		{
 			entity1->Set<cc::Animation>(mesh.second);
 		}
-		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(2.0f)));
+		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(1)));
 	}
+
 	/*Entity* entity1;
 	for (int i = 0; i < 50; i++)
 	{
@@ -192,7 +186,14 @@ TYvoid Scene::GenOctree()
 
 Scene::~Scene()
 {
-
+	for (Entity* entity : entityList)
+	{
+		delete entity;
+	}
+	for (BVH* bvh_ : bvh)
+	{
+		delete bvh_;
+	}
 }
 
 TYvoid Scene::Init()

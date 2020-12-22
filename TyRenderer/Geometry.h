@@ -151,6 +151,10 @@ class Model : public Geometry
 public:
 	Model();
 
+	Model(TYuint, const aiMesh*, TYuint, TYvector<VertexAnim>&, TYvector<TYuint>&, Animation*, TYvec, TYvec);
+
+	Model(TYuint, const aiMesh*, TYvector<Vertex>&, TYvector<TYuint>&, TYvec, TYvec);
+
 	Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnimations, TYvec Min, TYvec Max);
 
 	Model(TYstring filePath, PixelColorF sc,

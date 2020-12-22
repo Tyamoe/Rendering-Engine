@@ -2,7 +2,7 @@
 
 #include "Debugger.h"
 
-void* __CRTDECL operator new(size_t n)
+void* operator new(size_t n)
 {
 	Debug::Memory::allocs++;
 	Debug::Memory::bytesUsed += n + sizeof(size_t);

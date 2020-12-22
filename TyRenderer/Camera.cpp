@@ -37,14 +37,22 @@ TYbool Camera::Update(TYfloat dt)
 {
 	TYfloat currSpeed = 50.0f * dt;
 
-	if (Input::keyboard.keyCtrl)
+	if (Input::keyboard.keyCtrl && Input::keyboard.keyShift)
 	{
-		currSpeed *= 0.2f;
+		currSpeed *= 10.0f;
 	}
-	if (Input::keyboard.keyShift)
+	else
 	{
-		currSpeed *= 3.0f;
+		if (Input::keyboard.keyCtrl)
+		{
+			currSpeed *= 0.1f;
+		}
+		if (Input::keyboard.keyShift)
+		{
+			currSpeed *= 3.0f;
+		}
 	}
+
 
 	if (Input::isKeyDown(GLFW_KEY_W))
 	{
@@ -104,7 +112,7 @@ TYbool Camera::Update(TYfloat dt)
 	right = glm::normalize(glm::cross(front, up));
 
 	view = glm::lookAt(position, position + front, up);
-	proj = glm::perspective(glm::radians(Global::FOV), 1.0f, near, far);;
+	proj = glm::perspective(glm::radians(Global::FOV), TYfloat(TyRenderer::width) / TYfloat(TyRenderer::height), near, far);
 
 	dirty = false;
 

@@ -14,16 +14,18 @@ TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat&
 	Mesh* mesh = entity->Get<Mesh*>();
 	Transform* transform = entity->Get<Transform*>();
 
-	TYvector<Geometry*> geoList = mesh->GetGeometryList();
+	//TYvector<Geometry*>& geoList = mesh->GetGeometryList();
+	const TYvector<SubMesh>& subMeshList = mesh->GetSubMeshList();
 
 	TYvec norm = TYvec(0.0f);
 	TYfloat tnear = TYinf;
 	Geometry* hit = TYnull;
 	TYint hitIndex = -1;
 
-	for (TYint i = 0; i < geoList.size(); i++)
+	for (TYint i = 0; i < subMeshList.size(); i++)
 	{
-		if (geoList[i]->Intersect(rayOrig, rayDir, t0, t1, norm))
+		Geometry* geometry = subMeshList[i].geometry;
+		if (geometry->Intersect(rayOrig, rayDir, t0, t1, norm))
 		{
 			if (t0 < 0)
 			{
@@ -33,7 +35,7 @@ TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat&
 			if (t0 < tnear)
 			{
 				tnear = t0;
-				hit = geoList[i];
+				hit = geometry;
 				normal = norm;
 				hitIndex = i;
 
@@ -56,7 +58,10 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	}
 	else
 	{
-		//node->color = new TYvec(0.92f, 1.0f, 0.0f);
+		if (!node->color)
+		{
+			node->color = new TYvec(TyVec3("fa68ff"));
+		}
 
 		if (node->empty)
 		{
@@ -101,6 +106,12 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	normal = norm;
 	t0 = t00;
 	t1 = t11;
+
+	/*if (!h)
+	{
+		t0 = node->T;
+		h = true;
+	}*/
 
 	return h;
 }
