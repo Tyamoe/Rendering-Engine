@@ -10,6 +10,7 @@ class GenericDraw
 public:
 	static TYvoid Init();
 	static TYvoid Destroy();
+	static TYvoid Update(TYfloat dt);
 
 	static TYvoid DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width = 2.0f);
 
@@ -26,8 +27,11 @@ public:
 	static TYvoid DrawFSQuad(TYuint texture);
 
 	static TYvoid DrawText(TYstring text, TYvec2 pos, TYfloat scale, TYvec4 color);
+	static TYvoid DrawText(TYstring text, TYvec pos, TYfloat scale, TYvec4 color);
 
 	friend class Camera;
+
+	static inline TYvector<TYpair<TYvec, TYfloat>> RecurringSpheres;
 
 	static inline const Camera* MainCamera = TYnull;
 private:

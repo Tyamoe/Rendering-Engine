@@ -2,6 +2,7 @@
 
 #include "Types.h"
 
+struct aiNodeAnim;
 struct aiNode;
 class Transform;
 

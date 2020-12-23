@@ -2,7 +2,48 @@
 
 #include <SOIL2.h>
 
+#include "Utils.h"
 #include "GLUtils.h"
+#include "AssimpUtils.h"
+
+TYvoid Material::LoadMaterial(aiScene* mScene, TYstring& path)
+{
+	for (TYuint i = 0; i < mScene->mNumMaterials; i++)
+	{
+		const aiMaterial* pMaterial = mScene->mMaterials[i];
+
+		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+		{
+			aiString afilename;
+
+			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &afilename, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS)
+			{
+				TYstring filename(afilename.data);
+
+				if (filename.substr(0, 2) == ".\\")
+				{
+					filename = filename.substr(2, filename.size() - 2);
+				}
+
+				TYstring fullPath = path + "/" + filename;
+
+				if (filename.find(":") != TYstring::npos || filename.find("..") != TYstring::npos)
+				{
+					fullPath = filename;
+				}
+
+				TYuint texture = Material::CreateTexture(fullPath);
+				if (texture == 0)
+				{
+					color = { GetRand(0.0f, 1.0f), GetRand(0.0f, 1.0f), GetRand(0.0f, 1.0f), 1.0f };
+					texture = Material::CreateTexture(TYvec4(1.0f));
+				}
+
+				AddTexture(texture);
+			}
+		}
+	}
+}
 
 TYuint Material::CreateTexture(TYstring& filename)
 {

@@ -63,6 +63,7 @@ TYvoid TyRenderer::PreRender()
 TYvoid TyRenderer::Render()
 {
 	renderer->Render(currDT);
+	//GenericDraw::Update(currDT);
 }
 
 TYvoid TyRenderer::PostRender()

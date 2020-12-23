@@ -14,7 +14,6 @@
 #include "AnimationUtils.h"
 #include "GLUtils.h"
 
-// Model
 Model::Model() : Geometry()
 {
 	SetType(geoModel);
@@ -268,186 +267,6 @@ Model::Model(TYstring filePath, PixelColorF sc, TYfloat refl, TYfloat transp, Pi
 	//octree->Make();
 }
 
-/*
-Model::Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnimations_, TYvec Min, TYvec Max)
-{
-	SetType(geoModel);
-	octree = new Octree(this);
-
-	hasAnimations = hasAnimations_;
-
-	Skeleton* skeleton = TYnull;
-	if (anim)
-	{
-		skeleton = anim->skeleton;
-	}
-
-	TYvec Centering = (Max + Min) / 2.0f;
-
-	if (hasAnimations)
-	{
-		for (TYuint i = 0; i < mesh->mNumVertices; i++)
-		{
-			VertexAnim vertex;
-
-			//process position 
-			TYvec vector = AssimpToGlm(mesh->mVertices[i]) - Centering;
-			vertex.position = vector;
-
-			vector = TYvec();
-			//process normal
-			if (mesh->HasNormals())
-			{
-				vector.x = mesh->mNormals[i].x;
-				vector.y = mesh->mNormals[i].y;
-				vector.z = mesh->mNormals[i].z;
-			}
-			vertex.normal = vector;
-
-			//process uv
-			TYvec2 vec = TYvec();
-			if (mesh->HasTextureCoords(0))
-			{
-				vec.x = mesh->mTextureCoords[0][i].x;
-				vec.y = mesh->mTextureCoords[0][i].y;
-			}
-			vertex.texCoord = vec;
-
-			vertex.boneIds = glm::ivec4(0);
-			vertex.boneWeights = TYvec4(0.0f);
-
-			animVertices.push_back(vertex);
-		}
-	}
-	else
-	{
-		for (TYuint i = 0; i < mesh->mNumVertices; i++)
-		{
-			Vertex vertex;
-
-			//process position 
-			TYvec vector = AssimpToGlm(mesh->mVertices[i]) - Centering;
-			vertex.position = vector;
-
-			vector = TYvec();
-			//process normal
-			if (mesh->HasNormals())
-			{
-				vector.x = mesh->mNormals[i].x;
-				vector.y = mesh->mNormals[i].y;
-				vector.z = mesh->mNormals[i].z;
-			}
-			vertex.normal = vector;
-
-			//process uv
-			TYvec2 vec = TYvec();
-			if (mesh->HasTextureCoords(0))
-			{
-				vec.x = mesh->mTextureCoords[0][i].x;
-				vec.y = mesh->mTextureCoords[0][i].y;
-			}
-			vertex.texCoord = vec;
-
-			Vertices.push_back(vertex);
-		}
-	}
-
-	if (hasAnimations)
-	{
-		TYvector<TYuint> boneCounts;
-
-		boneCounts.resize(animVertices.size(), 0);
-
-		TYuint nBoneCount = mesh->mNumBones;
-
-		for (TYuint i = 0; i < nBoneCount; i++)
-		{
-			aiBone* bone = mesh->mBones[i];
-			TYint hashStr = Hash(TYstring(bone->mName.C_Str()));
-
-			for (TYuint j = 0; j < bone->mNumWeights; j++)
-			{
-				TYuint id = bone->mWeights[j].mVertexId;
-				TYfloat weight = bone->mWeights[j].mWeight;
-
-				boneCounts[id]++;
-
-				switch (boneCounts[id])
-				{
-				case 1:
-					animVertices[id].boneIds.x = skeleton->skeleton[hashStr]->id;;
-					animVertices[id].boneWeights.x = weight;
-					break;
-				case 2:
-					animVertices[id].boneIds.y = skeleton->skeleton[hashStr]->id;;
-					animVertices[id].boneWeights.y = weight;
-					break;
-				case 3:
-					animVertices[id].boneIds.z = skeleton->skeleton[hashStr]->id;;
-					animVertices[id].boneWeights.z = weight;
-					break;
-				case 4:
-					animVertices[id].boneIds.w = skeleton->skeleton[hashStr]->id;;
-					animVertices[id].boneWeights.w = weight;
-					break;
-				default:
-					//std::cout << "err: unable to allocate bone to vertex" << std::endl;
-					break;
-				}
-			}
-		}
-
-		for (TYsizet i = 0; i < animVertices.size(); i++)
-		{
-			TYvec4& boneWeights = animVertices[i].boneWeights;
-			TYfloat totalWeight = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
-			if (totalWeight > 0.0f)
-			{
-				animVertices[i].boneWeights = TYvec4(
-					boneWeights.x / totalWeight,
-					boneWeights.y / totalWeight,
-					boneWeights.z / totalWeight,
-					boneWeights.w / totalWeight
-				);
-			}
-		}
-	}
-
-	for (TYuint i = 0; i < mesh->mNumFaces; i++)
-	{
-		aiFace& face = mesh->mFaces[i];
-		for (TYuint j = 0; j < face.mNumIndices; j++)
-		{
-			Indices.push_back(face.mIndices[j]);
-		}
-	}
-
-	for (TYsizet i = 0; i < Indices.size(); i += 3)
-	{
-		TYuint i1 = Indices[i];
-		TYuint i2 = Indices[i + 1];
-		TYuint i3 = Indices[i + 2];
-
-		if (hasAnimations)
-		{
-			Vertex v1 = animVertices[i1];
-			Vertex v2 = animVertices[i2];
-			Vertex v3 = animVertices[i3];
-
-			triangles.push_back(Triangle(v1, v2, v3));
-		}
-		else
-		{
-			Vertex v1 = Vertices[i1];
-			Vertex v2 = Vertices[i2];
-			Vertex v3 = Vertices[i3];
-
-			triangles.push_back(Triangle(v1, v2, v3));
-		}
-	}
-}
-*/
-
 Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<VertexAnim>& gVertices, TYvector<TYuint>& gIndices, Animation* animation)
 {
 	SetType(geoModel);
@@ -456,8 +275,6 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 	hasAnimations = true;
 
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-
-	//TYvec Centering = (Max + Min) / 2.0f;
 
 	// Vertices
 	for (TYuint i = 0; i < pMesh->mNumVertices; i++)
@@ -529,11 +346,6 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 	for (TYuint i = 0; i < pMesh->mNumFaces; i++)
 	{
 		const aiFace& face = pMesh->mFaces[i];
-		/*for (TYuint j = 0; j < face.mNumIndices; j++)
-		{
-			Indices.push_back(face.mIndices[j]);
-			gIndices.push_back(face.mIndices[j]);
-		}*/
 		assert(face.mNumIndices == 3);
 		gIndices.push_back(face.mIndices[0]);
 		gIndices.push_back(face.mIndices[1]);
@@ -571,8 +383,6 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices,
 
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-	//TYvec Centering = (Max + Min) / 2.0f;
-
 	for (TYuint i = 0; i < pMesh->mNumVertices; i++)
 	{
 		const aiVector3D* pPos = &(pMesh->mVertices[i]);
@@ -601,7 +411,6 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYvector<Vertex>& gVertices,
 		Indices.push_back(Face.mIndices[2]);
 	}
 
-
 	for (TYsizet i = 0; i < Indices.size(); i += 3)
 	{
 		TYuint i1 = Indices[i];
@@ -626,8 +435,7 @@ TYvoid Model::AddTriangles(TYvector<Triangle>& pTriangles)
 
 TYvoid Model::GenOctree()
 {
-	octree->GlobalTriangles.insert(octree->GlobalTriangles.begin(), triangles.begin(), triangles.end());
-	octree->Make();
+	octree->Make(triangles);
 }
 
 TYmat Model::GetMatrix()

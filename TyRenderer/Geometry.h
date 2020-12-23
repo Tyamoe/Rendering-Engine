@@ -155,10 +155,9 @@ public:
 
 	Model(TYuint, const aiMesh*, TYvector<Vertex>&, TYvector<TYuint>&);
 
-	//Model(Animation* anim, const aiScene* scene, aiMesh* mesh, TYbool hasAnimations, TYvec Min, TYvec Max);
-
 	Model(TYstring filePath, PixelColorF sc,
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF(), TYvec ce = TYvec(0.0f));
+	
 	~Model();
 
 	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);

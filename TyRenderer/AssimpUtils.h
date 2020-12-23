@@ -8,7 +8,7 @@
 #include <assimp/vector3.h>
 #include <assimp/Importer.hpp>
 
-inline TYmat AssimpToGlm(aiMatrix4x4 mat)
+inline TYmat AssimpToGlm(const aiMatrix4x4& mat)
 {
 	TYmat m;
 	for (TYint y = 0; y < 4; y++)
@@ -21,22 +21,22 @@ inline TYmat AssimpToGlm(aiMatrix4x4 mat)
 	return m;
 }
 
-inline TYvec AssimpToGlm(aiVector3D vec)
+inline TYvec AssimpToGlm(const aiVector3D& vec)
 {
 	return TYvec(vec.x, vec.y, vec.z);
 }
 
-inline TYvec4 AssimpToGlm(aiColor4D vec)
+inline TYvec4 AssimpToGlm(const aiColor4D& vec)
 {
 	return TYvec4(vec.r, vec.g, vec.b, vec.a);
 }
 
-inline TYvec AssimpToGlm(aiColor3D vec)
+inline TYvec AssimpToGlm(const aiColor3D& vec)
 {
 	return TYvec(vec.r, vec.g, vec.b);
 }
 
-inline TYquaternion AssimpToGlm(aiQuaternion quat)
+inline TYquaternion AssimpToGlm(const aiQuaternion& quat)
 {
 	TYquaternion q;
 	q.x = quat.x;

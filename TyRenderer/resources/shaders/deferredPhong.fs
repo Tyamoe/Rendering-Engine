@@ -121,7 +121,7 @@ void main()
 
   			float att = 1.0f;
 
-  			if(xtra != 3 && i != 0) // Directional
+  			if(xtra != 3) // Directional
   			{
   				att = 1.0f / (attCoef.x + attCoef.y * dis + attCoef.z * (dis * dis));
   			}

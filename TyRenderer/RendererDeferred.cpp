@@ -59,6 +59,7 @@ static TYvector<Light> Lights;
 static TYbool tempPlay = false;
 static TYbool tempDrawOctree = false;
 static TYbool tempDrawSkeleton = false;
+static TYbool tempDrawLights = false;
 
 static TYuint albedoMap = 0;
 static TYuint normalMap = 0;
@@ -92,11 +93,11 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 		TYmat modelMatrix = entity->GetMatrix();
 		if (mesh->IsAnimated())
 		{
-			/*TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
+			TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
 			TYmat rtMatrix = glm::mat4_cast(TYquaternion(RotationBatch));
 			TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(ScaleBithc));
 
-			modelMatrix = trMatrix * rtMatrix * scMatrix;*/
+			modelMatrix = trMatrix * rtMatrix * scMatrix;
 		}
 		TYmat modelInv = glm::inverse(modelMatrix);
 		modelInv = glm::transpose(modelInv);
@@ -357,12 +358,14 @@ TYvoid RenderDeferred::Forward()
 	// UI
 	{
 		ImGui::Begin("Details");
-		ImGui::Checkbox("Draw Octree", &tempDrawOctree);
 
 		ImGui::Text("Camera Pos: %.3f, %.3f, %.3f", camera->position.x, camera->position.y, camera->position.z);
 		ImGui::Text("Camera Front: %.3f, %.3f, %.3f", camera->front.x, camera->front.y, camera->front.z);
 
 		ImGui::NewLine();
+
+		ImGui::Checkbox("Draw Octree", &tempDrawOctree);
+		ImGui::Checkbox("Draw Lights", &tempDrawLights);
 
 		/*Transform* t = Entity::Get<Transform*>("Test");
 
@@ -388,8 +391,8 @@ TYvoid RenderDeferred::Forward()
 
 		ImGui::Begin("Test Animations");
 
-		ImGui::SliderFloat3("Position##1337", &PositionBitss.x, -100.0f, 100.0f);
-		ImGui::SliderFloat("Scale##1337", &ScaleBithc, 0.0f, 20.0f);
+		ImGui::SliderFloat3("Position##1337", &PositionBitss.x, -500.0f, 500.0f);
+		ImGui::SliderFloat("Scale##1337", &ScaleBithc, 0.0f, 30.0f);
 		ImGui::SliderFloat4("Rotation##1337", &RotationBatch.x, -TYpi, TYpi);
 
 		ImGui::End();
@@ -418,15 +421,22 @@ TYvoid RenderDeferred::Forward()
 			Animation* anim = scene->entityList[i]->Get<Animation*>();
 			if (anim)
 			{
-				anim->DrawSkeleton();
+				TYmat modelMatrix = scene->entityList[i]->GetMatrix();
+				anim->DrawSkeleton(modelMatrix);
 				//DrawSkeleton(anim->skeleton->skeleton);
 			}
 		}
 	}
 
-	//skinnyMesh->BoneTransform(0.01667f, tTransforms);
-
-	//GenericDraw::DrawCube({ 0,0,0 }, { 3,3,3 }, UI::Color::PURPLE);
+	if (tempDrawLights)
+	{
+		for (TYint i = 0; i < Lights.size(); i++)
+		{
+			if (i == 0) continue;
+			TYvec center = Lights[i].pos;
+			GenericDraw::DrawSphere(center, 0.88f, Lights[i].diff);
+		}
+	}
 
 	//UI::Use(camera);
 	//UI::DrawBackground(Texture2D::CreateTexture("editorBackground.png"), 10.0f);
@@ -660,6 +670,8 @@ TYvoid RenderDeferred::Init()
 
 	camera = new Camera(false);
 
+	GenericDraw::MainCamera = camera;
+
 	// Setup frameBuffer
 	glGenFramebuffers(1, &RenderBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, RenderBuffer);
@@ -778,7 +790,7 @@ RenderDeferred::RenderDeferred() : Renderer()
 	Lights.push_back(light);
 
 
-	for (int i = 0; i < 50; i++)
+	for (TYint i = 0; i < 50; i++)
 	{
 		TYvec v = randomVec();
 		light.ambi = { v * 1.2f };

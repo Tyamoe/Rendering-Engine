@@ -3,12 +3,11 @@
 #include "Types.h"
 #include "Utils.h"
 
-typedef class Triangle Triangle;
-typedef class Geometry Geometry;
+class Triangle;
+class Geometry;
 
-class Plane
+struct Plane
 {
-public:
 	Plane() {}
 	Plane(TYfloat c, TYvec orientation, TYvec pos) : Distance(c), Center(pos), Normal(orientation)
 	{
@@ -39,43 +38,8 @@ public:
 	}
 };
 
-class Segment;
-
-struct Triangle_
-{
-public:
-	Triangle_(TYvec v0 = TYvec(0), TYvec v1 = TYvec(0), TYvec v2 = TYvec(0))
-	{
-		v[0] = v0;
-		v[1] = v1;
-		v[2] = v2;
-	
-		center = (v[0] + v[1] + v[2]) / 3.0f;
-
-		TYvec min(std::numeric_limits<TYfloat>::max());
-		TYvec max(-std::numeric_limits<TYfloat>::max());
-
-		for (TYvec v1 : v)
-		{
-			if (v1.x > max.x) max.x = v1.x;
-			if (v1.x < min.x) min.x = v1.x;
-			if (v1.y > max.y) max.y = v1.y;
-			if (v1.y < min.y) min.y = v1.y;
-			if (v1.z > max.z) max.z = v1.z;
-			if (v1.z < min.z) min.z = v1.z;
-		}
-
-		extents = max - min;
-	}
-
-	TYvec v[3];
-	TYvec center;
-	TYvec extents;
-};
-
 struct AABB
 {
-public:
 	AABB() {}
 	TYvec min = TYvec(0.0f);
 	TYvec max = TYvec(0.0f);
@@ -102,50 +66,7 @@ public:
 	TYbool TriInAABB(Triangle& tri);
 	TYbool PointInAABB(TYvec point);
 
-	TYbool IntersectLineAABB(TYvec O, TYvec D, TYfloat t[], TYfloat epsilon);
-
-	TYbool SegmentIntersectsGridAlignedBox3D(Segment segment);
-
 };
-
-
-
-class Segment
-{
-public:
-	Segment(const TYvec& startPoint, const TYvec& endPoint) :
-		origin(startPoint), direction(endPoint - startPoint),
-		inverseDirection(TYvec(1.0f) / direction),
-		sign{ (inverseDirection.x < 0.0f),(inverseDirection.y < 0.0f),(inverseDirection.z < 0.0f) }
-	{}
-
-	TYfloat length() {
-		return sqrtf(direction.x * direction.x + direction.y * direction.y +
-			direction.z * direction.z);
-	}
-	TYvec origin, endpoint, direction;
-	TYvec inverseDirection;
-	TYint sign[3];
-};
-
-enum class Octant
-{
-	Fr_BL = 1,
-	Fr_BR = 5,
-	Fr_TL = 3,
-	Fr_TR = 7,
-
-	Ba_BL = 0,
-	Ba_BR = 4,
-	Ba_TL = 2,
-	Ba_TR = 6,
-
-	Root = 8
-};
-
-static const char* OctantStrings[] = { "Back_BottomL", "Front_BottomL", "Back_TopL", "Front_TopL", 
-									   "Back_BottomR", "Front_BottomR", "Back_TopR", "Front_TopR"
-										,"Root" };
 
 class Node
 {
@@ -187,44 +108,22 @@ public:
 
 	TYint childID = 0;
 
-	Node* Intersect(TYvec rayOrig, TYvec rayDir, TYfloat t);
+	Node* Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint);
 
 private:
+	TYint SignMask(TYvec vec);
+	TYint SignMask(TYfloat f, TYfloat c);
 
 };
 
 class Octree
 {
-
 public:
-	TYvector3 colors;
-	TYint  tempint = 0;
-
-	TYfloat colorBias = 0.0f;
-
-	TYfloat ColorDiff(TYvec cul);
-
-	TYvoid GenColors();
-
 	Octree(Geometry* parentGeometry_);
 
 	~Octree()
 	{
 		Delete(root);
-	}
-
-	TYvoid Traverse(Node* node);
-
-	TYvoid Draw(Node* node);
-
-	Node* Intersect(TYvec rayOrig, TYvec rayDir);
-	Node* Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t);
-
-	TYvoid MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries);
-
-	TYvoid Break()
-	{
-		maxDepth = 0;
 	}
 
 	TYvoid Delete(Node* node)
@@ -234,14 +133,20 @@ public:
 		for (int i = 0; i < 8; i++)
 		{
 			Delete(node->children[i]);
-			//delete node->children[i];
 		}
 		delete node;
 	}
 
-	TYvoid Make();
+	TYvoid Make(TYvector<Triangle>& GlobalTriangles);
+	TYvoid MakeRec(Node* parent, TYint depth, TYvector<Triangle>& tries);
 
-	TYvector<Triangle> GlobalTriangles;
+	TYvoid GenColors();
+
+	TYvoid Traverse(Node* node);
+
+	TYvoid Draw(Node* node);
+
+	Node* Intersect(TYvec rayOrig, TYvec rayDir);
 
 	Node* root;
 
@@ -251,10 +156,35 @@ public:
 	TYbool drawEmpty = true;
 	TYbool drawy = true;
 
-	TYint  BranchCutoff = 300;
+	TYint BranchCutoff = 300;
+
+	TYvector3 colors;
+	TYint tempint = 0;
+
+	TYfloat colorBias = 0.0f;
 
 	Geometry* parentGeometry = TYnull;
 
 private:
+	TYfloat ColorDiff(TYvec cul);
 
 };
+
+enum class Octant
+{
+	Fr_BL = 1,
+	Fr_BR = 5,
+	Fr_TL = 3,
+	Fr_TR = 7,
+
+	Ba_BL = 0,
+	Ba_BR = 4,
+	Ba_TL = 2,
+	Ba_TR = 6,
+
+	Root = 8
+};
+
+static const char* OctantStrings[] = { "Back_BottomL", "Front_BottomL", "Back_TopL", "Front_TopL",
+									   "Back_BottomR", "Front_BottomR", "Back_TopR", "Front_TopR"
+										,"Root" };

@@ -33,7 +33,7 @@ public:
 	TYvoid UpdatePose();
 	TYvoid UpdatePose(const aiNode* pNode, const TYmat& ParentTransform);
 
-	TYvoid DrawSkeleton();
+	TYvoid DrawSkeleton(const TYmat& modelMatrix);
 
 	TYvoid SetFrame(TYfloat frame);
 	TYvoid SetFrame(TYint frame);
@@ -70,6 +70,7 @@ private:
 	TYuint FindScaling(const aiNodeAnim* pNodeAnim);
 	TYuint FindRotation(const aiNodeAnim* pNodeAnim);
 	TYuint FindPosition(const aiNodeAnim* pNodeAnim);
+
 private:
 	static Animation* CreateAnimation(const aiScene* scene);
 

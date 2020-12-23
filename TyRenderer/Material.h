@@ -2,6 +2,8 @@
 
 #include "Types.h"
 
+struct aiScene;
+
 enum class MaterialShader
 {
 	Phong,
@@ -15,6 +17,8 @@ public:
 	Material() : color({0.0f, 0.0f, 0.0f, 1.0f}) {}
 	Material(TYvec4 color_) : color(color_) {}
 	~Material() {}
+
+	TYvoid LoadMaterial(aiScene* mScene, TYstring& path);
 
 	TYfloat GetTransparency() { return 0.0f; }
 	TYuint GetTexture(TYuint i) 

@@ -53,7 +53,6 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	node = octree->Intersect(rayOrig, rayDir);
 	if (!node)
 	{
-		Global::CulledTries++;
 		return false;
 	}
 	else
@@ -69,28 +68,19 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 		}
 	}
 
-	//Global::TriCount = triangles.size();
-
 	TYvec norm = TYvec(0.0f);
 	TYfloat t00 = TYinf, t11 = TYinf;
 	TYbool h = false;
 
-	if (node && node->Triangles.size() <= triangles.size())
-	{
-		Global::TriCount++;
-	}
-
-	//for (TYsizet i = 0; i < triangles.size(); i++)
 	for (TYsizet i = 0; i < node->Triangles.size(); i++)
 	{
-		/*TYvec p0 = triangles[i].vertices[0].position;
-		TYvec p1 = triangles[i].vertices[1].position;
-		TYvec p2 = triangles[i].vertices[2].position;
+		/*TYvec p0 = node->Triangles[i].vertices[0].position;
+		TYvec p1 = node->Triangles[i].vertices[1].position;
+		TYvec p2 = node->Triangles[i].vertices[2].position;
 
 		TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
 		if (prod.z <= 0.0f)
 		{
-			//Global::CulledTries++;
 			continue;
 		}*/
 		if (node->Triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < TYmaxf && t0 < t00)
@@ -99,19 +89,12 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 			t11 = t1;
 			norm = normal;
 			h = true;
-			//return true;
 		}
 	}
 
 	normal = norm;
 	t0 = t00;
 	t1 = t11;
-
-	/*if (!h)
-	{
-		t0 = node->T;
-		h = true;
-	}*/
 
 	return h;
 }
@@ -147,7 +130,6 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 
 	if (t0 < TYepsilon)
 	{
-		Global::TriCount++;
 		return false;
 	}
 

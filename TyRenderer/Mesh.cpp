@@ -87,6 +87,23 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		std::cout << "ERROR::ASSIMP::" << rre << std::endl;
 		std::cout << "ERROR::ASSIMP::" << std::endl;
 	}
+
+	TYstring::size_type slashIndex = filename.find_last_of("/");
+	TYstring meshDirectory;
+
+	if (slashIndex == TYstring::npos)
+	{
+		meshDirectory = ".";
+	}
+	else if (slashIndex == 0)
+	{
+		meshDirectory = "/";
+	}
+	else
+	{
+		meshDirectory = filename.substr(0, slashIndex);
+	}
+
 	aiScene* mScene = importer.GetOrphanedScene();
 
 	hasAnimations = mScene->HasAnimations();
@@ -288,61 +305,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 		mesh->meshHandle = mh;
 	}
 
-	// Extract the directory part from the file name
-	TYstring::size_type SlashIndex = filename.find_last_of("/");
-	TYstring Dir;
-
-	if (SlashIndex == TYstring::npos) 
-	{
-		Dir = ".";
-	}
-	else if (SlashIndex == 0) 
-	{
-		Dir = "/";
-	}
-	else 
-	{
-		Dir = filename.substr(0, SlashIndex);
-	}
-
-	bool Ret = true;
-
-	// Initialize the materials
-	for (TYuint i = 0; i < mScene->mNumMaterials; i++) 
-	{
-		const aiMaterial* pMaterial = mScene->mMaterials[i];
-
-		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) 
-		{
-			aiString Path;
-
-			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) 
-			{
-				TYstring p(Path.data);
-
-				if (p.substr(0, 2) == ".\\") 
-				{
-					p = p.substr(2, p.size() - 2);
-				}
-
-				TYstring FullPath = Dir + "/" + p;
-
-				if (p.find(":") != TYstring::npos || p.find("..") != TYstring::npos)
-				{
-					FullPath = p;
-				}
-
-				TYuint texture = Material::CreateTexture(FullPath);
-				if (texture == 0)
-				{
-					mesh->material->color = randColor;
-					texture = Material::CreateTexture(TYvec4(1.0f));
-				}
-
-				mesh->material->AddTexture(texture);
-			}
-		}
-	}
+	mesh->material->LoadMaterial(mScene, meshDirectory);
 
 	return { mesh , anim };
 }

@@ -271,6 +271,14 @@ TYvoid GenericDraw::Init()
 	}
 }
 
+TYvoid GenericDraw::Update(TYfloat dt)
+{
+	for (TYpair<TYvec, TYfloat> sphere: RecurringSpheres)
+	{
+		GenericDraw::DrawSphere(sphere.first, sphere.second, TYvec(0, 0, 0));
+	}
+}
+
 TYvoid GenericDraw::DrawCube(TYvec pos, TYvec size, TYvec color, TYfloat width)
 {
 	ColorShader->Use();
@@ -672,6 +680,133 @@ TYvoid GenericDraw::DrawText(TYstring text, TYvec2 position, TYfloat scale, TYve
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		position.x += (ch.Advance >> 6) * scale;
+	}
+
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+TYvoid GenericDraw::DrawText(TYstring text, TYvec position, TYfloat scale, TYvec4 color)
+{
+	if (!tmpTextInit)
+	{
+		tmpTextInit = true;
+
+		int error = FT_Init_FreeType(&library);
+		if (error) TYlog << "Init_FreeType Error " << error << TYlogbreak;
+
+		error = FT_New_Face(library, eng_font2, 0, &face);
+
+		if (error == FT_Err_Unknown_File_Format)
+		{
+			TYlog << "FT_Err_Unknown_File_Format" << TYlogbreak;
+		}
+
+		error = FT_Set_Pixel_Sizes(face, 0, 10 * 48);
+
+		CharsEng.clear();
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
+
+		for (TYubyte c = 0; c < 128; c++)
+		{
+			// Load character glyph 
+			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+			{
+				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+				continue;
+			}
+
+			TYuint texture;
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			Character character
+			{
+					texture,
+					TYivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+					TYivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+					(TYuint)face->glyph->advance.x
+			};
+
+			//AvgCharacterSize += (TYfloat)character.Size.x;
+			AvgCharacterSize += (TYfloat)character.Size.x + ((TYfloat)character.Bearing.x * 2.0f);
+
+			CharsEng.insert(TYpair<TYchar, Character>(c, character));
+		}
+		AvgCharacterSize /= 128.0f;
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glGenVertexArrays(1, &TextVAO);
+		glGenBuffers(1, &TextVBO);
+
+		glBindVertexArray(TextVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(TYfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(TYfloat), 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
+	TextShader->Use();
+
+	TYmat model = glm::translate(TYmat(1.0f), position);
+
+	// 3D Text
+	TextShader->Uniforms["Model"](model);
+	TextShader->Uniforms["View"](MainCamera->view);
+	TextShader->Uniforms["Proj"](MainCamera->proj);
+
+	TextShader->Uniforms["textColor"](color);
+
+	glBindVertexArray(TextVAO);
+
+	TYvec2 pPos = {};
+
+	// Iterate through all characters
+	TYstring::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = CharsEng[*c];
+
+		GLfloat xpos = pPos.x + ch.Bearing.x * scale;
+		GLfloat ypos = pPos.y - (ch.Size.y - ch.Bearing.y) * scale;
+
+		GLfloat w = ch.Size.x * scale;
+		GLfloat h = ch.Size.y * scale;
+
+		GLfloat vertices[6][4] =
+		{
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos,     ypos,       0.0f, 1.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+			{ xpos + w, ypos + h,   1.0f, 0.0f }
+		};
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+		TextShader->Uniforms["text"](0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		pPos.x += (ch.Advance >> 6) * scale;
 	}
 
 	glBindVertexArray(0);
