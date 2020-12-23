@@ -11,14 +11,12 @@ class Octree;
 class BVH;
 class MeshHandle;
 class Mesh;
+class Animation;
+class Entity;
+struct Bone;
 
 struct aiScene;
 struct aiMesh;
-
-class Bone;
-class Skeleton;
-class Animation;
-class Entity;
 
 enum GeoType
 {

@@ -14,9 +14,35 @@ TYvoid Debug::Update(TYfloat dt)
 
 	ImGui::NewLine();
 
+	TYdouble kilobytesInUse = Memory::bytesInUse / TYdouble(1000);
+	TYdouble megabytesInUse = Memory::bytesInUse / TYdouble(1000000);
+	TYdouble gigabytesInUse = Memory::bytesInUse / TYdouble(1000000000);
+
 	ImGui::Text("Allocations: %d", Memory::allocs);
 	ImGui::Text("Deallocations: %d", Memory::deallocs);
-	ImGui::Text("Bytes in use: %zu", Memory::bytesInUse);
+
+	if (Memory::bytesInUse >= 1000)
+	{
+		if (kilobytesInUse >= 1000.0)
+		{
+			if (megabytesInUse >= 1000.0)
+			{
+				ImGui::Text("Gigabytes in use: %.3f", gigabytesInUse);
+			}
+			else
+			{
+				ImGui::Text("Megabytes in use: %.3f", megabytesInUse);
+			}
+		}
+		else
+		{
+			ImGui::Text("Kilobytes in use: %.3f", kilobytesInUse);
+		}
+	}
+	else
+	{
+		ImGui::Text("Bytes in use: %lu", Memory::bytesInUse);
+	}
 
 	ImGui::NewLine();
 

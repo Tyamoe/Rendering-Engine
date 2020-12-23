@@ -2,7 +2,6 @@
 // Handles animation updates
 // Stores current animation, (optional) Animator 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-//https://github.com/Robadob/sdl_exp/blob/master/sdl_exp/visualisation/model/Animation.h
 
 #include "Animation.h"
 
@@ -27,8 +26,7 @@ Animation::Animation()
 
 Animation::~Animation()
 {
-	//skeleton1.clear();
-	//delete skeleton;
+
 }
 
 Animation* Animation::CreateAnimation(const aiScene* scene)
@@ -68,11 +66,8 @@ TYvoid Animation::SetFrame(TYint frame)
 
 TYvoid Animation::Update(TYfloat dt)
 {
-	timeElapsed += dt * ticksPerSecond * 0.5f;
-
-	// Animation Time: duration * tickPerSecond / 60.0f
-
-	timeElapsed = (timeElapsed >= duration ? dt * 0.2f : timeElapsed);
+	timeElapsed += dt * ticksPerSecond;
+	timeElapsed = (timeElapsed >= duration ? 0.0f : timeElapsed);
 }
 
 TYvoid Animation::UpdatePose()
@@ -83,470 +78,191 @@ TYvoid Animation::UpdatePose()
 
 	for (TYuint i = 0; i < numBones; i++)
 	{
-		currentPose[i] = boneInfo[i].FinalTransformation;
+		currentPose[i] = bones[i].BoneTransform;
 	}
 }
 
 TYvoid Animation::UpdatePose(const aiNode* pNode, const TYmat& ParentTransform)
 {
-	//TYstring NodeName(pNode->mName.C_Str());
 	TYint hashStr = Hash(pNode->mName.C_Str(), pNode->mName.length);
 	
 	const aiAnimation* pAnimation = mScene->mAnimations[0];
 
 	TYmat NodeTransformation = AssimpToGlm(pNode->mTransformation);
 	
-	const aiNodeAnim* pNodeAnim = nodeMapping[hashStr];// GetNodeAnim(pAnimation, NodeName);//
+	const aiNodeAnim* pNodeAnim = nodeMapping[hashStr];
 
 	if (pNodeAnim)
 	{
-		/*TYvec Scaling;
-		CalcInterpolatedScaling(Scaling, timeElapsed, pNodeAnim);
+		TYvec Scaling = GetPoseScale(pNodeAnim);
 		TYmat ScalingM = glm::scale(TYmat(1.0f), { Scaling.x, Scaling.y, Scaling.z });
 
-		TYquaternion RotationQ;
-		CalcInterpolatedRotation(RotationQ, timeElapsed, pNodeAnim);
+		TYquaternion RotationQ = GetPoseRotation(pNodeAnim);
 		TYmat RotationM = glm::mat4_cast(RotationQ);
 
-		TYvec Translation;
-		CalcInterpolatedPosition(Translation, timeElapsed, pNodeAnim);
-		TYmat TranslationM = glm::translate(TYmat(1.0f), { Translation.x, Translation.y, Translation.z });*/
-
-		/*TYvec position = GetPosePosition(pNodeAnim);
-		TYvec scale = GetPoseScale(pNodeAnim);
-		TYquaternion rotation = GetPoseRotation(pNodeAnim);
-
-		TYmat ScalingM = glm::scale(TYmat(1.0f), scale);
-
-		TYmat RotationM = glm::mat4_cast(rotation);
-
-		TYmat TranslationM = glm::translate(TYmat(1.0f), position);*/
-
-		TYvec Scaling;
-		CalcInterpolatedScaling(Scaling, pNodeAnim);
-		TYmat ScalingM = glm::scale(TYmat(1.0f), { Scaling.x, Scaling.y, Scaling.z });
-
-		TYquaternion RotationQ;
-		CalcInterpolatedRotation(RotationQ, pNodeAnim);
-		TYmat RotationM = glm::mat4_cast(RotationQ);
-
-		TYvec Translation;
-		CalcInterpolatedPosition(Translation, pNodeAnim);
+		TYvec Translation = GetPosePosition(pNodeAnim);
 		TYmat TranslationM = glm::translate(TYmat(1.0f), { Translation.x, Translation.y, Translation.z });
 
 		NodeTransformation = TranslationM * RotationM * ScalingM;
 	}
 
-	TYmat GlobalTransformation = ParentTransform * NodeTransformation;
+	TYmat GlobalTransform = ParentTransform * NodeTransformation;
 
 	auto it = boneMapping.find(hashStr);
 	if (it != boneMapping.end())
 	{
 		TYuint BoneIndex = it->second;
-		boneInfo[BoneIndex].GlobalTransformation = GlobalTransformation;
-		boneInfo[BoneIndex].FinalTransformation = globalInvMatrix * GlobalTransformation * boneInfo[BoneIndex].BoneOffset;
+		bones[BoneIndex].GlobalTransform = GlobalTransform;
+		bones[BoneIndex].BoneTransform = globalInvMatrix * GlobalTransform * bones[BoneIndex].BoneOffset;
 	}
 
 	for (TYuint i = 0; i < pNode->mNumChildren; i++)
 	{
-		UpdatePose(pNode->mChildren[i], GlobalTransformation);
+		UpdatePose(pNode->mChildren[i], GlobalTransform);
 	}
-}
-
-const aiNodeAnim* Animation::GetNodeAnim(const aiAnimation* pAnimation, TYstring& NodeName)
-{
-	static TYumap<TYstring, aiNodeAnim*> animMap;
-
-	aiNodeAnim* anim = TYnull;
-
-	if (animMap.size() > 0)
-	{
-		anim = animMap[NodeName];
-	}
-	else
-	{
-		for (TYuint i = 0; i < pAnimation->mNumChannels; i++) 
-		{
-			const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
-
-			animMap.insert({ TYstring(pNodeAnim->mNodeName.data), (aiNodeAnim*)pNodeAnim });
-
-			if (TYstring(pNodeAnim->mNodeName.data) == NodeName)
-			{
-				anim = (aiNodeAnim*)pNodeAnim;
-			}
-		}
-	}
-
-
-	return anim;
 }
 
 TYvec Animation::GetPosePosition(const aiNodeAnim* pNodeAnim)
 {
-	/*if (timestamps.size() == 1)
-	{
-		return positions[0];
-	}
-
-	if (timestamps.size() == 0)
-	{
-		return TYvec();
-	}*/
 	if (pNodeAnim->mNumPositionKeys == 1)
 	{
 		return AssimpToGlm(pNodeAnim->mPositionKeys[0].mValue);
 	}
 
-	TYuint curr = 0;
-	/*while (timeElapsed > timestamps[segment])
-	{
-		segment++;
-	}
-
-	if (segment == 0) segment++;*/
-
-	for (TYuint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
-	{
-		if (timeElapsed < (TYfloat)pNodeAnim->mPositionKeys[i + 1].mTime)
-		{
-			curr = i;
-			break;
-		}
-	}
-
-	TYuint next = curr + 1;
-
-	assert(next < pNodeAnim->mNumPositionKeys);
-
-	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mPositionKeys[next].mTime - pNodeAnim->mPositionKeys[curr].mTime);
-	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mPositionKeys[curr].mTime) / DeltaTime;
-
-	//assert(Factor >= 0.0f && Factor <= 1.0f);
-
-	TYvec startPos = AssimpToGlm(pNodeAnim->mPositionKeys[curr].mValue);
-	TYvec endPos = AssimpToGlm(pNodeAnim->mPositionKeys[next].mValue);
-
-	TYvec Delta = endPos - startPos;
-
-	return startPos + Factor * Delta;
-
-	//return glm::mix(initPos, nextPos, frac);
-}
-
-TYvec Animation::GetPoseScale(const aiNodeAnim* pNodeAnim)
-{
-	/*if (timestamps.size() == 1)
-	{
-		return scales[0];
-	}
-
-	if (timestamps.size() == 0)
-	{
-		return TYvec(1.0f);
-	}
-
-	TYuint segment = 0;
-	while (timeElapsed > timestamps[segment])
-	{
-		segment++;
-	}
-
-	if (segment == 0) segment++;
-
-	TYfloat start = timestamps[segment - 1];
-	TYfloat end = timestamps[segment];
-	TYfloat frac = (timeElapsed - start) / (end - start);
-
-	TYvec initScale = scales[segment - 1];
-	TYvec nextScale = scales[segment];
-
-	return glm::mix(initScale, nextScale, frac);*/
-
-	if (pNodeAnim->mNumScalingKeys == 1)
-	{
-		return AssimpToGlm(pNodeAnim->mScalingKeys[0].mValue);
-	}
-
-	TYuint curr = 0;
-	for (TYuint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) 
-	{
-		if (timeElapsed < (TYfloat)pNodeAnim->mScalingKeys[i + 1].mTime) 
-		{
-			curr = i;
-			break;
-		}
-	}
-
-	TYuint next = curr + 1;
-
-	assert(next < pNodeAnim->mNumScalingKeys);
-
-	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mScalingKeys[next].mTime - pNodeAnim->mScalingKeys[curr].mTime);
-	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mScalingKeys[curr].mTime) / DeltaTime;
-
-	//assert(Factor >= 0.0f && Factor <= 1.0f);
-
-	TYvec startScale = AssimpToGlm(pNodeAnim->mScalingKeys[curr].mValue);
-	TYvec endScale = AssimpToGlm(pNodeAnim->mScalingKeys[next].mValue);
-
-	TYvec Delta = endScale - startScale;
-
-	return startScale + Factor * Delta;
-}
-
-TYquaternion Animation::GetPoseRotation(const aiNodeAnim* pNodeAnim)
-{
-	/*if (timestamps.size() == 1)
-	{
-		return rotations[0];
-	}
-
-	if (timestamps.size() == 0)
-	{
-		return TYquaternion(TYvec4(0.0f, 0.0f, 0.0f, 1.0f));
-	}
-
-	TYuint segment = 0;
-	while (timeElapsed > timestamps[segment])
-	{
-		segment++;
-	}
-
-	if (segment == 0) segment++;
-
-	TYfloat start = timestamps[segment - 1];
-	TYfloat end = timestamps[segment];
-	TYfloat frac = (timeElapsed - start) / (end - start);
-
-	TYquaternion initRot = rotations[segment - 1];
-	TYquaternion nextRot = rotations[segment];
-
-	return glm::slerp(initRot, nextRot, frac);*/
-
-	if (pNodeAnim->mNumRotationKeys == 1) 
-	{
-		return AssimpToGlm(pNodeAnim->mRotationKeys[0].mValue);
-	}
-
-	TYuint curr = 0;
-
-	for (TYuint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
-	{
-		if (timeElapsed < (TYfloat)pNodeAnim->mRotationKeys[i + 1].mTime) 
-		{
-			curr = i;
-		}
-	}
-
-	TYuint next = curr + 1;
-
-	assert(next < pNodeAnim->mNumRotationKeys);
-
-	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mRotationKeys[next].mTime - pNodeAnim->mRotationKeys[curr].mTime);
-	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mRotationKeys[curr].mTime) / DeltaTime;
-
-	//assert(Factor >= 0.0f && Factor <= 1.0f);
-
-	aiQuaternion rot;
-	aiQuaternion::Interpolate(rot, pNodeAnim->mRotationKeys[curr].mValue, pNodeAnim->mRotationKeys[next].mValue, Factor);
-	rot.Normalize();
-
-	return AssimpToGlm(rot);
-}
-
-TYvoid Animation::DrawSkeleton(const TYmat& modelMatrix)
-{
-	for (TYuint i = 0; i < boneInfo.size(); i++)
-	{
-		{
-			TYvec center = modelMatrix * boneInfo[i].GlobalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
-			//GenericDraw::DrawLine(parentCenter, center, TYvec(0.0f), 1.5f);
-			GenericDraw::DrawSphere(center, 0.6f, TYvec(1.0f, 0.95f, 0.95f));
-		}
-
-		{
-			TYvec center = modelMatrix * boneInfo[i].FinalTransformation * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
-			GenericDraw::DrawSphere(center, 0.3f, TYvec(0.85f, 0.15f, 0.15f));
-		}
-	}
-}
-
-TYuint Animation::FindPosition(const aiNodeAnim* pNodeAnim)
-{
-	/*TYuint a = 0;
-	for (TYuint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
-	{
-		if (timeElapsed < (float)pNodeAnim->mPositionKeys[i + 1].mTime)
-		{
-			a = i;
-		}
-	}*/
-
-	//return 0;
-
-	TYuint it, first = 0, step = 0;
+	TYuint it, curr = 0, step = 0;
 	TYuint count = pNodeAnim->mNumPositionKeys - 1;
 
-	while (count > 0) 
+	while (count > 0)
 	{
-		it = first;
+		it = curr;
 		step = count / 2;
 
 		it += step;
 
 		if (((TYfloat)pNodeAnim->mPositionKeys[it].mTime < timeElapsed))
 		{
-			first = ++it;
+			curr = ++it;
 			count -= step + 1;
 		}
 		else
 			count = step;
 	}
 
-	return first - 1;
+	if (curr != 0)
+		curr--;
+
+	TYuint NextPositionIndex = (curr + 1);
+
+	assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
+
+	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[curr].mTime);
+	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mPositionKeys[curr].mTime) / DeltaTime;
+
+	//assert(Factor >= 0.0f && Factor <= 1.0f);
+
+	TYvec Start = AssimpToGlm(pNodeAnim->mPositionKeys[curr].mValue);
+	TYvec End = AssimpToGlm(pNodeAnim->mPositionKeys[NextPositionIndex].mValue);
+	TYvec Delta = End - Start;
+
+	return Start + Factor * Delta;
 }
 
-TYuint Animation::FindRotation(const aiNodeAnim* pNodeAnim)
+TYvec Animation::GetPoseScale(const aiNodeAnim* pNodeAnim)
 {
-	assert(pNodeAnim->mNumRotationKeys > 0);
-
-	/*for (TYuint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) 
+	if (pNodeAnim->mNumScalingKeys == 1)
 	{
-		if (timeElapsed < (float)pNodeAnim->mRotationKeys[i + 1].mTime) 
-		{
-			//return i;
-		}
-	}*/
-
-	//return 0;
-
-	TYuint it, first = 0, step = 0;
-	TYuint count = pNodeAnim->mNumRotationKeys - 1;
-
-	while (count > 0)
-	{
-		it = first;
-		step = count / 2;
-
-		it += step;
-
-		if (((TYfloat)pNodeAnim->mRotationKeys[it].mTime < timeElapsed))
-		{
-			first = ++it;
-			count -= step + 1;
-		}
-		else
-			count = step;
+		return AssimpToGlm(pNodeAnim->mScalingKeys[0].mValue);
 	}
 
-	return first - 1;
-}
-
-TYuint Animation::FindScaling(const aiNodeAnim* pNodeAnim)
-{
-	assert(pNodeAnim->mNumScalingKeys > 0);
-
-	/*for (TYuint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) 
-	{
-		if (timeElapsed < (float)pNodeAnim->mScalingKeys[i + 1].mTime) 
-		{
-			//return i;
-		}
-	}*/
-
-	//return 0;
-
-	TYuint it, first = 0, step = 0;
+	TYuint it, curr = 0, step = 0;
 	TYuint count = pNodeAnim->mNumScalingKeys - 1;
 
 	while (count > 0)
 	{
-		it = first;
+		it = curr;
 		step = count / 2;
 
 		it += step;
 
 		if (((TYfloat)pNodeAnim->mScalingKeys[it].mTime < timeElapsed))
 		{
-			first = ++it;
+			curr = ++it;
 			count -= step + 1;
 		}
 		else
 			count = step;
 	}
 
-	return first - 1;
-}
+	if(curr != 0)
+		curr--;
 
-TYvoid Animation::CalcInterpolatedPosition(TYvec& Out, const aiNodeAnim* pNodeAnim)
-{
-	if (pNodeAnim->mNumPositionKeys == 1)
-	{
-		Out = AssimpToGlm(pNodeAnim->mPositionKeys[0].mValue);
-		return;
-	}
-
-	TYuint PositionIndex = FindPosition(pNodeAnim);
-	TYuint NextPositionIndex = (PositionIndex + 1);
-
-	assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-
-	float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-	float Factor = (timeElapsed - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
+	TYuint NextScalingIndex = (curr + 1);
+	assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
+	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[curr].mTime);
+	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mScalingKeys[curr].mTime) / DeltaTime;
 
 	//assert(Factor >= 0.0f && Factor <= 1.0f);
 
-	TYvec Start = AssimpToGlm(pNodeAnim->mPositionKeys[PositionIndex].mValue);
-	TYvec End = AssimpToGlm(pNodeAnim->mPositionKeys[NextPositionIndex].mValue);
+	TYvec Start = AssimpToGlm(pNodeAnim->mScalingKeys[curr].mValue);
+	TYvec End = AssimpToGlm(pNodeAnim->mScalingKeys[NextScalingIndex].mValue);
 	TYvec Delta = End - Start;
-	Out = Start + Factor * Delta;
+
+	return Start + Factor * Delta;
 }
 
-TYvoid Animation::CalcInterpolatedRotation(TYquaternion& Out, const aiNodeAnim* pNodeAnim)
+TYquaternion Animation::GetPoseRotation(const aiNodeAnim* pNodeAnim)
 {
-	// we need at least two values to interpolate...
-	if (pNodeAnim->mNumRotationKeys == 1) {
-		Out = AssimpToGlm(pNodeAnim->mRotationKeys[0].mValue);
-		return;
+	if (pNodeAnim->mNumRotationKeys == 1) 
+	{
+		return AssimpToGlm(pNodeAnim->mRotationKeys[0].mValue);
 	}
 
-	TYuint RotationIndex = FindRotation(pNodeAnim);
-	TYuint NextRotationIndex = (RotationIndex + 1);
-	
+	TYuint it, curr = 0, step = 0;
+	TYuint count = pNodeAnim->mNumRotationKeys - 1;
+
+	while (count > 0)
+	{
+		it = curr;
+		step = count / 2;
+
+		it += step;
+
+		if (((TYfloat)pNodeAnim->mRotationKeys[it].mTime < timeElapsed))
+		{
+			curr = ++it;
+			count -= step + 1;
+		}
+		else
+			count = step;
+	}
+
+	if (curr != 0)
+		curr--;
+
+	TYuint NextRotationIndex = (curr + 1);
+
 	assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-	
-	float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-	float Factor = (timeElapsed - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
+
+	TYfloat DeltaTime = (TYfloat)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[curr].mTime);
+	TYfloat Factor = (timeElapsed - (TYfloat)pNodeAnim->mRotationKeys[curr].mTime) / DeltaTime;
 
 	//assert(Factor >= 0.0f && Factor <= 1.0f);
-	TYquaternion StartRotationQ = AssimpToGlm(pNodeAnim->mRotationKeys[RotationIndex].mValue);
+	TYquaternion StartRotationQ = AssimpToGlm(pNodeAnim->mRotationKeys[curr].mValue);
 	TYquaternion EndRotationQ = AssimpToGlm(pNodeAnim->mRotationKeys[NextRotationIndex].mValue);
 
 	//TYquaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
 	aiQuaternion ooo;
-	aiQuaternion::Interpolate(ooo, pNodeAnim->mRotationKeys[RotationIndex].mValue, pNodeAnim->mRotationKeys[NextRotationIndex].mValue, Factor);
+	aiQuaternion::Interpolate(ooo, pNodeAnim->mRotationKeys[curr].mValue, pNodeAnim->mRotationKeys[NextRotationIndex].mValue, Factor);
 	ooo.Normalize();
 
-	Out = AssimpToGlm(ooo);
+	return AssimpToGlm(ooo);
 }
 
-TYvoid Animation::CalcInterpolatedScaling(TYvec& Out, const aiNodeAnim* pNodeAnim)
+TYvoid Animation::DrawSkeleton(const TYmat& modelMatrix)
 {
-	if (pNodeAnim->mNumScalingKeys == 1)
+	for (TYuint i = 0; i < bones.size(); i++)
 	{
-		Out = AssimpToGlm(pNodeAnim->mScalingKeys[0].mValue);
-		return;
+		TYvec center = modelMatrix * bones[i].GlobalTransform * TYvec4(0.0f, 0.0f, 0.0f, 1.0f);
+		GenericDraw::DrawSphere(center, 0.6f, TYvec(1.0f, 0.95f, 0.95f));
 	}
-
-	TYuint ScalingIndex = FindScaling(pNodeAnim);
-	TYuint NextScalingIndex = (ScalingIndex + 1);
-	assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-	float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-	float Factor = (timeElapsed - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-	//assert(Factor >= 0.0f && Factor <= 1.0f);
-	TYvec Start = AssimpToGlm(pNodeAnim->mScalingKeys[ScalingIndex].mValue);
-	TYvec End = AssimpToGlm(pNodeAnim->mScalingKeys[NextScalingIndex].mValue);
-	TYvec Delta = End - Start;
-	Out = Start + Factor * Delta;
 }

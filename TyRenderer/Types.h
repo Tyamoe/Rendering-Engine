@@ -52,6 +52,7 @@ typedef void TYvoid;
 typedef long long int TYlint;
 typedef long long int TYlong;
 typedef unsigned long long int TYulint;
+typedef unsigned long long int TYulong;
 
 typedef std::vector<TYint> TYvectorI;
 typedef std::vector<TYuint> TYvectorUI;

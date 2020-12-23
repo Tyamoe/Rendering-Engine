@@ -6,7 +6,20 @@
 #include <condition_variable>
 #include <mutex>
 
+#include <iomanip>
+#include <locale>
+#include <sstream>
+
 #include "Types.h"
+
+template<class T>
+TYstring FormatWithCommas(T value)
+{
+	std::stringstream ss;
+	ss.imbue(std::locale(""));
+	ss << std::fixed << value;
+	return ss.str();
+}
 
 template<typename T>
 T GetRand(T low, T high, TYbool fast = false)

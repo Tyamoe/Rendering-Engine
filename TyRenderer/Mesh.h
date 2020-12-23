@@ -30,6 +30,8 @@ struct SubMesh
 class Mesh
 {
 public:
+	friend class Scene;
+
 	Mesh() {}
 	Mesh(Geometry* geometry_, Material* mat);
 	Mesh(TYvector<Geometry*>& geoList_, Material* mat = TYnull);
@@ -44,10 +46,6 @@ public:
 
 	GeoType geoType();
 
-	/*TYsizet geoCount()
-	{
-		return geoList.size();
-	}*/
 	TYsizet SubMeshCount()
 	{
 		return subMeshes.size();
@@ -58,16 +56,6 @@ public:
 		return meshHandle;
 	}
 
-	/*MeshHandle& GetHandle(TYint i)
-	{
-		return meshHandles[i];
-	}*/
-
-	/*Geometry* GetGeometry(TYint i = 0)
-	{
-		if (i == -1) return geoList[hitIndex];
-		return geoList[i];
-	}*/
 	Geometry* GetGeometry(TYint i = 0)
 	{
 		if (i == -1) return subMeshes[hitIndex].geometry;
@@ -87,19 +75,13 @@ public:
 
 	TYvoid SetHitIndex(TYint i) { hitIndex = i; }
 
-	/*TYvector<Geometry*>& GetGeometryList()
-	{
-		return geoList;
-	}*/
-
 	TYbool IsAnimated()
 	{
 		return isAnimated;
 	}
 
-	friend class Scene;
-
 private:
+	friend class Renderer;
 
 	TYvector<SubMesh> subMeshes;
 	MeshHandle meshHandle;
@@ -109,18 +91,8 @@ private:
 
 	TYint hitIndex = 0;
 
-	////////////////////////////////////
-
-	//TYvector<Geometry*> geoList;
-	//TYvector<MeshHandle> meshHandles;
-
-	//Geometry* geometry;
-
-	////////////////////////////////////
-
+private:
 	static TYpair<Mesh*, Animation*> CreateMesh(TYstring filename, TYbool&, TYbool&, Material* m = TYnull);
-
-	friend class Renderer;
 
 // Template
 public:
@@ -135,12 +107,6 @@ public:
 	{
 		return material;
 	}
-
-	/*template<>
-	Geometry* Get(Geometry*)
-	{
-		return geometry;
-	}*/
 
 	static inline TYbool GenHandles = true;
 };

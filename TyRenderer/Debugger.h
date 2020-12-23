@@ -33,7 +33,7 @@ namespace Debug
 		inline TYint allocs;
 		inline TYint deallocs;
 		inline TYsizet bytesUsed;
-		inline TYsizet bytesInUse;
+		inline TYulong bytesInUse;
 	}
 }
 

@@ -69,9 +69,9 @@ static TYuint aoMap = 0;
 
 static TYvec tmpVec = {0, 0, 0};
 
-static TYvec PositionBitss = { 0.0f, 0.0f, 0.0f };
-static TYfloat ScaleBithc = 1.0f;
-static TYvec4 RotationBatch = { 0.0f, 0.0f, 0.0f, 1.0f };
+static TYvec tempPosition = { 0.0f, 0.0f, 0.0f };
+static TYfloat tempScale = 1.0f;
+static TYvec4 tempRotation = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 TYvoid RenderDeferred::Draw(Entity* entity)
 {
@@ -93,11 +93,11 @@ TYvoid RenderDeferred::Draw(Entity* entity)
 		TYmat modelMatrix = entity->GetMatrix();
 		if (mesh->IsAnimated())
 		{
-			TYmat trMatrix = glm::translate(TYmat(1.0f), PositionBitss);
-			TYmat rtMatrix = glm::mat4_cast(TYquaternion(RotationBatch));
-			TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(ScaleBithc));
+			/*TYmat trMatrix = glm::translate(TYmat(1.0f), tempPosition);
+			TYmat rtMatrix = glm::mat4_cast(TYquaternion(tempRotation));
+			TYmat scMatrix = glm::scale(TYmat(1.0f), TYvec(tempScale));
 
-			modelMatrix = trMatrix * rtMatrix * scMatrix;
+			modelMatrix = trMatrix * rtMatrix * scMatrix;*/
 		}
 		TYmat modelInv = glm::inverse(modelMatrix);
 		modelInv = glm::transpose(modelInv);
@@ -391,9 +391,9 @@ TYvoid RenderDeferred::Forward()
 
 		ImGui::Begin("Test Animations");
 
-		ImGui::SliderFloat3("Position##1337", &PositionBitss.x, -500.0f, 500.0f);
-		ImGui::SliderFloat("Scale##1337", &ScaleBithc, 0.0f, 30.0f);
-		ImGui::SliderFloat4("Rotation##1337", &RotationBatch.x, -TYpi, TYpi);
+		ImGui::SliderFloat3("Position##1337", &tempPosition.x, -500.0f, 500.0f);
+		ImGui::SliderFloat("Scale##1337", &tempScale, 0.0f, 30.0f);
+		ImGui::SliderFloat4("Rotation##1337", &tempRotation.x, -TYpi, TYpi);
 
 		ImGui::End();
 	}
@@ -403,12 +403,17 @@ TYvoid RenderDeferred::Forward()
 		for (TYuint i = 0; i < scene->entityList.size(); i++)
 		{
 			Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
-			Geometry* g = mesh->GetGeometry();
-			if (g->GetType() == geoModel)
+
+			if (mesh->geoType() == geoModel)
 			{
-				if (((Model*)g)->octree)
+				const TYvector<SubMesh>& subMeshes = mesh->GetSubMeshList();
+				for (const SubMesh& submesh : subMeshes)
 				{
-					((Model*)g)->octree->Draw(((Model*)g)->octree->root);
+					Model* model = (Model*)submesh.geometry;
+					if (model->octree)
+					{
+						model->octree->Draw(model->octree->root);
+					}
 				}
 			}
 		}
@@ -494,39 +499,10 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 				ImGui::End();
 			}
 
-			//UI2
-			{
-				ImGui::Begin("Object");
-
-				ImGui::SliderFloat3("rr", &tmpVec.x, -360.0f, 360.0f);
-
-				ImGui::NewLine();
-
-				Transform* tr = scene->entityList[i]->Get<Transform*>();
-
-				TYquaternion rot = tr->GetRotation();
-
-				TYvec r = tr->Get<Transformation::Rotation>(); // { rot.x, rot.y, rot.z};
-
-				TYvec sss = r;
-
-				ImGui::SliderFloat3("R", &r.x, -360.0f, 360.0f);
-
-				if (r != sss)
-				{
-					//rot = TYquaternion(r);
-					tr->Set<Transformation::Rotation>(r);
-				}
-
-				ImGui::End();
-			}
-
 			if (tempPlay)
 			{
 				anim->Update(dt);
 				anim->UpdatePose();
-				//for (TYuint m = 0; m < anim->currentPoseList.size(); m++)
-				//	anim->UpdatePose(anim->skeletonList[m], TYmat(1.0f), anim->globalInvMatrix, m);
 			}
 		}
 	}
@@ -564,7 +540,7 @@ TYvoid RenderDeferred::Render(TYfloat dt)
 		x_ = width / 2.0f; //Input::mouse.screenPos.x;
 		y_ = height / 2.0f; //Input::mouse.screenPos.y;
 
-		TYvec2 screenCoord;
+		TYvec2 screenCoord = {};
 		screenCoord.x = (2.0f * x_) / width - 1.0f;
 		screenCoord.y = (-2.0f * (height - y_)) / height + 1.0f;
 
@@ -731,7 +707,7 @@ TYvoid RenderDeferred::Init()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
-	unsigned int attachments[4] = 
+	TYuint attachments[4] = 
 	{ 
 		GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 
 	};

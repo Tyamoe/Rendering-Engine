@@ -85,7 +85,6 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 	{
 		TYstring rre = importer.GetErrorString();
 		std::cout << "ERROR::ASSIMP::" << rre << std::endl;
-		std::cout << "ERROR::ASSIMP::" << std::endl;
 	}
 
 	TYstring::size_type slashIndex = filename.find_last_of("/");
@@ -327,13 +326,13 @@ Mesh::~Mesh()
 
 TYvoid Mesh::DestroyVAO(TYuint vao)
 {
-	GLint max_vtx_attrib = 0;
-	GLuint buffer_object;
+	TYint max_vtx_attrib = 0;
+	TYuint buffer_object;
 
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vtx_attrib);
 	glBindVertexArray(vao);
 
-	for (int i = 0; i < max_vtx_attrib; ++i)
+	for (TYint i = 0; i < max_vtx_attrib; ++i)
 	{
 		glGetVertexAttribIuiv(i, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &buffer_object);
 		if (buffer_object > 0)
@@ -342,7 +341,7 @@ TYvoid Mesh::DestroyVAO(TYuint vao)
 		}
 	}
 
-	glGetVertexArrayiv(vao, GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<GLint*>(&buffer_object));
+	glGetVertexArrayiv(vao, GL_ELEMENT_ARRAY_BUFFER_BINDING, reinterpret_cast<TYint*>(&buffer_object));
 
 	if (buffer_object > 0)
 	{

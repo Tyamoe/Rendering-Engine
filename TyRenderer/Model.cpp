@@ -305,9 +305,9 @@ Model::Model(TYuint MeshIndex, const aiMesh* pMesh, TYuint offset, TYvector<Vert
 			BoneIndex = animation->numBones;
 			animation->numBones++;
 
-			BoneInfo1 bone;
+			Bone bone;
 			bone.BoneOffset = AssimpToGlm(pMesh->mBones[i]->mOffsetMatrix);
-			animation->boneInfo.push_back(bone);
+			animation->bones.push_back(bone);
 
 			animation->boneMapping[hashStr] = BoneIndex;
 		}

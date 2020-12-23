@@ -2,20 +2,17 @@
 
 #include "Types.h"
 
-struct aiNodeAnim;
-struct aiNode;
-class Transform;
-
-struct BoneInfo1
+struct Bone
 {
 	TYmat BoneOffset;
-	TYmat FinalTransformation;
-	TYmat GlobalTransformation;
+	TYmat BoneTransform;
 
-	BoneInfo1()
+	TYmat GlobalTransform;
+
+	Bone()
 	{
 		BoneOffset = TYmat(1.0f);
-		FinalTransformation = TYmat(1.0f);
-		GlobalTransformation = TYmat(1.0f);
+		BoneTransform = TYmat(1.0f);
+		GlobalTransform = TYmat(1.0f);
 	}
 };

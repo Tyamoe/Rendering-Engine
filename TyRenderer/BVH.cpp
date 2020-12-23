@@ -7,7 +7,7 @@
 
 BVH::~BVH()
 {
-	delete head;
+	//delete head;
 }
 
 BVH* BVH::GenerateBVH(Sphere* sphere)
