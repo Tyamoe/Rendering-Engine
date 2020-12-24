@@ -22,6 +22,7 @@ class RenderRayTraceCPU : public Renderer
 
 		TYvec Origin = TYvec(0.0f);
 		TYvector3 Direction;
+		TYvector3 Bias;
 
 		TYfloat aspect;
 		TYfloat angle;
@@ -46,9 +47,8 @@ class RenderRayTraceCPU : public Renderer
 
 			std::thread* tracingThreads = TYnull;
 			TYint threadCount = 0;
-	};
+		};
 
-	public:
 		RenderRayTraceCPU();
 		~RenderRayTraceCPU();
 
@@ -89,6 +89,8 @@ class RenderRayTraceCPU : public Renderer
 
 		TYint pixelCount = 0; 
 		PixelColor clearColor = PixelColor(89, 155, 100, 255);
+
+		TYvoid InitThreads();
 
 		TYvoid UpdateData();
 		TYvoid TraceRays();

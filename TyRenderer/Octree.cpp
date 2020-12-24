@@ -4,6 +4,8 @@
 #include "GenericDraw.h"
 #include "Debugger.h"
 
+#include "Globals.h"
+
 Octree::Octree(Geometry* parentGeometry_) : parentGeometry(parentGeometry_)
 {
 	maxDepth = 0;
@@ -337,14 +339,17 @@ TYfloat Octree::ColorDiff(TYvec cul)
 	return smol;
 }
 
-TYbool Intersect(TYvec rayOrig, TYvec rayDir, const AABB& aabb, TYfloat& t)
+TYbool Intersect(TYvec rayOrig, TYvec rayDir, const AABB& aabb, TYfloat& t, TYmat& modelMat)
 {
+	TYvec minV = modelMat * TYvec4(aabb.min, 1.0f);
+	TYvec maxV = modelMat * TYvec4(aabb.max, 1.0f);
+
 	TYfloat tmin = -TYmaxf;
 	TYfloat tmax = TYmaxf;
 
 	TYvec invD = 1.0f / rayDir;
-	TYvec t0s = (aabb.min - rayOrig) * invD;
-	TYvec t1s = (aabb.max - rayOrig) * invD;
+	TYvec t0s = (minV - rayOrig) * invD;
+	TYvec t1s = (maxV - rayOrig) * invD;
 
 	TYvec tsmaller = min(t0s, t1s);
 	TYvec tbigger = max(t0s, t1s);
@@ -357,23 +362,50 @@ TYbool Intersect(TYvec rayOrig, TYvec rayDir, const AABB& aabb, TYfloat& t)
 	return (tmin < tmax);
 }
 
-Node* Octree::Intersect(TYvec rayOrig, TYvec rayDir)
+Node* Octree::Intersect(TYvec rayOrig, TYvec rayDir, TYmat& modelMat)
 {
 	Node* node = TYnull;
 	TYfloat t = 0.0f;
-	if (::Intersect(rayOrig, rayDir, root->bound, t))
+	if (::Intersect(rayOrig, rayDir, root->bound, t, modelMat))
 	{
 		TYvec hitPoint = rayOrig + rayDir * t;
-		node = root->Intersect(rayOrig, rayDir, hitPoint);
+		node = root->Intersect(rayOrig, rayDir, hitPoint, modelMat);
 	}
 	return node;
 }
 
-Node* Node::Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint)
+Node* Node::Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint, TYmat& modelMat)
 {
 	if (Triangles.size() > 0)
 	{
-		return this;
+		TYvec norm = TYvec(0.0f);
+		TYfloat t00 = TYinf, t11 = TYinf;
+		TYbool h = false;
+
+		for (TYsizet i = 0; i < Triangles.size(); i++)
+		{
+			if (Triangles[i].Intersect(rayOrig, rayDir, hitInfo.t0, hitInfo.t1, hitInfo.normal, modelMat) 
+				&& hitInfo.t0 < TYmaxf && hitInfo.t0 < t00)
+			{
+				t00 = hitInfo.t0;
+				t11 = hitInfo.t1;
+				norm = hitInfo.normal;
+				h = true;
+			}
+		}
+
+		if (h)
+		{
+			hitInfo.normal = norm;
+			hitInfo.t0 = t00;
+			hitInfo.t1 = t11;
+
+			return this;
+		}
+		else
+		{
+			return TYnull;
+		}
 	}
 
 	TYfloat xDist = glm::distance2(hitPoint, bound.midPlanes[2].Center * bound.midPlanes[2].Normal);
@@ -388,7 +420,7 @@ Node* Node::Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint)
 		Node* ret = TYnull;
 		if (children[index])
 		{
-			ret = children[index]->Intersect(rayOrig, rayDir, hitPoint);
+			ret = children[index]->Intersect(rayOrig, rayDir, hitPoint, modelMat);
 		}
 
 		if (ret != TYnull)

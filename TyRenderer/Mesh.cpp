@@ -79,7 +79,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 	//ai_real ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
 	//importer.SetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY", 1.01f);
 	//ddd = importer.GetPropertyFloat("AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY");
-	const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes/* | aiProcess_GlobalScale*/);
+	const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcessPreset_TargetRealtime_Fast1 | aiProcess_GenBoundingBoxes/* | aiProcess_GlobalScale*/);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -116,6 +116,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 	if (hasMaterial && !material)
 	{
 		mat->color = TYvec4(1.0f);
+		mat->color = randColor;
 	}
 	else if(!material)
 	{
@@ -125,6 +126,7 @@ TYpair<Mesh*, Animation*> Mesh::CreateMesh(TYstring filename, TYbool& hasSkeleto
 	{
 		delete mat;
 		mat = material;
+		mat->color = randColor;
 	}
 
 	// Bounding Box

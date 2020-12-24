@@ -26,4 +26,7 @@ namespace Global
 	inline TYbool DevComputeShaderB = false;
 	inline TYfloat DevComputeShaderF = 1.0f;
 	inline TYvec DevComputeShaderV = TYvec();
+
+	inline TYbool OctreeIntersect = true;
+	inline TYbool seeIntersect = false;
 }

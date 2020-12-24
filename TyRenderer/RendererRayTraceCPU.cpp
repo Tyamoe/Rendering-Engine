@@ -97,14 +97,12 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	TYint hitIndex = -1;
 
 	// Intersect ray with scene
-	//for (TYuint i = 0; i < scene->geometry.size(); i++)
 	for (TYuint i = 0; i < scene->entityList.size(); i++)
 	{
 		if (i == ignore) continue;
 		TYvec norm = TYvec(0.0f);
 		TYfloat t0 = TYinf, t1 = TYinf;
 
-		//if (scene->geometry[i]->Intersect(rayOrigin, rayDir, t0, t1, norm))
 		if (Geometry::Intersect(scene->entityList[i], rayOrigin, rayDir, t0, t1, norm))
 		{
 			if (t0 < 0)
@@ -117,7 +115,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 				Mesh* mesh = scene->entityList[i]->Get<Mesh*>();
 
 				tnear = t0;
-				hit = mesh->GetGeometry(-1);// scene->geometry[i];
+				hit = mesh->GetGeometry(-1);
 				normal = norm;
 				hitIndex = i;
 			}
@@ -155,21 +153,6 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		DdotN = glm::dot(rayDir, nhit);
 	}
 
-	/*************************************/
-	if (hit->GetType() == geoModel)
-	{
-		//surfaceColor = glm::normalize(phit);
-		if (Global::DevBool)
-		{
-			lineLock.lock();
-
-			lines.push_back(phit);
-			lines.push_back(phit + nhit * bias);
-
-			lineLock.unlock();
-		}
-	}
-
 	PixelColorF incomingColor = PixelColorF();
 
 	if ((hit->transparency > 0 || hit->reflection > 0) && rayDepth < MAX_RAY_DEPTH)
@@ -193,7 +176,7 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 		// Compute refraction ray
 		if (hit->transparency)
 		{
-			TYfloat ior = hit->transparency, eta = (inside) ? ior : 1.0f / ior; // are we inside or outside the surface? 
+			TYfloat ior = hit->transparency, eta = (inside) ? ior : 1.0f / ior; // inside or outside the surface
 			TYfloat cosi = -glm::dot(nhit, rayDir);
 
 			TYfloat k = 1.0f - eta * eta * (1.0f - cosi * cosi);
@@ -235,17 +218,17 @@ PixelColorF RenderRayTraceCPU::Trace(TYvec rayOrigin, TYvec rayDir, TYint rayDep
 	// Shadow Step
 	PixelColorF trans = PixelColorF(1.0f);
 
-	//for (TYuint j = 1; j < scene->geometry.size(); j++)
-	for (TYuint j = 0; j < scene->entityList.size(); j++)
+	for (TYuint j = 1; j < scene->entityList.size(); j++)
 	{
+		if (j == hitIndex) continue;
+
 		TYfloat t0, t1;
-		//if (scene->geometry[j]->Intersect(phit + nhit * bias, lightDir, t0, t1, normal))
 		if (Geometry::Intersect(scene->entityList[j], phit + nhit * bias, lightDir, t0, t1, normal))
 		{
 			Mesh* mesh = scene->entityList[j]->Get<Mesh*>();
 			Material* mat = mesh->Get<Material*>();
 
-			TYfloat t = mat->GetTransparency();// scene->geometry[j]->transparency;
+			TYfloat t = mat->GetTransparency();
 			if (t != 0.0f)
 			{
 				t = t <= 1.0f ? 1.0f : glm::clamp(1.0f - (t - 1.0f), 0.4f, 0.95f);
@@ -274,7 +257,6 @@ TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffe
 		TYint rayc = 0;
 
 		// Evalute Pixels in this thread group
-		//for (TYint y_ = y; y_ > y - sy; y_--)
 		for (TYint y_ = y - sy + 1;  y_ < y + 1;  y_++)
 		{
 			TYint i = y_ * TYint(rt->traceData.width) + x;
@@ -282,18 +264,7 @@ TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffe
 			{
 				if (rt->traceData.dirty)
 				{
-					/*TYfloat xx = (2.0f * ((x_ + 0.5f) * rt->traceData.invWidth) - 1.0f) * rt->traceData.aspect * rt->traceData.angle;
-					TYfloat yy = (1.0f - 2.0f * ((y_ + 0.5f) * rt->traceData.invHeight)) * rt->traceData.angle;
-
-					// Ray direction considering camera
-					TYvec ir = (rt->camera->view * TYvec4(xx, yy, -1.0f, 1.0f));
-					ir = ir - rt->traceData.Origin;
-					ir = glm::normalize(ir);
-
-					rt->traceData.Direction[i] = ir;*/
-
-					/////////////////////////////////////////////
-					TYvec2 screenCoord;
+					TYvec2 screenCoord = {};
 					screenCoord.x = (2.0f * x_) / rt->traceData.width - 1.0f;
 					screenCoord.y = (-2.0f * (rt->traceData.height - y_)) / rt->traceData.height + 1.0f;
 
@@ -301,12 +272,22 @@ TYvoid TraceThread(TYint x, TYint y, TYint sx, TYint sy, PixelColor*& PixelBuffe
 						screenCoord.y * rt->camera->dim.y * rt->camera->up;
 
 					rt->traceData.Direction[i] = glm::normalize(dir);
-					/////////////////////////////////////////////
 				}
 
 				TYint rays = 0;
-				PixelColor pixel = static_cast<PixelColor>(rt->Trace(rt->traceData.Origin, rt->traceData.Direction[i], 0, rays));
+
+				PixelColorF pixel1 = rt->Trace(rt->traceData.Origin, rt->traceData.Direction[i], 0, rays);
+				//PixelColorF pixel2 = rt->Trace(rt->traceData.Origin, rt->traceData.Direction[i] + rt->traceData.Bias[i], 1, rays);
+
+				//pixel1 = pixel1 + pixel2;
+				//pixel1 /= 2.0f;
+
+				pixel1.Clamp();
+
+				PixelColor pixel = static_cast<PixelColor>(pixel1);
+
 				rayc += rays;
+
 				pixel.Clamp();
 				PixelBuffer[i] = pixel;
 			}
@@ -356,7 +337,7 @@ TYvoid RenderRayTraceCPU::TraceRays()
 
 		TYint rays = 0;
 
-		int i = 0;
+		TYint i = 0;
 		for (TYint y = height; y > 0; y--)
 		{
 			for (TYint x = 0; x < width; x++, i++)
@@ -428,6 +409,10 @@ TYvoid RenderRayTraceCPU::Render(TYfloat dt)
 	ImGui::Text("Camera Pos: %.3f, %.3f, %.3f", camera->position.x, camera->position.y, camera->position.z);
 	ImGui::Text("Camera Front: %.3f, %.3f, %.3f", camera->front.x, camera->front.y, camera->front.z);
 
+	ImGui::NewLine();
+
+	ImGui::Checkbox("Octree Intersect", &Global::OctreeIntersect);
+
 	ImGui::End();
 }
 
@@ -494,7 +479,7 @@ TYvoid RenderRayTraceCPU::ThreadHeight()
 
 	traceBarrier = new Barrier(traceData.ThreadCount);
 
-	int i = 0;
+	TYint i = 0;
 	for (TYint y = height - 1; y >= 0; y--)
 	{
 		tracingThreads[i] = std::thread(TraceThread, 0, y, width, 1, std::ref(PixelBuffer), this, i);
@@ -568,7 +553,7 @@ TYvoid RenderRayTraceCPU::ThreadStrip()
 	TYint width = layout.width;
 	TYint height = layout.height;
 
-	traceData.ThreadCount = Global::DevThreadCount; //6;
+	traceData.ThreadCount = 100;// Global::DevThreadCount; //6;
 
 	rayCount = TYvector< TyAtomic<TYint> >(traceData.ThreadCount);
 
@@ -585,7 +570,17 @@ TYvoid RenderRayTraceCPU::ThreadStrip()
 
 	for (TYint i = 0; i < traceData.ThreadCount; i++)
 	{
-		tracingThreads[i] = std::thread(TraceThread, 0, height - sy * i - 1, sx, sy, std::ref(PixelBuffer), this, i);
+		TYint sizey = sy;
+		if (i == traceData.ThreadCount - 1)
+		{
+			TYint tt = (sizey * i - 1);
+			sizey = height - tt ;
+			tracingThreads[i] = std::thread(TraceThread, 0, sizey - 1, sx, sizey, std::ref(PixelBuffer), this, i);
+		}
+		else
+		{
+			tracingThreads[i] = std::thread(TraceThread, 0, height - sy * i - 1, sx, sizey, std::ref(PixelBuffer), this, i);
+		}
 	}
 }
 
@@ -600,6 +595,12 @@ TYvoid RenderRayTraceCPU::Init()
 	traceData.height = TYfloat(height);
 
 	traceData.Direction = TYvector3(width * height, TYvec(0));
+	traceData.Bias = TYvector3(width * height, TYvec(0));
+
+	for (TYint i = 0; i < width * height; i++)
+	{
+		traceData.Bias[i] = TYvec(GetRand(-0.000002f, 0.000002f), GetRand(-0.000002f, 0.000002f), GetRand(-0.000002f, 0.000002f));
+	}
 
 	camera = new Camera(true);
 

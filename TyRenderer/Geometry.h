@@ -7,6 +7,7 @@
 #include "RenderingUtils.h"
 #include "MeshUtils.h"
 
+class Transform;
 class Octree;
 class BVH;
 class MeshHandle;
@@ -34,7 +35,7 @@ public:
 	{ }
 	virtual ~Geometry();
 
-	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal) { return false; }
+	virtual TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat) { return false; }
 
 	virtual MeshHandle GenHandle_GL() {
 		return MeshHandle();
@@ -57,6 +58,8 @@ public:
 	MeshHandle meshHandle;
 
 	BVH* bvh = TYnull;
+
+	Transform* transform = TYnull;
 
 	operator Mesh*();
 	operator Mesh*() const;
@@ -82,7 +85,7 @@ public:
 		TYfloat refl = 0, TYfloat transp = 0, PixelColorF ec = PixelColorF());
 	~Triangle();
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat);
 
 	MeshHandle GenHandle_GL();
 
@@ -131,7 +134,7 @@ public:
 
 	~Sphere();
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat);
 
 	TYmat GetMatrix();
 
@@ -158,7 +161,7 @@ public:
 	
 	~Model();
 
-	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal);
+	TYbool Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat);
 	TYvoid AddTriangles(TYvector<Triangle>& pTriangles);
 
 	TYmat GetMatrix();

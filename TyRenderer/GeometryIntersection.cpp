@@ -14,6 +14,8 @@ TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat&
 	Mesh* mesh = entity->Get<Mesh*>();
 	Transform* transform = entity->Get<Transform*>();
 
+	TYmat modelMat = transform->GetMatrix();
+
 	//TYvector<Geometry*>& geoList = mesh->GetGeometryList();
 	const TYvector<SubMesh>& subMeshList = mesh->GetSubMeshList();
 
@@ -25,7 +27,7 @@ TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat&
 	for (TYint i = 0; i < subMeshList.size(); i++)
 	{
 		Geometry* geometry = subMeshList[i].geometry;
-		if (geometry->Intersect(rayOrig, rayDir, t0, t1, norm))
+		if (geometry->Intersect(rayOrig, rayDir, t0, t1, norm, modelMat))
 		{
 			if (t0 < 0)
 			{
@@ -47,10 +49,10 @@ TYbool Geometry::Intersect(Entity* entity, TYvec rayOrig, TYvec rayDir, TYfloat&
 	return hit != TYnull;
 }
 
-TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
+TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat)
 {
 	Node* node = TYnull;
-	node = octree->Intersect(rayOrig, rayDir);
+	node = octree->Intersect(rayOrig, rayDir, modelMat);
 	if (!node)
 	{
 		return false;
@@ -59,61 +61,35 @@ TYbool Model::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, T
 	{
 		if (!node->color)
 		{
-			node->color = new TYvec(TyVec3("fa68ff"));
-		}
-
-		if (node->empty)
-		{
-			//TYlog << "node->empty\n";
+			//node->color = new TYvec(TyVec3("fa68ff"));
 		}
 	}
 
-	TYvec norm = TYvec(0.0f);
-	TYfloat t00 = TYinf, t11 = TYinf;
-	TYbool h = false;
+	normal = node->hitInfo.normal;
+	t0 = node->hitInfo.t0;
+	t1 = node->hitInfo.t1;
 
-	for (TYsizet i = 0; i < node->Triangles.size(); i++)
-	{
-		/*TYvec p0 = node->Triangles[i].vertices[0].position;
-		TYvec p1 = node->Triangles[i].vertices[1].position;
-		TYvec p2 = node->Triangles[i].vertices[2].position;
-
-		TYvec prod = glm::normalize((glm::cross(p1 - p0, p2 - p0) * (p1 - TYvec(0.0f, 0.0f, -1.0f))));
-		if (prod.z <= 0.0f)
-		{
-			continue;
-		}*/
-		if (node->Triangles[i].Intersect(rayOrig, rayDir, t0, t1, normal) && t0 < TYmaxf && t0 < t00)
-		{
-			t00 = t0;
-			t11 = t1;
-			norm = normal;
-			h = true;
-		}
-	}
-
-	normal = norm;
-	t0 = t00;
-	t1 = t11;
-
-	return h;
+	return true;
 }
 
-TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
+TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat)
 {
-	TYvec e1 = vertices[1].position - vertices[0].position;
-	TYvec e2 = vertices[2].position - vertices[0].position;
+	TYvec v0 = modelMat * TYvec4(vertices[0].position, 1.0f);
+	TYvec v1 = modelMat * TYvec4(vertices[1].position, 1.0f);
+	TYvec v2 = modelMat * TYvec4(vertices[2].position, 1.0f);
+
+	TYvec e1 = v1 - v0;
+	TYvec e2 = v2 - v0;
 
 	TYvec h = glm::cross(rayDir, e2);
 	TYfloat det = glm::dot(e1, h);
 
-	// Ray and triangle are parallel if det is close to 0
 	if (fabs(det) < TYepsilon)
 		return false;
 
 	TYfloat invDet = 1.0f / det;
 
-	TYvec s = rayOrig - vertices[0].position;
+	TYvec s = rayOrig - v0;
 
 	TYfloat u = glm::dot(s, h) * invDet;
 
@@ -133,22 +109,15 @@ TYbool Triangle::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1
 		return false;
 	}
 
-	normal = glm::cross(vertices[1].position - vertices[0].position, vertices[2].position - vertices[0].position);
+	normal = glm::cross(v1 - v0, v2 - v0);
 
 	return true;
 }
 
-TYbool Sphere::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal)
+TYbool Sphere::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, TYvec& normal, TYmat& modelMat)
 {
-	/*if (bvh)
-	{
-		if (bvh->head->Intersect(rayOrig, rayDir))
-		{
-			//TYlog << "Bounding Sphere\n";
-		}
-	}*/
-
-	TYvec l = center - rayOrig;
+	TYvec c = center;// modelMat* TYvec4(center, 1.0f);
+	TYvec l = c - rayOrig;
 
 	TYfloat tca = glm::dot(l, rayDir);
 
@@ -172,7 +141,7 @@ TYbool Sphere::Intersect(TYvec rayOrig, TYvec rayDir, TYfloat& t0, TYfloat& t1, 
 
 	// Compute normal at the intersection point 
 	TYvec phit = rayOrig + rayDir * t0;
-	normal = phit - center;
+	normal = phit - c;
 
 	return true;
 }

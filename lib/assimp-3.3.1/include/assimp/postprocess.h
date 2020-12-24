@@ -623,6 +623,12 @@ enum aiPostProcessSteps
     aiProcess_SortByPType           |  \
     0 )
 
+#define aiProcessPreset_TargetRealtime_Fast1 ( \
+    aiProcess_GenNormals            |  \
+    aiProcess_Triangulate           |  \
+    aiProcess_GenUVCoords           |  \
+    0 )
+
  // ---------------------------------------------------------------------------------------
  /** @def aiProcessPreset_TargetRealtime_Quality
   *  @brief Default postprocess configuration optimizing the data for real-time rendering.

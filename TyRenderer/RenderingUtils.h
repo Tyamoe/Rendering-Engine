@@ -128,11 +128,27 @@ union PixelColorF
 		return PixelColorF(r * a1, g * a1, b * a1, a);
 	}
 
+	PixelColorF operator/=(const TYfloat& a1) const
+	{
+		return PixelColorF(r / a1, g / a1, b / a1, a);
+	}
+
 	TYvoid Clamp()
 	{
 		r = std::min(1.0f, r);
 		g = std::min(1.0f, g);
 		b = std::min(1.0f, b);
+		a = std::min(1.0f, a);
+	}
+
+	TYvoid Normalize()
+	{
+		TYvec v = { r, g, b };
+		v = glm::normalize(v);
+
+		r = v.r;
+		g = v.g;
+		b = v.b;
 		a = std::min(1.0f, a);
 	}
 
@@ -152,7 +168,7 @@ inline PixelColorF operator-(TYfloat f, const PixelColorF& p)
 	return PixelColorF(f - p.r, f - p.g, f - p.b, p.a);
 }
 
-inline PixelColorF operator* (TYfloat f, const PixelColorF& p)
+inline PixelColorF operator*(TYfloat f, const PixelColorF& p)
 {
 	return PixelColorF(p.r * f, p.g * f, p.b * f, p.a);
 }

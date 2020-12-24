@@ -28,16 +28,15 @@ class Transform
 			}
 			else if constexpr (e == Transformation::Rotation)
 			{
-				euler = value;
-				rotation = glm::radians(value);
+				rotation = TYquaternion(value);
 			}
+			dirty = true;
 		}
 
 		TYvoid Set(TYquaternion value)
 		{
 			rotation = value;
-
-			//printf("Set: %.3f, %.3f, %.3f \n", value.x, value.y, value.z);
+			dirty = true;
 		}
 
 		template<Transformation e>
@@ -51,10 +50,6 @@ class Transform
 			{
 				return scale;
 			}
-			else if constexpr (e == Transformation::Rotation)
-			{
-				return euler;
-			}
 		}
 
 		TYquaternion GetRotation()
@@ -67,12 +62,11 @@ class Transform
 	private:
 		TYvec position;
 		TYvec scale;
-
 		TYquaternion rotation;
-		TYvec euler = TYvec();
-		TYmat rotMat;
 
 		TYvec pivot = {};
 
 		TYmat model;
+
+		TYbool dirty = true;
 };

@@ -18,6 +18,7 @@ public:
 
 	// Camera Transform -> used to make View matrix.
 	TYvec position = TYvec(-18.45f, 6.5f, 80.0f);
+	//TYvec position = TYvec(-4.301f, 4.297f, 6.202f);
 	TYvec front = TYvec(0.0f, 0.0f, -1.0f);
 	TYvec up = TYvec(0.0f, 1.0f, 0.0f);
 

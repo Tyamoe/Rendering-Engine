@@ -92,7 +92,15 @@ public:
 		delete color;
 	}
 
-	TYfloat T = 0;
+	struct HitInfo
+	{
+		TYint hitIndex = -1;
+		TYfloat t0 = TYmaxf;
+		TYfloat t1 = TYmaxf;
+		TYvec normal = {};
+	};
+
+	HitInfo hitInfo;
 
 	AABB bound;
 
@@ -108,7 +116,7 @@ public:
 
 	TYint childID = 0;
 
-	Node* Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint);
+	Node* Intersect(const TYvec& rayOrig, const TYvec& rayDir, TYvec hitPoint, TYmat& modelMat);
 
 private:
 	TYint SignMask(TYvec vec);
@@ -146,7 +154,7 @@ public:
 
 	TYvoid Draw(Node* node);
 
-	Node* Intersect(TYvec rayOrig, TYvec rayDir);
+	Node* Intersect(TYvec rayOrig, TYvec rayDir, TYmat& modelMat);
 
 	Node* root;
 

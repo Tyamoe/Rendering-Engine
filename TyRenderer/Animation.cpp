@@ -129,7 +129,11 @@ TYvec Animation::GetPosePosition(const aiNodeAnim* pNodeAnim)
 		return AssimpToGlm(pNodeAnim->mPositionKeys[0].mValue);
 	}
 
-	TYuint it, curr = 0, step = 0;
+	TYfloat animPercent = timeElapsed / duration;
+	TYuint currKey = TYuint(animPercent * pNodeAnim->mNumPositionKeys);
+
+	TYuint curr = 0;
+	/*TYuint it, step = 0;
 	TYuint count = pNodeAnim->mNumPositionKeys - 1;
 
 	while (count > 0)
@@ -146,8 +150,9 @@ TYvec Animation::GetPosePosition(const aiNodeAnim* pNodeAnim)
 		}
 		else
 			count = step;
-	}
+	}*/
 
+	curr = currKey;
 	if (curr != 0)
 		curr--;
 
@@ -174,7 +179,11 @@ TYvec Animation::GetPoseScale(const aiNodeAnim* pNodeAnim)
 		return AssimpToGlm(pNodeAnim->mScalingKeys[0].mValue);
 	}
 
-	TYuint it, curr = 0, step = 0;
+	TYfloat animPercent = timeElapsed / duration;
+	TYuint currKey = TYuint(animPercent * pNodeAnim->mNumScalingKeys);
+
+	TYuint curr = 0;
+	/*TYuint it, step = 0;
 	TYuint count = pNodeAnim->mNumScalingKeys - 1;
 
 	while (count > 0)
@@ -191,8 +200,9 @@ TYvec Animation::GetPoseScale(const aiNodeAnim* pNodeAnim)
 		}
 		else
 			count = step;
-	}
+	}*/
 
+	curr = currKey;
 	if(curr != 0)
 		curr--;
 
@@ -217,7 +227,11 @@ TYquaternion Animation::GetPoseRotation(const aiNodeAnim* pNodeAnim)
 		return AssimpToGlm(pNodeAnim->mRotationKeys[0].mValue);
 	}
 
-	TYuint it, curr = 0, step = 0;
+	TYfloat animPercent = timeElapsed / duration;
+	TYuint currKey = TYuint(animPercent * pNodeAnim->mNumRotationKeys);
+
+	TYuint curr = 0;
+	/*TYuint it, step = 0;
 	TYuint count = pNodeAnim->mNumRotationKeys - 1;
 
 	while (count > 0)
@@ -234,8 +248,9 @@ TYquaternion Animation::GetPoseRotation(const aiNodeAnim* pNodeAnim)
 		}
 		else
 			count = step;
-	}
+	}*/
 
+	curr = currKey;
 	if (curr != 0)
 		curr--;
 

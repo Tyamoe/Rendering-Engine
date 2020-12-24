@@ -19,12 +19,13 @@ Scene::Scene(TYint i)
 
 		Entity* entity = CreateEntity("TestRaytrace");
 		entity->Set<Component::Mesh>(new Mesh(geometry[0], new Material(TYvec4(0.65f, 0.95f, 0.1f, 1.0f))));
-		entity->Set<Component::Transform>(new Transform(TYvec(0.0f, 30.0f, 0.0f), TYvec(2.0f)));
+		entity->Set<Component::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(2.0f)));
 
 		Entity* entity1 = CreateEntity("TestRaytrace52");
+		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/mp5_sil.fbx", hasBones, hasAnim);
 		TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/trofy.obj", hasBones, hasAnim);
 		entity1->Set<Component::Mesh>(mesh.first);
-		entity1->Set<Component::Transform>(new Transform(TYvec(7.0f, 0.0f, -5.0f), TYvec(1.0f)));
+		entity1->Set<Component::Transform>(new Transform(TYvec(0.0f, 0.0f, 0.0f), TYvec(1.0f)));
 
 		entity1 = CreateEntity("TestRaytrace3");
 		entity1->Set<Component::Mesh>(new Mesh(new Sphere(TYvec(0.0, -10007, -20), 10000.0f, PixelColorF(0.20f, 0.20f, 0.20f), 0.7f, 0.0f), new Material(TYvec4(0.65f, 0.95f, 0.1f, 1.0f))));
@@ -95,7 +96,7 @@ Scene::Scene(TYint i)
 		}
 		entity1->Set<cc::Transform>(new Transform(TYvec(-40.0f, 0.0f, 0.0f), TYvec(1)));
 	}
-	{
+	/*{
 		Entity* entity1 = CreateEntity("Test12");
 
 		//TYpair<Mesh*, Animation*> mesh = Mesh::CreateMesh("./resources/models/krieg_walk2.fbx", hasBones, hasAnim);
@@ -126,7 +127,7 @@ Scene::Scene(TYint i)
 			entity1->Set<cc::Animation>(mesh.second);
 		}
 		entity1->Set<cc::Transform>(new Transform(TYvec(0.0f, 20.0f, 40.0f), TYvec(1.0f), TYquaternion(TYvec4(0.0f, 0.0f, 0.0f, 1.0f))));
-	}
+	}*/
 
 	/*Entity* entity1;
 	for (int i = 0; i < 50; i++)
